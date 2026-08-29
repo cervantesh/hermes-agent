@@ -1,0 +1,84 @@
+name: Update command decomposition fork CI
+
+on:
+  push:
+    branches:
+      - ci/update-cmd-decomposition-standard-runners
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-cmd-decomposition-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  updater-matrix:
+    name: updater matrix (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            runner: ubuntu-latest
+          - name: macOS
+            runner: macos-latest
+          - name: Windows
+            runner: windows-latest
+
+    steps:
+      - name: Checkout candidate plus CI harness
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+        with:
+          version: "0.9.28"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Install project and test dependencies
+        run: uv sync --locked --python 3.11 --extra dev
+
+      - name: Run updater regression matrix
+        shell: bash
+        run: |
+          uv run python -c "import glob, subprocess, sys; tests=['tests/hermes_cli/test_cmd_update.py','tests/hermes_cli/test_lazy_command_exports.py',*sorted(glob.glob('tests/hermes_cli/test_update*.py'))]; raise SystemExit(subprocess.call([sys.executable,'-m','pytest','-q','--tb=short',*tests]))"
+
+      - name: Run focused decomposition guards
+        shell: bash
+        run: |
+          uv run python -m pytest -q \
+            tests/hermes_cli/test_backup.py::TestRunPreUpdateBackup \
+            tests/hermes_cli/test_lazy_command_exports.py \
+            tests/hermes_cli/test_update_modified_notice.py \
+            tests/hermes_cli/test_update_stale_module_purge.py
+
+      - name: Static quality gates
+        if: matrix.name == 'Linux'
+        shell: bash
+        run: |
+          uv run ruff check \
+            hermes_cli/update_cmd.py \
+            hermes_cli/_update_compat.py \
+            hermes_cli/update_backup.py \
+            hermes_cli/update_dependencies.py \
+            hermes_cli/update_desktop.py \
+            hermes_cli/update_gateway_posix.py \
+            hermes_cli/update_gateway_windows.py \
+            hermes_cli/update_notices.py \
+            hermes_cli/update_orchestrator.py \
+            hermes_cli/update_process_guard.py \
+            hermes_cli/update_reconciliation.py \
+            hermes_cli/update_runtime_refresh.py \
+            hermes_cli/update_source.py \
+            hermes_cli/update_zip.py
+          uv run python -m compileall -q hermes_cli
