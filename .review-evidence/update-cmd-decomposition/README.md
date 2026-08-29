@@ -23,8 +23,12 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 - Static compatibility audits found no missing monkeypatch propagation across
   the extracted consumers.
 - Every changed Python file is below the 2,000 physical-line cap.
-- Candidate and clean-base broad runs share the same 42 failing node IDs; the
-  candidate adds three passing regression guards.
+- A historical single-process diagnostic produced the same 42 failing node IDs
+  on candidate and clean base, while the candidate added three passing guards.
+  That command is not the canonical per-file runner and is not current-CI
+  status. A later canonical clean-main audit assigned the independently
+  closable test defects to #98037, #98038, #98039, and #98040; none is caused
+  by this refactor.
 - Hosted focused checks passed on Linux, macOS, and Windows.
 - The controlled Linux real update path produced exit `0`, the same five
   observable invariants, and an `equivalent` comparator verdict before/after.
@@ -39,7 +43,8 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 - `REVIEW_ADJUDICATION.md` — independent findings, adjudication, and TDD fixes.
 - `REPRODUCE.md` — commands and limits for repeating the checks.
 - `VERIFICATION_RESULTS.txt` — compact machine-oriented result ledger.
-- `KNOWN_BASELINE_FAILURES.txt` — identical inherited failure set.
+- `KNOWN_BASELINE_FAILURES.txt` — node IDs from the historical noncanonical
+  single-process diagnostic; retained as comparison provenance, not current CI.
 - `UPSTREAM_CI.md` — initial red classification, two-line metadata correction,
   and exact-current-head upstream CI receipt.
 - `linux-e2e/` — controlled real-path workflow and machine verdict;

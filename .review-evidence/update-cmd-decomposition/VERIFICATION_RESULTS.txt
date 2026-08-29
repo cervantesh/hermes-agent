@@ -56,11 +56,14 @@ CLEAN_MAIN_SAME_3_NODES 3 failed
 NEW_SCM_TRANSITIONAL_ANCESTOR_GUARD 1 passed
 CLASSIFICATION inherited-live-environment-guard, not candidate regression
 
-BROAD COMPARISON
+HISTORICAL SINGLE-PROCESS DIAGNOSTIC (NONCANONICAL)
 CANDIDATE 610 passed, 42 failed, 42 skipped
 CLEAN_MAIN 607 passed, 42 failed, 42 skipped
 FAILURE_NODE_ID_DELTA none
 ADDITIONAL_CANDIDATE_PASSES 3
+INTERPRETATION identical inherited outcomes, not current CI status
+CANONICAL_CLEAN_MAIN_FOLLOWUP 598 passed, 12 failed, 42 skipped, plus 1 per-file timeout
+INDEPENDENT_OWNERS #98037 #98038 #98039 #98040
 
 STATIC QUALITY
 RUFF All checks passed!

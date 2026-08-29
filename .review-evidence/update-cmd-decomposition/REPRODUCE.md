@@ -74,7 +74,12 @@ modules using attribute-free AST dumps. Expected results:
 - `update_fleet_restart.py 1178`;
 - `MOVED_FUNCTIONS 7`; `MISSING []`; `CHANGED []`.
 
-## 5. Broad updater matrix
+## 5. Historical broad diagnostic (noncanonical)
+
+This command preserves the original candidate/base comparison frame. It runs
+the selection in one pytest process, so it is not the repository's canonical
+per-file-isolated runner and its failure count must not be presented as current
+CI status.
 
 ```powershell
 $tests = @(
@@ -94,8 +99,14 @@ Expected in the reviewed Windows environment:
 - the 42 failure node IDs are identical.
 
 Do not infer equivalence from the counts alone. Capture and compare the failed
-node IDs. Environment-sensitive failures included absent `psutil`, POSIX/macOS
-controls executed on Windows, and existing test-isolation behavior.
+node IDs. A later canonical per-file audit on clean main reduced the actionable
+set to 12 failed assertions plus one passing file that exceeded the 300-second
+file limit. Their independent closure contracts are tracked in
+[#98037](https://github.com/NousResearch/hermes-agent/issues/98037),
+[#98038](https://github.com/NousResearch/hermes-agent/issues/98038),
+[#98039](https://github.com/NousResearch/hermes-agent/issues/98039), and
+[#98040](https://github.com/NousResearch/hermes-agent/issues/98040). They are
+not candidate regressions and are outside this refactor's closure predicate.
 
 ## 6. Recompute file identity
 
