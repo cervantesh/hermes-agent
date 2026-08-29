@@ -1,0 +1,275 @@
+name: Update command native supervisor equivalence
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci/update-cmd-decomposition-standard-runners
+    paths:
+      - .github/workflows/update-cmd-native-supervisor-equivalence.yml
+
+permissions:
+  contents: read
+
+env:
+  BEFORE_SHA: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+  AFTER_SHA: cd38939500c7aac9110a0cff0d68b244414d65f4
+
+jobs:
+  native-supervisor:
+    name: ${{ matrix.supervisor }} / ${{ matrix.frame }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - supervisor: systemd
+            runner: ubuntu-latest
+            frame: before
+            source_sha: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+          - supervisor: systemd
+            runner: ubuntu-latest
+            frame: after
+            source_sha: cd38939500c7aac9110a0cff0d68b244414d65f4
+          - supervisor: launchd
+            runner: macos-latest
+            frame: before
+            source_sha: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+          - supervisor: launchd
+            runner: macos-latest
+            frame: after
+            source_sha: cd38939500c7aac9110a0cff0d68b244414d65f4
+          - supervisor: windows-scm
+            runner: windows-latest
+            frame: before
+            source_sha: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+          - supervisor: windows-scm
+            runner: windows-latest
+            frame: after
+            source_sha: cd38939500c7aac9110a0cff0d68b244414d65f4
+
+    steps:
+      - name: Checkout validation harness
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ci/update-cmd-decomposition-standard-runners
+          path: harness
+
+      - name: Checkout exact product frame
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ matrix.source_sha }}
+          path: source
+
+      - name: Verify pinned frame
+        shell: bash
+        if: runner.os != 'Windows'
+        run: test "$(git -C source rev-parse HEAD)" = '${{ matrix.source_sha }}'
+
+      - name: Verify pinned frame (Windows)
+        shell: pwsh
+        if: runner.os == 'Windows'
+        run: |
+          if ((git -C source rev-parse HEAD) -ne '${{ matrix.source_sha }}') {
+            throw 'checked-out SHA does not match the requested frame'
+          }
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+        with:
+          version: "0.9.28"
+          enable-cache: true
+          cache-dependency-glob: |
+            source/pyproject.toml
+            source/uv.lock
+
+      - name: Install Python 3.11
+        run: uv python install 3.11
+
+      - name: Install locked dependencies
+        working-directory: source
+        run: uv sync --locked --python 3.11 --extra dev
+
+      - name: Create evidence directory
+        shell: bash
+        if: runner.os != 'Windows'
+        run: mkdir -p "$RUNNER_TEMP/native-supervisor-evidence"
+
+      - name: Create evidence directory (Windows)
+        shell: pwsh
+        if: runner.os == 'Windows'
+        run: New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/native-supervisor-evidence" | Out-Null
+
+      - name: Create real systemd service
+        if: matrix.supervisor == 'systemd'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo install -m 0644 /dev/stdin /etc/systemd/system/hermes-serve-codex-e2e.service <<'UNIT'
+          [Unit]
+          Description=Hermes updater native-supervisor equivalence fixture
+
+          [Service]
+          Type=simple
+          ExecStart=/usr/bin/sleep infinity
+          Restart=always
+          RestartSec=0
+          UNIT
+          sudo systemctl daemon-reload
+          sudo systemctl start hermes-serve-codex-e2e
+          systemctl is-active --quiet hermes-serve-codex-e2e
+
+      - name: Exercise real systemd boundary
+        if: matrix.supervisor == 'systemd'
+        working-directory: source
+        shell: bash
+        env:
+          FRAME: ${{ matrix.frame }}
+          SOURCE_SHA: ${{ matrix.source_sha }}
+          EVIDENCE_DIR: ${{ runner.temp }}/native-supervisor-evidence
+        run: uv run --no-sync python ../harness/.github/native-supervisor-e2e/systemd_equivalence.py
+
+      - name: Exercise real launchd boundary
+        if: matrix.supervisor == 'launchd'
+        working-directory: source
+        shell: bash
+        env:
+          FRAME: ${{ matrix.frame }}
+          SOURCE_SHA: ${{ matrix.source_sha }}
+          EVIDENCE_DIR: ${{ runner.temp }}/native-supervisor-evidence
+        run: uv run --no-sync python ../harness/.github/native-supervisor-e2e/launchd_equivalence.py
+
+      - name: Install real Windows SCM service
+        if: matrix.supervisor == 'windows-scm'
+        shell: pwsh
+        run: |
+          choco install nssm --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw 'NSSM fixture installation failed' }
+          nssm.exe install HermesCodexSupervisorE2E `
+            "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" `
+            '-NoProfile -ExecutionPolicy Bypass -Command "while ($true) { Start-Sleep -Seconds 60 }"'
+          if ($LASTEXITCODE -ne 0) { throw 'SCM fixture registration failed' }
+          sc.exe start HermesCodexSupervisorE2E
+          if ($LASTEXITCODE -ne 0) { throw 'service start failed' }
+
+      - name: Exercise real Windows SCM boundary
+        if: matrix.supervisor == 'windows-scm'
+        working-directory: source
+        shell: pwsh
+        env:
+          FRAME: ${{ matrix.frame }}
+          SOURCE_SHA: ${{ matrix.source_sha }}
+          EVIDENCE_DIR: ${{ runner.temp }}/native-supervisor-evidence
+        run: uv run --no-sync python ../harness/.github/native-supervisor-e2e/windows_scm_equivalence.py
+
+      - name: Capture native supervisor diagnostics
+        if: always() && matrix.supervisor == 'systemd'
+        shell: bash
+        run: |
+          systemctl status hermes-serve-codex-e2e --no-pager > "$RUNNER_TEMP/native-supervisor-evidence/systemd-status.txt" 2>&1 || true
+          sudo journalctl -u hermes-serve-codex-e2e --no-pager > "$RUNNER_TEMP/native-supervisor-evidence/systemd-journal.txt" 2>&1 || true
+
+      - name: Capture launchd diagnostics
+        if: always() && matrix.supervisor == 'launchd'
+        shell: bash
+        run: launchctl print "gui/$(id -u)/ai.hermes.gateway" > "$RUNNER_TEMP/native-supervisor-evidence/launchd-print.txt" 2>&1 || true
+
+      - name: Capture SCM diagnostics
+        if: always() && matrix.supervisor == 'windows-scm'
+        shell: pwsh
+        run: sc.exe queryex HermesCodexSupervisorE2E *> "$env:RUNNER_TEMP/native-supervisor-evidence/scm-query.txt"
+
+      - name: Clean up systemd fixture
+        if: always() && matrix.supervisor == 'systemd'
+        shell: bash
+        run: |
+          sudo systemctl stop hermes-serve-codex-e2e || true
+          sudo rm -f /etc/systemd/system/hermes-serve-codex-e2e.service
+          sudo systemctl daemon-reload
+
+      - name: Clean up launchd fixture
+        if: always() && matrix.supervisor == 'launchd'
+        shell: bash
+        run: |
+          launchctl bootout "gui/$(id -u)/ai.hermes.gateway" || true
+          rm -f "$HOME/Library/LaunchAgents/ai.hermes.gateway.plist"
+
+      - name: Clean up SCM fixture
+        if: always() && matrix.supervisor == 'windows-scm'
+        shell: pwsh
+        run: |
+          sc.exe stop HermesCodexSupervisorE2E
+          Start-Sleep -Seconds 2
+          if (Get-Command nssm.exe -ErrorAction SilentlyContinue) {
+            nssm.exe remove HermesCodexSupervisorE2E confirm
+          } else {
+            sc.exe delete HermesCodexSupervisorE2E
+          }
+
+      - name: Upload frame evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-${{ matrix.supervisor }}-${{ matrix.frame }}-${{ matrix.source_sha }}
+          path: ${{ runner.temp }}/native-supervisor-evidence
+          retention-days: 14
+          if-no-files-found: error
+
+  compare:
+    name: Compare native supervisor contracts
+    needs: native-supervisor
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all frame evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: native-*
+          path: ${{ runner.temp }}/frames
+
+      - name: Require identical successful contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          outcomes = {}
+          for path in Path(os.environ["RUNNER_TEMP"], "frames").glob("*/outcome.json"):
+              outcome = json.loads(path.read_text(encoding="utf-8"))
+              outcomes[(outcome["supervisor"], outcome["frame"])] = outcome
+
+          supervisors = ("systemd", "launchd", "windows-scm")
+          report = {"verdict": "equivalent", "supervisors": {}}
+          for supervisor in supervisors:
+              before = outcomes.get((supervisor, "before"))
+              after = outcomes.get((supervisor, "after"))
+              if before is None or after is None:
+                  raise SystemExit(f"missing {supervisor} before/after outcome")
+              equivalent = before["contract"] == after["contract"] and all(before["contract"].values())
+              report["supervisors"][supervisor] = {
+                  "verdict": "equivalent" if equivalent else "different",
+                  "before": before,
+                  "after": after,
+              }
+              if not equivalent:
+                  report["verdict"] = "different"
+
+          output = Path(os.environ["RUNNER_TEMP"], "native-supervisor-equivalence.json")
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if report["verdict"] != "equivalent":
+              raise SystemExit("native supervisor contracts differ")
+          PY
+
+      - name: Upload equivalence report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-supervisor-equivalence-report
+          path: ${{ runner.temp }}/native-supervisor-equivalence.json
+          retention-days: 14
+          if-no-files-found: error
