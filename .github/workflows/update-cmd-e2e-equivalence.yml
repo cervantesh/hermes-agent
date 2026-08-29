@@ -38,9 +38,22 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = '${{ matrix.source_sha }}'
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("tests/install/install-update-e2e.sh")
+          source = path.read_text(encoding="utf-8")
+          old = '  printf \'%s\' "$script" | grep -qF -- "$flag"\n'
+          new = '  grep -qF -- "$flag" <<<"$script"\n'
+          if source.count(old) != 1:
+              raise SystemExit("expected exactly one pipefail-sensitive installer flag probe")
+          path.write_text(source.replace(old, new), encoding="utf-8")
+          PY
+          git diff --check
+          git add -- tests/install/install-update-e2e.sh
           git config user.name 'Hermes E2E Equivalence'
           git config user.email 'e2e-equivalence@invalid.local'
-          git commit --allow-empty -m 'test: synthetic updater equivalence target'
+          git commit -m 'test: make installer flag probe pipefail-safe'
           target_sha="$(git rev-parse HEAD)"
           echo "source_sha=${{ matrix.source_sha }}" >> "$GITHUB_OUTPUT"
           echo "target_sha=$target_sha" >> "$GITHUB_OUTPUT"
@@ -101,7 +114,8 @@ jobs:
               "frame": os.environ["FRAME"],
               "source_sha": os.environ["SOURCE_SHA"],
               "target_sha": os.environ["TARGET_SHA"],
-              "transition": "one empty descendant commit",
+              "transition": "one identical test-harness-only descendant commit",
+              "harness_adjustment": "pipefail-safe installer flag probe",
               "route": "hermes update",
               "exit_code": int(os.environ["EXIT_CODE"]),
               "assertions": assertions,
