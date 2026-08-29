@@ -1,11 +1,11 @@
 # Native supervisor before/after equivalence
 
 This directory preserves the executable harness and normalized results from
-[Actions run 33232976850](https://github.com/cervantesh/hermes-agent/actions/runs/33232976850).
+[Actions run 33257891768](https://github.com/cervantesh/hermes-agent/actions/runs/33257891768).
 Each isolated job checked out one exact product frame:
 
-- before: `ee742fe1bc828f6456659f67d27bdbeacdebbdd4`;
-- after: `cd38939500c7aac9110a0cff0d68b244414d65f4`.
+- before: `74a95a3ddf0e5e85d464f7cad5e8cd981e258496`;
+- after: `a654f00ca05fd7f8237daf916ee3e2ceaf24d91c`.
 
 ## Real boundaries exercised
 

@@ -8,6 +8,6 @@
     "service_stopped_and_old_pid_gone": true
   },
   "frame": "before",
-  "source_sha": "ee742fe1bc828f6456659f67d27bdbeacdebbdd4",
+  "source_sha": "74a95a3ddf0e5e85d464f7cad5e8cd981e258496",
   "supervisor": "windows-scm"
 }
