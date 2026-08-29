@@ -2,6 +2,11 @@ name: Update command native supervisor equivalence
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - ci/update-cmd-decomposition-standard-runners
+    paths:
+      - .github/workflows/update-cmd-native-supervisor-equivalence.yml
 
 permissions:
   contents: read
