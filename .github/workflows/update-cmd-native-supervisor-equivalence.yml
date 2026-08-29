@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 env:
-  BEFORE_SHA: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
-  AFTER_SHA: cd38939500c7aac9110a0cff0d68b244414d65f4
+  BEFORE_SHA: 74a95a3ddf0e5e85d464f7cad5e8cd981e258496
+  AFTER_SHA: a654f00ca05fd7f8237daf916ee3e2ceaf24d91c
 
 jobs:
   native-supervisor:
@@ -27,27 +27,27 @@ jobs:
           - supervisor: systemd
             runner: ubuntu-latest
             frame: before
-            source_sha: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+            source_sha: 74a95a3ddf0e5e85d464f7cad5e8cd981e258496
           - supervisor: systemd
             runner: ubuntu-latest
             frame: after
-            source_sha: cd38939500c7aac9110a0cff0d68b244414d65f4
+            source_sha: a654f00ca05fd7f8237daf916ee3e2ceaf24d91c
           - supervisor: launchd
             runner: macos-latest
             frame: before
-            source_sha: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+            source_sha: 74a95a3ddf0e5e85d464f7cad5e8cd981e258496
           - supervisor: launchd
             runner: macos-latest
             frame: after
-            source_sha: cd38939500c7aac9110a0cff0d68b244414d65f4
+            source_sha: a654f00ca05fd7f8237daf916ee3e2ceaf24d91c
           - supervisor: windows-scm
             runner: windows-latest
             frame: before
-            source_sha: ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+            source_sha: 74a95a3ddf0e5e85d464f7cad5e8cd981e258496
           - supervisor: windows-scm
             runner: windows-latest
             frame: after
-            source_sha: cd38939500c7aac9110a0cff0d68b244414d65f4
+            source_sha: a654f00ca05fd7f8237daf916ee3e2ceaf24d91c
 
     steps:
       - name: Checkout validation harness
