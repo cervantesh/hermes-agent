@@ -81,3 +81,17 @@ def test_update_facade_global_patch_reaches_extracted_consumers(monkeypatch, tmp
 
     monkeypatch.setattr(update_cmd, "get_hermes_home", lambda: tmp_path)
     assert update_cmd._fleet_restart_pending_marker_path().parent == tmp_path
+
+
+def test_update_facade_patch_reaches_fleet_restart_consumer(monkeypatch):
+    import hermes_cli.update_cmd as update_cmd
+    import hermes_cli.update_fleet_restart as update_fleet_restart
+
+    sentinel = object()
+    monkeypatch.setattr(update_cmd, "subprocess", sentinel)
+
+    assert update_fleet_restart.subprocess is sentinel
+    assert (
+        update_cmd._fleet_probe_expected_runtimes
+        is update_fleet_restart._fleet_probe_expected_runtimes
+    )

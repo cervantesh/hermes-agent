@@ -84,6 +84,7 @@ def test_purge_protects_executing_modules():
         "hermes_cli.update_backup",
         "hermes_cli.update_dependencies",
         "hermes_cli.update_desktop",
+        "hermes_cli.update_fleet_restart",
         "hermes_cli.update_gateway_posix",
         "hermes_cli.update_gateway_windows",
         "hermes_cli.update_notices",

@@ -46,6 +46,7 @@ from hermes_cli import update_process_guard as _update_process_guard
 from hermes_cli import update_gateway_windows as _update_gateway_windows
 from hermes_cli import update_gateway_posix as _update_gateway_posix
 from hermes_cli import update_desktop as _update_desktop
+from hermes_cli import update_fleet_restart as _update_fleet_restart
 from hermes_cli import update_orchestrator as _update_orchestrator
 
 _UPDATE_RUNTIME_RELOAD_MODULES = _update_runtime_refresh._UPDATE_RUNTIME_RELOAD_MODULES
@@ -220,11 +221,11 @@ _normalize_managed_eol = _update_source._normalize_managed_eol
 _desktop_app_present = _update_desktop._desktop_app_present
 _rebuild_desktop_after_update = _update_desktop._rebuild_desktop_after_update
 _cmd_update_impl = _update_orchestrator._cmd_update_impl
-_restart_phase_failure_is_incomplete = _update_orchestrator._restart_phase_failure_is_incomplete
-_fleet_probe_expected_runtimes = _update_orchestrator._fleet_probe_expected_runtimes
-_print_items = _update_orchestrator._print_items
-_wait_for_service_active = _update_orchestrator._wait_for_service_active
-_service_restart_sec = _update_orchestrator._service_restart_sec
+_restart_phase_failure_is_incomplete = _update_fleet_restart._restart_phase_failure_is_incomplete
+_fleet_probe_expected_runtimes = _update_fleet_restart._fleet_probe_expected_runtimes
+_print_items = _update_fleet_restart._print_items
+_wait_for_service_active = _update_fleet_restart._wait_for_service_active
+_service_restart_sec = _update_fleet_restart._service_restart_sec
 
 
 _COMPAT_CONSUMERS = {
@@ -275,14 +276,14 @@ _COMPAT_CONSUMERS = {
     '_ensure_uv_for_termux': (_update_orchestrator, _update_zip),
     '_finish_dashboard_update_cleanup': (_update_orchestrator, _update_zip),
     '_fleet_restart_pending_marker_path': (_update_reconciliation,),
-    '_for_each_systemd_gateway_unit': (_update_orchestrator, _update_reconciliation),
+    '_for_each_systemd_gateway_unit': (_update_fleet_restart, _update_orchestrator, _update_reconciliation),
     '_format_concurrent_instances_message': (_update_orchestrator,),
     '_format_time_ago': (_update_notices,),
     '_format_update_failure_stage': (_update_orchestrator,),
     '_format_venv_python_holders_message': (_update_orchestrator,),
     '_gateway_prompt': (_update_orchestrator, _update_runtime_refresh),
     '_gateway_recovery_partition': (_update_reconciliation,),
-    '_gateway_service_matches_profile': (_update_orchestrator,),
+    '_gateway_service_matches_profile': (_update_fleet_restart, _update_orchestrator),
     '_has_upstream_remote': (_update_source,),
     '_hermes_holder_subcommand': (_update_process_guard,),
     '_holder_value_flags': (_update_process_guard,),
@@ -295,7 +296,7 @@ _COMPAT_CONSUMERS = {
     '_is_zip_staging_artifact_status_line': (_update_zip,),
     '_log_only_write': (_update_dependencies,),
     '_looks_like_desktop_control_plane': (_update_process_guard,),
-    '_m': (_update_dependencies, _update_desktop, _update_gateway_windows, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_source, _update_zip),
+    '_m': (_update_dependencies, _update_desktop, _update_fleet_restart, _update_gateway_windows, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_source, _update_zip),
     '_mark_skip_upstream_prompt': (_update_source,),
     '_migrate_sibling_profile_configs': (_update_runtime_refresh,),
     '_normalize_managed_eol': (_update_orchestrator,),
@@ -317,7 +318,7 @@ _COMPAT_CONSUMERS = {
     '_receipt_looks_unfinished': (_update_reconciliation,),
     '_receipt_reports_stale_runtime': (_update_reconciliation,),
     '_record_npm_lockfile_hash': (_update_dependencies,),
-    '_recover_gateway_restart_after_abort': (_update_orchestrator,),
+    '_recover_gateway_restart_after_abort': (_update_fleet_restart, _update_orchestrator),
     '_refuse_update_for_contended_shims': (_update_orchestrator, _update_zip),
     '_reload_config_modules': (_update_runtime_refresh,),
     '_reload_process_scan_modules': (_update_notices,),
@@ -325,8 +326,8 @@ _COMPAT_CONSUMERS = {
     '_resolve_pre_update_backup_mode': (_update_backup,),
     '_resolve_stash_selector': (_update_source,),
     '_restart_launchd_gateway_after_update': (_update_gateway_posix,),
-    '_restart_macos_launchd_gateways': (_update_orchestrator, _update_reconciliation),
-    '_restart_phase_failure_is_incomplete': (_update_orchestrator,),
+    '_restart_macos_launchd_gateways': (_update_fleet_restart, _update_orchestrator, _update_reconciliation),
+    '_restart_phase_failure_is_incomplete': (_update_fleet_restart,),
     '_restart_systemd_gateway_units_best_effort': (_update_reconciliation,),
     '_restore_state_db_from_snapshot': (_update_orchestrator, _update_zip),
     '_restore_windows_gateway_service': (_update_gateway_windows,),
@@ -335,8 +336,8 @@ _COMPAT_CONSUMERS = {
     '_run_migrate_config_fresh': (_update_runtime_refresh,),
     '_run_pending_fleet_restart': (_update_reconciliation,),
     '_serve_relaunch_commands': (_update_process_guard,),
-    '_service_restart_sec': (_update_orchestrator,),
-    '_service_unit_supports_graceful_sigusr1_restart': (_update_orchestrator,),
+    '_service_restart_sec': (_update_fleet_restart,),
+    '_service_unit_supports_graceful_sigusr1_restart': (_update_fleet_restart, _update_orchestrator),
     '_shim_quarantine_error_type': (_update_orchestrator, _update_zip),
     '_should_skip_upstream_prompt': (_update_source,),
     '_should_zip_fallback_on_update_error': (_update_orchestrator,),
@@ -344,37 +345,37 @@ _COMPAT_CONSUMERS = {
     '_start_windows_gateway_service': (_update_gateway_windows,),
     '_stash_apply_failed_only_on_existing_untracked': (_update_source,),
     '_stop_windows_gateway_service': (_update_gateway_windows,),
-    '_surviving_gateway_pids_after_failed_restart': (_update_orchestrator,),
+    '_surviving_gateway_pids_after_failed_restart': (_update_fleet_restart, _update_orchestrator),
     '_sync_fork_with_upstream': (_update_source,),
-    '_time': (_update_backup, _update_gateway_windows, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation),
+    '_time': (_update_backup, _update_fleet_restart, _update_gateway_windows, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation),
     '_update_complete_message': (_update_zip,),
     '_update_node_dependencies': (_update_dependencies, _update_orchestrator, _update_zip),
     '_update_via_zip': (_update_orchestrator,),
     '_validate_critical_files_syntax': (_update_orchestrator,),
     '_validate_critical_modules_import': (_update_orchestrator, _update_zip),
     '_venv_core_imports_healthy': (_update_orchestrator,),
-    '_wait_for_service_active': (_update_orchestrator,),
-    '_warn_gateway_restart_phase_aborted': (_update_orchestrator, _update_reconciliation),
-    '_warn_incomplete_gateway_fleet_restart': (_update_orchestrator, _update_reconciliation),
+    '_wait_for_service_active': (_update_fleet_restart,),
+    '_warn_gateway_restart_phase_aborted': (_update_fleet_restart, _update_orchestrator, _update_reconciliation),
+    '_warn_incomplete_gateway_fleet_restart': (_update_fleet_restart, _update_orchestrator, _update_reconciliation),
     '_warn_pending_fleet_restart': (_update_reconciliation,),
     '_web_build_toolchain_ready': (_update_dependencies,),
     '_web_toolchain_roots': (_update_dependencies,),
     '_write_fleet_restart_pending_marker': (_update_orchestrator,),
-    '_write_gateway_update_exit_code': (_update_orchestrator,),
+    '_write_gateway_update_exit_code': (_update_fleet_restart, _update_orchestrator),
     '_write_lazy_refresh_incomplete_marker': (_update_orchestrator,),
     '_write_marker_file': (_update_reconciliation,),
     '_write_update_incomplete_marker': (_update_orchestrator, _update_zip),
     '_write_update_planned_stop_marker': (_update_gateway_windows,),
     '_zip_overlay_block_reason': (_update_zip,),
     'datetime': (_update_notices, _update_process_guard, _update_source),
-    'get_hermes_home': (_update_backup, _update_notices, _update_orchestrator, _update_reconciliation, _update_source, _update_zip),
+    'get_hermes_home': (_update_backup, _update_fleet_restart, _update_notices, _update_orchestrator, _update_reconciliation, _update_source, _update_zip),
     'hashlib': (_update_dependencies,),
     'json': (_update_dependencies, _update_reconciliation),
-    'logger': (_update_dependencies, _update_gateway_windows, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_zip),
-    'os': (_update_dependencies, _update_gateway_windows, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_zip),
+    'logger': (_update_dependencies, _update_fleet_restart, _update_gateway_windows, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_zip),
+    'os': (_update_dependencies, _update_fleet_restart, _update_gateway_windows, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_zip),
     'shlex': (_update_process_guard, _update_zip),
     'shutil': (_update_dependencies, _update_orchestrator, _update_reconciliation, _update_zip),
-    'subprocess': (_update_dependencies, _update_gateway_posix, _update_gateway_windows, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_source, _update_zip),
+    'subprocess': (_update_dependencies, _update_fleet_restart, _update_gateway_posix, _update_gateway_windows, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_source, _update_zip),
     'sys': (_update_desktop, _update_notices, _update_orchestrator, _update_process_guard, _update_reconciliation, _update_runtime_refresh, _update_source, _update_zip),
     'venv_python_path': (_update_orchestrator, _update_process_guard, _update_runtime_refresh),
 }
