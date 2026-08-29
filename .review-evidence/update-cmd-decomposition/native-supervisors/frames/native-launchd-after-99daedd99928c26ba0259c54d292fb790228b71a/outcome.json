@@ -7,6 +7,6 @@
     "real_agent_bootstrapped": true
   },
   "frame": "after",
-  "source_sha": "a654f00ca05fd7f8237daf916ee3e2ceaf24d91c",
+  "source_sha": "99daedd99928c26ba0259c54d292fb790228b71a",
   "supervisor": "launchd"
 }

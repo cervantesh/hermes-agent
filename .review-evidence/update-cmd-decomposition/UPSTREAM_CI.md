@@ -33,19 +33,19 @@ byte the reviewed `4dbdf314` runtime tree.
 
 ## Rebased ready-for-review head
 
-- Refreshed upstream base: `74a95a3ddf0e5e85d464f7cad5e8cd981e258496`.
-- Exact PR head: `a654f00ca05fd7f8237daf916ee3e2ceaf24d91c`.
+- Refreshed upstream base: `b954547e726eb8df7479178d3db489852904705b`.
+- Exact PR head: `99daedd99928c26ba0259c54d292fb790228b71a`.
 - `git range-diff` reports all three original patches unchanged and authorship
   is preserved.
 - Local exact-head gate: `56 passed`; Ruff passed; compileall and diff-check
   exited `0`; no changed Python file exceeds 2,000 physical lines.
-- Upstream CI: <https://github.com/NousResearch/hermes-agent/actions/runs/33257766767>
+- Upstream CI: <https://github.com/NousResearch/hermes-agent/actions/runs/33259952214>
   — success, including the full Python suite, E2E, Windows-only, macOS-only,
   Ruff, ty, security, attribution, and required checks.
-- Docker: <https://github.com/NousResearch/hermes-agent/actions/runs/33257766292>
+- Docker: <https://github.com/NousResearch/hermes-agent/actions/runs/33259951830>
   — success on amd64 and arm64.
-- Nix: <https://github.com/NousResearch/hermes-agent/actions/runs/33257766248>
+- Nix: <https://github.com/NousResearch/hermes-agent/actions/runs/33259951818>
   — success.
-- Native supervisors: <https://github.com/cervantesh/hermes-agent/actions/runs/33257891768>
+- Native supervisors: <https://github.com/cervantesh/hermes-agent/actions/runs/33260176395>
   — systemd, launchd, and Windows SCM before/after contracts are all true and
   equivalent on the refreshed base and exact PR head.

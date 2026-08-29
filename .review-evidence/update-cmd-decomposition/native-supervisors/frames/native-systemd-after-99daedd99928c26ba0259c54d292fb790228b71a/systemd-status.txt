@@ -1,0 +1,11 @@
+● hermes-serve-codex-e2e.service - Hermes updater native-supervisor equivalence fixture
+     Loaded: loaded (/etc/systemd/system/hermes-serve-codex-e2e.service; static)
+     Active: active (running) since Sat 2026-08-29 15:24:55 UTC; 51ms ago
+   Main PID: 2538 (sleep)
+      Tasks: 1 (limit: 19151)
+     Memory: 356.0K (peak: 356.0K)
+        CPU: 1ms
+     CGroup: /system.slice/hermes-serve-codex-e2e.service
+             └─2538 /usr/bin/sleep infinity
+
+Aug 29 15:24:55 runnervmgx7h7 systemd[1]: Started hermes-serve-codex-e2e.service - Hermes updater native-supervisor equivalence fixture.

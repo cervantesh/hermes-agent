@@ -7,7 +7,7 @@
     "service_running_after": true,
     "service_stopped_and_old_pid_gone": true
   },
-  "frame": "after",
-  "source_sha": "a654f00ca05fd7f8237daf916ee3e2ceaf24d91c",
+  "frame": "before",
+  "source_sha": "b954547e726eb8df7479178d3db489852904705b",
   "supervisor": "windows-scm"
 }

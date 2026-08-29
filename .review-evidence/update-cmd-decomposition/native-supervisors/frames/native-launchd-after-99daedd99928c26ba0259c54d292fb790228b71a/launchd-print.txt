@@ -13,7 +13,7 @@ gui/501/ai.hermes.gateway = {
 	stdout path = /Users/runner/work/_temp/native-supervisor-evidence/launchd.stdout.log
 	stderr path = /Users/runner/work/_temp/native-supervisor-evidence/launchd.stderr.log
 	inherited environment = {
-		SSH_AUTH_SOCK => /var/run/com.apple.launchd.GhV7fCnPVU/Listeners
+		SSH_AUTH_SOCK => /var/run/com.apple.launchd.Q1f0JRrwfE/Listeners
 	}
 
 	default environment = {
@@ -30,7 +30,7 @@ gui/501/ai.hermes.gateway = {
 	minimum runtime = 10
 	exit timeout = 5
 	runs = 2
-	pid = 1756
+	pid = 1618
 	immediate reason = inefficient
 	forks = 0
 	execs = 1
@@ -44,7 +44,7 @@ gui/501/ai.hermes.gateway = {
 	last terminating signal = Terminated: 15
 
 	resource coalition = {
-		ID = 1012
+		ID = 999
 		type = resource
 		state = active
 		active count = 1
@@ -52,7 +52,7 @@ gui/501/ai.hermes.gateway = {
 	}
 
 	jetsam coalition = {
-		ID = 1013
+		ID = 1000
 		type = jetsam
 		state = active
 		active count = 1

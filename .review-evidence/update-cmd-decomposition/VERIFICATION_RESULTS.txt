@@ -1,6 +1,6 @@
 REVIEW FRAME
-BASE 74a95a3ddf0e5e85d464f7cad5e8cd981e258496
-CANDIDATE a654f00ca05fd7f8237daf916ee3e2ceaf24d91c
+BASE b954547e726eb8df7479178d3db489852904705b
+CANDIDATE 99daedd99928c26ba0259c54d292fb790228b71a
 ORIGINAL_REFERENCE 3340bbbdad8368e7f3d9f6827d61692adbbd87d6
 BRANCH codex/update-cmd-decomposition
 DELIVERY_STATE upstream-pr-ready-for-review
@@ -48,7 +48,7 @@ EXPECTED_PROTECTED_MODULES 15
 MISSING_PROTECTION []
 
 FOCUSED TEST GATE
-56 passed in 9.18s on exact rebased head
+56 passed in 8.15s on exact rebased head
 
 CURRENT-MAIN GATEWAY DEPENDENCY CONTROL
 CANDIDATE 30 passed, 3 failed, 5 skipped
@@ -118,9 +118,9 @@ COMPARATOR_VERDICT equivalent
 WINDOWS_LIVE_RUN_SCM_SUPERVISOR_E2E no
 
 NATIVE SUPERVISOR BEFORE/AFTER EQUIVALENCE
-RUN https://github.com/cervantesh/hermes-agent/actions/runs/33257891768
-BEFORE_SOURCE 74a95a3ddf0e5e85d464f7cad5e8cd981e258496
-AFTER_SOURCE a654f00ca05fd7f8237daf916ee3e2ceaf24d91c
+RUN https://github.com/cervantesh/hermes-agent/actions/runs/33260176395
+BEFORE_SOURCE b954547e726eb8df7479178d3db489852904705b
+AFTER_SOURCE 99daedd99928c26ba0259c54d292fb790228b71a
 SYSTEMD_VERDICT equivalent
 SYSTEMD_CONTRACT 5/5 true before-and-after
 LAUNCHD_VERDICT equivalent
@@ -139,9 +139,9 @@ EXTERNAL GATE
 REAL_SUPERVISOR_LINUX_MACOS_WINDOWS confirmed-at-restart-boundary
 
 EXACT REBASED HEAD UPSTREAM CI
-CI https://github.com/NousResearch/hermes-agent/actions/runs/33257766767 success
-DOCKER https://github.com/NousResearch/hermes-agent/actions/runs/33257766292 success
-NIX https://github.com/NousResearch/hermes-agent/actions/runs/33257766248 success
+CI https://github.com/NousResearch/hermes-agent/actions/runs/33259952214 success
+DOCKER https://github.com/NousResearch/hermes-agent/actions/runs/33259951830 success
+NIX https://github.com/NousResearch/hermes-agent/actions/runs/33259951818 success
 CHECKS_PASS 22
 CHECKS_SKIPPED 13
 CHECKS_FAIL 0
