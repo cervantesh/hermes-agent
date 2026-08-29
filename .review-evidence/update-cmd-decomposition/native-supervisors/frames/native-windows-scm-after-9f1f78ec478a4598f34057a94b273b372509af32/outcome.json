@@ -1,0 +1,13 @@
+{
+  "contract": {
+    "hermes_start_path_completed": true,
+    "hermes_stop_path_completed": true,
+    "pid_rotated": true,
+    "real_service_running_before": true,
+    "service_running_after": true,
+    "service_stopped_and_old_pid_gone": true
+  },
+  "frame": "after",
+  "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+  "supervisor": "windows-scm"
+}

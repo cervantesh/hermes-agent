@@ -24,16 +24,15 @@
 | Hosted POSIX broad results show a deterministic candidate-only regression | Candidate/base comparison plus repeat-run inspection | **not observed** | all stable failures are inherited; only timing-sensitive `test_update_wedged_gateway` nodes varied between attempts |
 | Static quality gates pass | Ruff, compileall, and diff whitespace checks | **confirmed** | `All checks passed!`; compile exit `0`; diff-check exit `0` |
 | The evidence did not leave temporary reviewer artifacts in the worktree | explicit filesystem checks | **confirmed** | `BASELINE_EXISTS=no`; `SERENA_EXISTS=no` |
-| Exact-head behavior is proven on real Linux, macOS, and Windows supervisors | No current three-platform native-supervisor run exists for an eventual commit | **undetermined** | required final gate; must be supplied by CI before merge readiness |
+| The exact published head preserves the real native-supervisor restart boundary on Linux, macOS, and Windows | Before/after ephemeral services on systemd, launchd, and Windows SCM; require discovery, real restart, PID rotation, supervised/running post-state, cleanup, and identical contracts | **confirmed within supervisor-boundary scope** | all three comparators `equivalent`; every contract assertion true; [run 33232533464](https://github.com/cervantesh/hermes-agent/actions/runs/33232533464) |
 
 ## Overall verdict
 
-**Confirmed locally, through a controlled real-path Linux E2E, and through
-Windows live before/after tests, with one explicit external gate.** The decomposition meets
-the closed technical contract in the available static, unit, integration, and
-clean-baseline evidence. The Windows comparison covers real processes, locks,
-migration, and reconciliation, but not Windows SCM. Real-supervisor
-cross-platform equivalence remains
-undetermined and must not be described as completed. The E2E deliberately
+**Confirmed locally, through a controlled real-path Linux E2E, Windows live
+before/after tests, and real three-platform supervisor-boundary probes.** The decomposition meets
+the closed technical contract in the available static, unit, integration,
+clean-baseline, and native-supervisor evidence. The native run covers real
+systemd, launchd, and Windows SCM restart/verification boundaries, but not a
+complete source update launched from inside each fixture. The E2E deliberately
 excluded unrelated Node installation after two symmetric fake-network TLS
 failures; that limitation is recorded in its archived evidence.

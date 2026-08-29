@@ -1,0 +1,71 @@
+gui/501/ai.hermes.gateway = {
+	active count = 1
+	path = /Users/runner/Library/LaunchAgents/ai.hermes.gateway.plist
+	type = LaunchAgent
+	state = running
+
+	program = /Users/runner/work/hermes-agent/hermes-agent/source/.venv/bin/python3
+	arguments = {
+		/Users/runner/work/hermes-agent/hermes-agent/source/.venv/bin/python3
+		/Users/runner/work/_temp/native-supervisor-evidence/launchd_daemon.py
+	}
+
+	stdout path = /Users/runner/work/_temp/native-supervisor-evidence/launchd.stdout.log
+	stderr path = /Users/runner/work/_temp/native-supervisor-evidence/launchd.stderr.log
+	inherited environment = {
+		SSH_AUTH_SOCK => /var/run/com.apple.launchd.COQAVT4rE6/Listeners
+	}
+
+	default environment = {
+		PATH => /usr/bin:/bin:/usr/sbin:/sbin
+	}
+
+	environment = {
+		OSLogRateLimit => 64
+		XPC_SERVICE_NAME => ai.hermes.gateway
+	}
+
+	domain = gui/501 [100002]
+	asid = 100002
+	minimum runtime = 10
+	exit timeout = 5
+	runs = 2
+	pid = 3110
+	immediate reason = inefficient
+	forks = 0
+	execs = 1
+	initialized = 1
+	trampolined = 1
+	started suspended = 0
+	proxy started suspended = 0
+	checked allocations = 0 (queried = 1)
+	checked allocations reason = no host
+	checked allocations flags = 0x0
+	last terminating signal = Terminated: 15
+
+	resource coalition = {
+		ID = 1625
+		type = resource
+		state = active
+		active count = 1
+		name = ai.hermes.gateway
+	}
+
+	jetsam coalition = {
+		ID = 1626
+		type = jetsam
+		state = active
+		active count = 1
+		name = ai.hermes.gateway
+	}
+
+	spawn type = daemon (3)
+	jetsam priority = 40
+	jetsam memory limit (active) = (unlimited)
+	jetsam memory limit (inactive) = (unlimited)
+	jetsamproperties category = daemon
+	jetsam thread limit = 32
+	cpumon = default
+
+	properties = keepalive | runatload | inferred program | system service | tle system
+}

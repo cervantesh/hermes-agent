@@ -1,0 +1,88 @@
+{
+  "supervisors": {
+    "launchd": {
+      "after": {
+        "contract": {
+          "agent_supervised_after_restart": true,
+          "failed_labels_empty": true,
+          "hermes_restart_path_completed": true,
+          "pid_rotated": true,
+          "real_agent_bootstrapped": true
+        },
+        "frame": "after",
+        "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+        "supervisor": "launchd"
+      },
+      "before": {
+        "contract": {
+          "agent_supervised_after_restart": true,
+          "failed_labels_empty": true,
+          "hermes_restart_path_completed": true,
+          "pid_rotated": true,
+          "real_agent_bootstrapped": true
+        },
+        "frame": "before",
+        "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+        "supervisor": "launchd"
+      },
+      "verdict": "equivalent"
+    },
+    "systemd": {
+      "after": {
+        "contract": {
+          "pid_rotated": true,
+          "real_unit_discovered": true,
+          "restart_completed": true,
+          "timeout_isolation_unused": true,
+          "unit_active_after_restart": true
+        },
+        "frame": "after",
+        "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+        "supervisor": "systemd"
+      },
+      "before": {
+        "contract": {
+          "pid_rotated": true,
+          "real_unit_discovered": true,
+          "restart_completed": true,
+          "timeout_isolation_unused": true,
+          "unit_active_after_restart": true
+        },
+        "frame": "before",
+        "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+        "supervisor": "systemd"
+      },
+      "verdict": "equivalent"
+    },
+    "windows-scm": {
+      "after": {
+        "contract": {
+          "hermes_start_path_completed": true,
+          "hermes_stop_path_completed": true,
+          "pid_rotated": true,
+          "real_service_running_before": true,
+          "service_running_after": true,
+          "service_stopped_and_old_pid_gone": true
+        },
+        "frame": "after",
+        "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+        "supervisor": "windows-scm"
+      },
+      "before": {
+        "contract": {
+          "hermes_start_path_completed": true,
+          "hermes_stop_path_completed": true,
+          "pid_rotated": true,
+          "real_service_running_before": true,
+          "service_running_after": true,
+          "service_stopped_and_old_pid_gone": true
+        },
+        "frame": "before",
+        "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+        "supervisor": "windows-scm"
+      },
+      "verdict": "equivalent"
+    }
+  },
+  "verdict": "equivalent"
+}

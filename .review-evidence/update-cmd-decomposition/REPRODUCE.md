@@ -110,11 +110,19 @@ foreach ($file in $files) {
 
 Compare the output to `SHA256SUMS.txt`. Any difference requires a fresh review.
 
-## 7. Final external gate
+## 7. Native-supervisor gate
 
-Before calling an eventual PR ready to merge, execute its exact committed head
-through native-supervisor CI on Linux, macOS, and Windows. This package does not
-claim that gate has passed.
+The real native-supervisor comparison is preserved in `native-supervisors/`
+and visible in
+[run 33232533464](https://github.com/cervantesh/hermes-agent/actions/runs/33232533464).
+It checked out base `ac6c8028e0` and exact published head `9f1f78ec47`
+independently and exercised ephemeral real systemd, launchd, and Windows SCM
+services. Expected aggregate verdict: `equivalent`, with every contract value
+true in both frames.
+
+The exact workflow is `native-supervisors/workflow.yml`; executable probes are
+under `native-supervisors/harness/`. This is real supervisor-boundary coverage,
+not a claim that a complete source update ran from inside each fixture.
 
 Hosted standard-runner evidence is available in
 [fresh manual rerun 33228955478](https://github.com/cervantesh/hermes-agent/actions/runs/33228955478),
@@ -125,8 +133,8 @@ with the broad baseline comparison retained in
 [diagnostic run 33226997709](https://github.com/cervantesh/hermes-agent/actions/runs/33226997709),
 and the focused Windows reconciliation gate in
 [run 33227674944](https://github.com/cervantesh/hermes-agent/actions/runs/33227674944).
-These are OS-hosted unit/integration runs, not proof against real systemd,
-launchd, or Windows SCM supervisors.
+Those earlier runs are OS-hosted unit/integration evidence; the separate native
+run above supplies the real systemd, launchd, and Windows SCM boundary evidence.
 
 ## 8. Real-path updater E2E equivalence
 
@@ -156,5 +164,5 @@ non-empty testcase set, and mark every case passed. Expected result: 19 cases
 in each frame, no ID/status delta, verdict `equivalent`.
 
 This comparison uses real Windows processes, handles, locked files, process
-inventory, migration, and reconciliation. It is not Windows SCM coverage and
-does not close the native-supervisor gate in section 7.
+inventory, migration, and reconciliation. Windows SCM itself is covered
+separately by the native-supervisor gate in section 7.

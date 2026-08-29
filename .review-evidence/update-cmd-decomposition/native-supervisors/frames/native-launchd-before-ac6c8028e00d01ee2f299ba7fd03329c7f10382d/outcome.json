@@ -1,0 +1,12 @@
+{
+  "contract": {
+    "agent_supervised_after_restart": true,
+    "failed_labels_empty": true,
+    "hermes_restart_path_completed": true,
+    "pid_rotated": true,
+    "real_agent_bootstrapped": true
+  },
+  "frame": "before",
+  "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+  "supervisor": "launchd"
+}

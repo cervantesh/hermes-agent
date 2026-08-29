@@ -1,0 +1,12 @@
+{
+  "contract": {
+    "pid_rotated": true,
+    "real_unit_discovered": true,
+    "restart_completed": true,
+    "timeout_isolation_unused": true,
+    "unit_active_after_restart": true
+  },
+  "frame": "after",
+  "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+  "supervisor": "systemd"
+}

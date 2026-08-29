@@ -29,6 +29,8 @@ It lives on a fork-only evidence branch and is not part of the product PR.
   observable invariants, and an `equivalent` comparator verdict before/after.
 - The Windows live comparison produced exit `0`, the same 19 passing testcase
   IDs/statuses, and an `equivalent` comparator verdict before/after.
+- Real systemd, launchd, and Windows SCM boundaries produced identical,
+  entirely successful before/after contracts on the exact published PR head.
 
 ## Evidence map
 
@@ -43,6 +45,9 @@ It lives on a fork-only evidence branch and is not part of the product PR.
   [Actions run 33229985934](https://github.com/cervantesh/hermes-agent/actions/runs/33229985934).
 - `windows-live/` — real Windows process/filesystem workflow and machine verdict;
   [Actions run 33230583743](https://github.com/cervantesh/hermes-agent/actions/runs/33230583743).
+- `native-supervisors/` — real systemd, launchd, and Windows SCM fixtures,
+  executable probes, native diagnostics, and aggregate comparator;
+  [Actions run 33232533464](https://github.com/cervantesh/hermes-agent/actions/runs/33232533464).
 - `standard-runners/` — exact-candidate focused Linux/macOS/Windows receipt;
   [Actions run 33228955478](https://github.com/cervantesh/hermes-agent/actions/runs/33228955478).
 - `assets/update-cmd-decomposition-verification.png` — explanatory summary.
@@ -50,7 +55,8 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 
 ## Honest boundary
 
-This package supports operational equivalence in the exercised Linux updater
-and Windows-live scopes. It does not prove real systemd, launchd, or Windows
-SCM supervisor equivalence, and the infographic must not be treated as a
-substitute for the executable evidence.
+This package supports operational equivalence in the exercised Linux updater,
+Windows-live, and real native-supervisor boundaries. The supervisor run tests
+the restart/verification boundary directly; it does not execute a complete
+source update from inside each fixture. The infographic must not be treated as
+a substitute for the executable evidence.
