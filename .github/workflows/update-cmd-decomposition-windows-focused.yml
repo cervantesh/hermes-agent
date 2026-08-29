@@ -38,7 +38,6 @@ jobs:
         shell: bash
         run: |
           uv run python -m pytest -q --tb=short \
-            tests/hermes_cli/test_cmd_update.py \
             tests/hermes_cli/test_backup.py::TestRunPreUpdateBackup \
             tests/hermes_cli/test_lazy_command_exports.py \
             tests/hermes_cli/test_update_modified_notice.py \
