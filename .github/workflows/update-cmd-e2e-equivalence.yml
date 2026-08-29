@@ -32,12 +32,38 @@ jobs:
           ref: ${{ matrix.source_sha }}
           fetch-depth: 0
 
-      - name: Create equivalent one-commit update target
+      - name: Create controlled source and equivalent update target
         id: frame
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = '${{ matrix.source_sha }}'
+          python - <<'PY'
+          from pathlib import Path
+
+          installer = Path("scripts/install.sh")
+          installer_source = installer.read_text(encoding="utf-8")
+          function_start = "install_node_deps() {\n"
+          replacement = (
+              "install_node_deps() {\n"
+              "    log_info \"Skipping unrelated Node dependencies in updater equivalence E2E\"\n"
+              "    return 0\n"
+          )
+          if installer_source.count(function_start) != 1:
+              raise SystemExit("expected exactly one install_node_deps function")
+          installer.write_text(
+              installer_source.replace(function_start, replacement), encoding="utf-8"
+          )
+          PY
+          git diff --check
+          test "$(git diff --name-only)" = 'scripts/install.sh'
+          git add -- scripts/install.sh
+          git config user.name 'Hermes E2E Equivalence'
+          git config user.email 'e2e-equivalence@invalid.local'
+          git commit -m 'test: isolate updater e2e from unrelated node dependencies'
+          source_harness_sha="$(git rev-parse HEAD)"
+          test "$(git diff '${{ matrix.source_sha }}' "$source_harness_sha" --name-only)" = 'scripts/install.sh'
+
           python - <<'PY'
           from pathlib import Path
 
@@ -51,12 +77,12 @@ jobs:
           PY
           git diff --check
           git add -- tests/install/install-update-e2e.sh
-          git config user.name 'Hermes E2E Equivalence'
-          git config user.email 'e2e-equivalence@invalid.local'
           git commit -m 'test: make installer flag probe pipefail-safe'
           target_sha="$(git rev-parse HEAD)"
           echo "source_sha=${{ matrix.source_sha }}" >> "$GITHUB_OUTPUT"
+          echo "source_harness_sha=$source_harness_sha" >> "$GITHUB_OUTPUT"
           echo "target_sha=$target_sha" >> "$GITHUB_OUTPUT"
+          test "$(git diff "$source_harness_sha" "$target_sha" --name-only)" = 'tests/install/install-update-e2e.sh'
           test -z "$(git status --porcelain)"
 
       - name: Install sandbox dependencies
@@ -79,7 +105,7 @@ jobs:
         id: e2e
         shell: bash
         env:
-          HERMES_DEV_SANDBOX_UPSTREAM: https://github.com/cervantesh/hermes-agent.git
+          HERMES_DEV_SANDBOX_UPSTREAM: ${{ github.workspace }}
           HERMES_E2E_LOG_DIR: ${{ runner.temp }}/e2e-logs
         run: |
           set -uo pipefail
@@ -87,12 +113,13 @@ jobs:
           status=0
           tests/install/install-update-e2e.sh \
             --route update \
-            --install-ref '${{ matrix.source_sha }}' \
+            --install-ref '${{ steps.frame.outputs.source_harness_sha }}' \
             2>&1 | tee "$RUNNER_TEMP/e2e-evidence/transcript.log" || status=$?
           echo "exit_code=$status" >> "$GITHUB_OUTPUT"
 
           FRAME='${{ matrix.frame }}' \
           SOURCE_SHA='${{ matrix.source_sha }}' \
+          SOURCE_HARNESS_SHA='${{ steps.frame.outputs.source_harness_sha }}' \
           TARGET_SHA='${{ steps.frame.outputs.target_sha }}' \
           EXIT_CODE="$status" \
           python - <<'PY'
@@ -113,9 +140,13 @@ jobs:
           result = {
               "frame": os.environ["FRAME"],
               "source_sha": os.environ["SOURCE_SHA"],
+              "source_harness_sha": os.environ["SOURCE_HARNESS_SHA"],
               "target_sha": os.environ["TARGET_SHA"],
               "transition": "one identical test-harness-only descendant commit",
-              "harness_adjustment": "pipefail-safe installer flag probe",
+              "harness_adjustments": [
+                  "skip unrelated Node dependencies during updater E2E installation",
+                  "pipefail-safe installer flag probe",
+              ],
               "route": "hermes update",
               "exit_code": int(os.environ["EXIT_CODE"]),
               "assertions": assertions,
