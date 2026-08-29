@@ -30,3 +30,22 @@ new path as unreviewed and the old path as stale. No runtime behavior failed.
 The correction changes only test metadata. The operational runtime tree
 exercised by the before/after Linux and Windows-live evidence remains byte-for-
 byte the reviewed `4dbdf314` runtime tree.
+
+## Rebased ready-for-review head
+
+- Refreshed upstream base: `ee742fe1bc828f6456659f67d27bdbeacdebbdd4`.
+- Exact PR head: `cd38939500c7aac9110a0cff0d68b244414d65f4`.
+- `git range-diff` reports all three original patches unchanged and authorship
+  is preserved.
+- Local exact-head gate: `56 passed`; Ruff passed; compileall and diff-check
+  exited `0`; no changed Python file exceeds 2,000 physical lines.
+- Upstream CI: <https://github.com/NousResearch/hermes-agent/actions/runs/33232923520>
+  — success, including the full Python suite, E2E, Windows-only, macOS-only,
+  Ruff, ty, security, attribution, and required checks.
+- Docker: <https://github.com/NousResearch/hermes-agent/actions/runs/33232923216>
+  — success on amd64 and arm64.
+- Nix: <https://github.com/NousResearch/hermes-agent/actions/runs/33232923194>
+  — success.
+- Native supervisors: <https://github.com/cervantesh/hermes-agent/actions/runs/33232976850>
+  — systemd, launchd, and Windows SCM before/after contracts are all true and
+  equivalent on the refreshed base and exact PR head.

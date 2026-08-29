@@ -6,13 +6,14 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 
 ## Frozen frame
 
-- Upstream base: `ac6c8028e00d01ee2f299ba7fd03329c7f10382d`
+- Upstream base: `ee742fe1bc828f6456659f67d27bdbeacdebbdd4`
 - Operational candidate: `4dbdf314179f60999eb94e6ea5bc81367f2ea351`
-- Published PR head: `9f1f78ec478a4598f34057a94b273b372509af32`
-  (adds only relocated test-allowlist metadata)
-- Integration refresh: upstream `main` was three unrelated commits ahead when
-  publication was prepared; none changed updater or updater-test paths.
-- Delivery: implementation PR remains draft.
+- Published PR head: `cd38939500c7aac9110a0cff0d68b244414d65f4`
+  (the three original commits rebased without patch drift)
+- Integration refresh: the branch was rebased onto the exact upstream base
+  above; `git range-diff` reports all three patches unchanged and preserves
+  their authorship.
+- Delivery: implementation PR is ready for review.
 
 ## What the evidence establishes
 
@@ -47,7 +48,7 @@ It lives on a fork-only evidence branch and is not part of the product PR.
   [Actions run 33230583743](https://github.com/cervantesh/hermes-agent/actions/runs/33230583743).
 - `native-supervisors/` — real systemd, launchd, and Windows SCM fixtures,
   executable probes, native diagnostics, and aggregate comparator;
-  [Actions run 33232533464](https://github.com/cervantesh/hermes-agent/actions/runs/33232533464).
+  [Actions run 33232976850](https://github.com/cervantesh/hermes-agent/actions/runs/33232976850).
 - `standard-runners/` — exact-candidate focused Linux/macOS/Windows receipt;
   [Actions run 33228955478](https://github.com/cervantesh/hermes-agent/actions/runs/33228955478).
 - `assets/update-cmd-decomposition-verification.png` — explanatory summary.

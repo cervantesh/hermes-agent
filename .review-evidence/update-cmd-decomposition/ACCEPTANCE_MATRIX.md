@@ -2,7 +2,7 @@
 
 | Claim | How it was checked | Verdict | Raw evidence |
 |---|---|---|---|
-| The review targets current upstream main | `git rev-parse HEAD` after fetching and advancing the branch | **confirmed** | `ac6c8028e00d01ee2f299ba7fd03329c7f10382d` |
+| The published branch is rebased onto the refreshed upstream main without patch drift | exact base/head inspection plus `git range-diff` from the original series to the rebased series | **confirmed** | base `ee742fe1bc828f6456659f67d27bdbeacdebbdd4`; head `cd38939500c7aac9110a0cff0d68b244414d65f4`; all three patches `=` |
 | Every original updater function still has a destination | AST inventory of original `update_cmd.py` versus facade and extracted modules | **confirmed** | `OLD_FUNCTIONS 161`; `MISSING 0` |
 | Mechanical movement dominates the change | Attribute-free AST body comparison | **confirmed** | `IDENTICAL 155`; `ADAPTED 6` |
 | Every adaptation is accounted for | Source diff of the six adapted functions | **confirmed** | `_m` docstring only; four facade state/logger adaptations; `_cmd_update_impl` gateway block extraction |
@@ -24,7 +24,7 @@
 | Hosted POSIX broad results show a deterministic candidate-only regression | Candidate/base comparison plus repeat-run inspection | **not observed** | all stable failures are inherited; only timing-sensitive `test_update_wedged_gateway` nodes varied between attempts |
 | Static quality gates pass | Ruff, compileall, and diff whitespace checks | **confirmed** | `All checks passed!`; compile exit `0`; diff-check exit `0` |
 | The evidence did not leave temporary reviewer artifacts in the worktree | explicit filesystem checks | **confirmed** | `BASELINE_EXISTS=no`; `SERENA_EXISTS=no` |
-| The exact published head preserves the real native-supervisor restart boundary on Linux, macOS, and Windows | Before/after ephemeral services on systemd, launchd, and Windows SCM; require discovery, real restart, PID rotation, supervised/running post-state, cleanup, and identical contracts | **confirmed within supervisor-boundary scope** | all three comparators `equivalent`; every contract assertion true; [run 33232533464](https://github.com/cervantesh/hermes-agent/actions/runs/33232533464) |
+| The exact rebased head preserves the real native-supervisor restart boundary on Linux, macOS, and Windows | Before/after ephemeral services on systemd, launchd, and Windows SCM; require discovery, real restart, PID rotation, supervised/running post-state, cleanup, and identical contracts | **confirmed within supervisor-boundary scope** | base `ee742fe1bc828f6456659f67d27bdbeacdebbdd4`; head `cd38939500c7aac9110a0cff0d68b244414d65f4`; all three comparators `equivalent`; every contract assertion true; [run 33232976850](https://github.com/cervantesh/hermes-agent/actions/runs/33232976850) |
 
 ## Overall verdict
 

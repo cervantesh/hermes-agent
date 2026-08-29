@@ -114,8 +114,8 @@ Compare the output to `SHA256SUMS.txt`. Any difference requires a fresh review.
 
 The real native-supervisor comparison is preserved in `native-supervisors/`
 and visible in
-[run 33232533464](https://github.com/cervantesh/hermes-agent/actions/runs/33232533464).
-It checked out base `ac6c8028e0` and exact published head `9f1f78ec47`
+[run 33232976850](https://github.com/cervantesh/hermes-agent/actions/runs/33232976850).
+It checked out refreshed base `ee742fe1bc` and exact rebased head `cd38939500`
 independently and exercised ephemeral real systemd, launchd, and Windows SCM
 services. Expected aggregate verdict: `equivalent`, with every contract value
 true in both frames.

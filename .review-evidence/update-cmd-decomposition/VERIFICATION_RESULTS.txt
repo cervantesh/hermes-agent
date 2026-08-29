@@ -1,10 +1,11 @@
 REVIEW FRAME
-BASE ac6c8028e00d01ee2f299ba7fd03329c7f10382d
-CANDIDATE 4dbdf314179f60999eb94e6ea5bc81367f2ea351
+BASE ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+CANDIDATE cd38939500c7aac9110a0cff0d68b244414d65f4
 ORIGINAL_REFERENCE 3340bbbdad8368e7f3d9f6827d61692adbbd87d6
 BRANCH codex/update-cmd-decomposition
-DELIVERY_STATE fork-draft-pr-2
-FORK_PR https://github.com/cervantesh/hermes-agent/pull/2
+DELIVERY_STATE upstream-pr-ready-for-review
+UPSTREAM_PR https://github.com/NousResearch/hermes-agent/pull/97634
+REBASE_RANGE_DIFF 3/3 patches unchanged
 FORK_CI_COMPARISON https://github.com/cervantesh/hermes-agent/actions/runs/33226997709
 FORK_CANDIDATE_GATE https://github.com/cervantesh/hermes-agent/actions/runs/33228764944
 FORK_CANDIDATE_RERUN https://github.com/cervantesh/hermes-agent/actions/runs/33228955478
@@ -47,7 +48,7 @@ EXPECTED_PROTECTED_MODULES 15
 MISSING_PROTECTION []
 
 FOCUSED TEST GATE
-56 passed in 9.07s
+56 passed in 8.09s on exact rebased head
 
 BROAD COMPARISON
 CANDIDATE 610 passed, 42 failed, 42 skipped
@@ -111,9 +112,9 @@ COMPARATOR_VERDICT equivalent
 WINDOWS_LIVE_RUN_SCM_SUPERVISOR_E2E no
 
 NATIVE SUPERVISOR BEFORE/AFTER EQUIVALENCE
-RUN https://github.com/cervantesh/hermes-agent/actions/runs/33232533464
-BEFORE_SOURCE ac6c8028e00d01ee2f299ba7fd03329c7f10382d
-AFTER_SOURCE 9f1f78ec478a4598f34057a94b273b372509af32
+RUN https://github.com/cervantesh/hermes-agent/actions/runs/33232976850
+BEFORE_SOURCE ee742fe1bc828f6456659f67d27bdbeacdebbdd4
+AFTER_SOURCE cd38939500c7aac9110a0cff0d68b244414d65f4
 SYSTEMD_VERDICT equivalent
 SYSTEMD_CONTRACT 5/5 true before-and-after
 LAUNCHD_VERDICT equivalent
@@ -130,3 +131,12 @@ SERENA_ARTIFACT_EXISTS no
 
 EXTERNAL GATE
 REAL_SUPERVISOR_LINUX_MACOS_WINDOWS confirmed-at-restart-boundary
+
+EXACT REBASED HEAD UPSTREAM CI
+CI https://github.com/NousResearch/hermes-agent/actions/runs/33232923520 success
+DOCKER https://github.com/NousResearch/hermes-agent/actions/runs/33232923216 success
+NIX https://github.com/NousResearch/hermes-agent/actions/runs/33232923194 success
+CHECKS_PASS 22
+CHECKS_SKIPPED 13
+CHECKS_FAIL 0
+CHECKS_PENDING 0

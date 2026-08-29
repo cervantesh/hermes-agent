@@ -7,5 +7,5 @@ SERVICE_NAME: HermesCodexSupervisorE2E
         SERVICE_EXIT_CODE  : 0  (0x0)
         CHECKPOINT         : 0x0
         WAIT_HINT          : 0x0
-        PID                : 7340
+        PID                : 5960
         FLAGS              : 

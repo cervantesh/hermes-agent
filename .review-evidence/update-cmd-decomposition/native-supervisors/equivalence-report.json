@@ -10,7 +10,7 @@
           "real_agent_bootstrapped": true
         },
         "frame": "after",
-        "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+        "source_sha": "cd38939500c7aac9110a0cff0d68b244414d65f4",
         "supervisor": "launchd"
       },
       "before": {
@@ -22,7 +22,7 @@
           "real_agent_bootstrapped": true
         },
         "frame": "before",
-        "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+        "source_sha": "ee742fe1bc828f6456659f67d27bdbeacdebbdd4",
         "supervisor": "launchd"
       },
       "verdict": "equivalent"
@@ -37,7 +37,7 @@
           "unit_active_after_restart": true
         },
         "frame": "after",
-        "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+        "source_sha": "cd38939500c7aac9110a0cff0d68b244414d65f4",
         "supervisor": "systemd"
       },
       "before": {
@@ -49,7 +49,7 @@
           "unit_active_after_restart": true
         },
         "frame": "before",
-        "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+        "source_sha": "ee742fe1bc828f6456659f67d27bdbeacdebbdd4",
         "supervisor": "systemd"
       },
       "verdict": "equivalent"
@@ -65,7 +65,7 @@
           "service_stopped_and_old_pid_gone": true
         },
         "frame": "after",
-        "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+        "source_sha": "cd38939500c7aac9110a0cff0d68b244414d65f4",
         "supervisor": "windows-scm"
       },
       "before": {
@@ -78,7 +78,7 @@
           "service_stopped_and_old_pid_gone": true
         },
         "frame": "before",
-        "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+        "source_sha": "ee742fe1bc828f6456659f67d27bdbeacdebbdd4",
         "supervisor": "windows-scm"
       },
       "verdict": "equivalent"

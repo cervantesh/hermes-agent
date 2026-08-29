@@ -6,7 +6,7 @@
     "pid_rotated": true,
     "real_agent_bootstrapped": true
   },
-  "frame": "after",
-  "source_sha": "9f1f78ec478a4598f34057a94b273b372509af32",
+  "frame": "before",
+  "source_sha": "ee742fe1bc828f6456659f67d27bdbeacdebbdd4",
   "supervisor": "launchd"
 }
