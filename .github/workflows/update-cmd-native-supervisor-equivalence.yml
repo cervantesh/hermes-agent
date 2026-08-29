@@ -142,11 +142,14 @@ jobs:
 
       - name: Install real Windows SCM service
         if: matrix.supervisor == 'windows-scm'
-        working-directory: source
         shell: pwsh
         run: |
-          uv run --no-sync python ../harness/.github/native-supervisor-e2e/windows_test_service.py --startup auto install
-          if ($LASTEXITCODE -ne 0) { throw 'service installation failed' }
+          choco install nssm --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw 'NSSM fixture installation failed' }
+          nssm.exe install HermesCodexSupervisorE2E `
+            "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" `
+            '-NoProfile -ExecutionPolicy Bypass -Command "while ($true) { Start-Sleep -Seconds 60 }"'
+          if ($LASTEXITCODE -ne 0) { throw 'SCM fixture registration failed' }
           sc.exe start HermesCodexSupervisorE2E
           if ($LASTEXITCODE -ne 0) { throw 'service start failed' }
 
@@ -194,12 +197,15 @@ jobs:
 
       - name: Clean up SCM fixture
         if: always() && matrix.supervisor == 'windows-scm'
-        working-directory: source
         shell: pwsh
         run: |
           sc.exe stop HermesCodexSupervisorE2E
           Start-Sleep -Seconds 2
-          uv run --no-sync python ../harness/.github/native-supervisor-e2e/windows_test_service.py remove
+          if (Get-Command nssm.exe -ErrorAction SilentlyContinue) {
+            nssm.exe remove HermesCodexSupervisorE2E confirm
+          } else {
+            sc.exe delete HermesCodexSupervisorE2E
+          }
 
       - name: Upload frame evidence
         if: always()
