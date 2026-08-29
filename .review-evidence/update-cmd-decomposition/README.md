@@ -7,7 +7,9 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 ## Frozen frame
 
 - Upstream base: `ac6c8028e00d01ee2f299ba7fd03329c7f10382d`
-- Candidate: `4dbdf314179f60999eb94e6ea5bc81367f2ea351`
+- Operational candidate: `4dbdf314179f60999eb94e6ea5bc81367f2ea351`
+- Published PR head: `9f1f78ec478a4598f34057a94b273b372509af32`
+  (adds only relocated test-allowlist metadata)
 - Integration refresh: upstream `main` was three unrelated commits ahead when
   publication was prepared; none changed updater or updater-test paths.
 - Delivery: implementation PR remains draft.
@@ -35,6 +37,8 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 - `REPRODUCE.md` — commands and limits for repeating the checks.
 - `VERIFICATION_RESULTS.txt` — compact machine-oriented result ledger.
 - `KNOWN_BASELINE_FAILURES.txt` — identical inherited failure set.
+- `UPSTREAM_CI.md` — initial red classification, two-line metadata correction,
+  and exact-current-head upstream CI receipt.
 - `linux-e2e/` — controlled real-path workflow and machine verdict;
   [Actions run 33229985934](https://github.com/cervantesh/hermes-agent/actions/runs/33229985934).
 - `windows-live/` — real Windows process/filesystem workflow and machine verdict;
