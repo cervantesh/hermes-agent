@@ -45,6 +45,8 @@ It lives on a fork-only evidence branch and is not part of the product PR.
 - `VERIFICATION_RESULTS.txt` — compact machine-oriented result ledger.
 - `KNOWN_BASELINE_FAILURES.txt` — node IDs from the historical noncanonical
   single-process diagnostic; retained as comparison provenance, not current CI.
+- `INHERITED_FAILURE_AUDIT.md` — exact historical and canonical commands,
+  environment, results, causal controls, and ownership for #98037–#98040.
 - `UPSTREAM_CI.md` — initial red classification, two-line metadata correction,
   and exact-current-head upstream CI receipt.
 - `linux-e2e/` — controlled real-path workflow and machine verdict;

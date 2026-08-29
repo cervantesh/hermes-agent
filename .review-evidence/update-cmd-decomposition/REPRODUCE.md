@@ -107,6 +107,8 @@ file limit. Their independent closure contracts are tracked in
 [#98039](https://github.com/NousResearch/hermes-agent/issues/98039), and
 [#98040](https://github.com/NousResearch/hermes-agent/issues/98040). They are
 not candidate regressions and are outside this refactor's closure predicate.
+The exact canonical command, environment, causal controls, and limitations are
+preserved in `INHERITED_FAILURE_AUDIT.md`.
 
 ## 6. Recompute file identity
 
