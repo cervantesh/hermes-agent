@@ -15,23 +15,43 @@ concurrency:
 
 jobs:
   updater-matrix:
-    name: updater matrix (${{ matrix.name }})
+    name: updater matrix (${{ matrix.target }}, ${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: Linux
+          - target: candidate
+            ref: 026b98b9eb89ab54f7d12496a078bedc1e17ecb3
+            name: Linux
             runner: ubuntu-latest
-          - name: macOS
+          - target: candidate
+            ref: 026b98b9eb89ab54f7d12496a078bedc1e17ecb3
+            name: macOS
             runner: macos-latest
-          - name: Windows
+          - target: candidate
+            ref: 026b98b9eb89ab54f7d12496a078bedc1e17ecb3
+            name: Windows
+            runner: windows-latest
+          - target: baseline
+            ref: ac6c8028e00d01ee2f299ba7fd03329c7f10382d
+            name: Linux
+            runner: ubuntu-latest
+          - target: baseline
+            ref: ac6c8028e00d01ee2f299ba7fd03329c7f10382d
+            name: macOS
+            runner: macos-latest
+          - target: baseline
+            ref: ac6c8028e00d01ee2f299ba7fd03329c7f10382d
+            name: Windows
             runner: windows-latest
 
     steps:
       - name: Checkout candidate plus CI harness
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ matrix.ref }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
@@ -54,6 +74,7 @@ jobs:
           uv run python -c "import glob, subprocess, sys; tests=['tests/hermes_cli/test_cmd_update.py','tests/hermes_cli/test_lazy_command_exports.py',*sorted(glob.glob('tests/hermes_cli/test_update*.py'))]; raise SystemExit(subprocess.call([sys.executable,'-m','pytest','-q','--tb=short',*tests]))"
 
       - name: Run focused decomposition guards
+        if: ${{ always() && matrix.target == 'candidate' }}
         shell: bash
         run: |
           uv run python -m pytest -q \
@@ -63,7 +84,7 @@ jobs:
             tests/hermes_cli/test_update_stale_module_purge.py
 
       - name: Static quality gates
-        if: matrix.name == 'Linux'
+        if: ${{ always() && matrix.target == 'candidate' && matrix.name == 'Linux' }}
         shell: bash
         run: |
           uv run ruff check \
