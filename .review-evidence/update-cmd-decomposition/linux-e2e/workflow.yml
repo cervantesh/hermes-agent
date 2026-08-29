@@ -1,0 +1,229 @@
+name: Update command E2E equivalence
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci/update-cmd-decomposition-standard-runners
+    paths:
+      - .github/workflows/update-cmd-e2e-equivalence.yml
+
+permissions:
+  contents: read
+
+jobs:
+  real-update-e2e:
+    name: ${{ matrix.frame }} updater real-path E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - frame: before
+            source_sha: ac6c8028e00d01ee2f299ba7fd03329c7f10382d
+          - frame: after
+            source_sha: 4dbdf314179f60999eb94e6ea5bc81367f2ea351
+
+    steps:
+      - name: Checkout updater frame
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ matrix.source_sha }}
+          fetch-depth: 0
+
+      - name: Create controlled source and equivalent update target
+        id: frame
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '${{ matrix.source_sha }}'
+          python - <<'PY'
+          from pathlib import Path
+
+          installer = Path("scripts/install.sh")
+          installer_source = installer.read_text(encoding="utf-8")
+          function_start = "install_node_deps() {\n"
+          replacement = (
+              "install_node_deps() {\n"
+              "    log_info \"Skipping unrelated Node dependencies in updater equivalence E2E\"\n"
+              "    return 0\n"
+          )
+          if installer_source.count(function_start) != 1:
+              raise SystemExit("expected exactly one install_node_deps function")
+          installer.write_text(
+              installer_source.replace(function_start, replacement), encoding="utf-8"
+          )
+          PY
+          git diff --check
+          test "$(git diff --name-only)" = 'scripts/install.sh'
+          git add -- scripts/install.sh
+          git config user.name 'Hermes E2E Equivalence'
+          git config user.email 'e2e-equivalence@invalid.local'
+          git commit -m 'test: isolate updater e2e from unrelated node dependencies'
+          source_harness_sha="$(git rev-parse HEAD)"
+          test "$(git diff '${{ matrix.source_sha }}' "$source_harness_sha" --name-only)" = 'scripts/install.sh'
+
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("tests/install/install-update-e2e.sh")
+          source = path.read_text(encoding="utf-8")
+          old = '  printf \'%s\' "$script" | grep -qF -- "$flag"\n'
+          new = '  grep -qF -- "$flag" <<<"$script"\n'
+          if source.count(old) != 1:
+              raise SystemExit("expected exactly one pipefail-sensitive installer flag probe")
+          path.write_text(source.replace(old, new), encoding="utf-8")
+          PY
+          git diff --check
+          git add -- tests/install/install-update-e2e.sh
+          git commit -m 'test: make installer flag probe pipefail-safe'
+          target_sha="$(git rev-parse HEAD)"
+          echo "source_sha=${{ matrix.source_sha }}" >> "$GITHUB_OUTPUT"
+          echo "source_harness_sha=$source_harness_sha" >> "$GITHUB_OUTPUT"
+          echo "target_sha=$target_sha" >> "$GITHUB_OUTPUT"
+          test "$(git diff "$source_harness_sha" "$target_sha" --name-only)" = 'tests/install/install-update-e2e.sh'
+          test -z "$(git status --porcelain)"
+
+      - name: Install sandbox dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap slirp4netns uidmap util-linux
+
+      - name: Permit unprivileged user namespaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          sysctl kernel.unprivileged_userns_clone 2>/dev/null || true
+          if sysctl -n kernel.apparmor_restrict_unprivileged_userns >/dev/null 2>&1; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+
+      - name: Run the repository's real install/update E2E
+        id: e2e
+        shell: bash
+        env:
+          HERMES_DEV_SANDBOX_UPSTREAM: ${{ github.workspace }}
+          HERMES_E2E_LOG_DIR: ${{ runner.temp }}/e2e-logs
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/e2e-evidence"
+          status=0
+          tests/install/install-update-e2e.sh \
+            --route update \
+            --install-ref '${{ steps.frame.outputs.source_harness_sha }}' \
+            2>&1 | tee "$RUNNER_TEMP/e2e-evidence/transcript.log" || status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+
+          FRAME='${{ matrix.frame }}' \
+          SOURCE_SHA='${{ matrix.source_sha }}' \
+          SOURCE_HARNESS_SHA='${{ steps.frame.outputs.source_harness_sha }}' \
+          TARGET_SHA='${{ steps.frame.outputs.target_sha }}' \
+          EXIT_CODE="$status" \
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          transcript = Path(os.environ["RUNNER_TEMP"], "e2e-evidence", "transcript.log").read_text(
+              encoding="utf-8", errors="replace"
+          )
+          assertions = {
+              "real_install_completed": "install of upstream" in transcript and "completed (log:" in transcript,
+              "launcher_works_before_update": "hermes runs after install" in transcript,
+              "real_update_landed_on_target": "hermes update landed on" in transcript,
+              "launcher_works_after_update": "hermes runs after hermes update" in transcript,
+              "repository_e2e_contract_passed": "install/update E2E passed (route: update" in transcript,
+          }
+          result = {
+              "frame": os.environ["FRAME"],
+              "source_sha": os.environ["SOURCE_SHA"],
+              "source_harness_sha": os.environ["SOURCE_HARNESS_SHA"],
+              "target_sha": os.environ["TARGET_SHA"],
+              "transition": "one identical test-harness-only descendant commit",
+              "harness_adjustments": [
+                  "skip unrelated Node dependencies during updater E2E installation",
+                  "pipefail-safe installer flag probe",
+              ],
+              "route": "hermes update",
+              "exit_code": int(os.environ["EXIT_CODE"]),
+              "assertions": assertions,
+          }
+          Path(os.environ["RUNNER_TEMP"], "e2e-evidence", "outcome.json").write_text(
+              json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(result, indent=2, sort_keys=True))
+          PY
+
+          cp -a "$HERMES_E2E_LOG_DIR/." "$RUNNER_TEMP/e2e-evidence/" 2>/dev/null || true
+          exit "$status"
+
+      - name: Upload frame evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: update-cmd-e2e-${{ matrix.frame }}-${{ matrix.source_sha }}
+          path: ${{ runner.temp }}/e2e-evidence
+          retention-days: 14
+          if-no-files-found: error
+
+  compare-observable-contract:
+    name: Compare before/after observable contract
+    needs: real-update-e2e
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download both E2E evidence sets
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: update-cmd-e2e-*
+          path: ${{ runner.temp }}/frames
+
+      - name: Require equivalent successful outcomes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          outcomes = {}
+          for path in Path(os.environ["RUNNER_TEMP"], "frames").glob("*/outcome.json"):
+              outcome = json.loads(path.read_text(encoding="utf-8"))
+              outcomes[outcome["frame"]] = outcome
+
+          if set(outcomes) != {"before", "after"}:
+              raise SystemExit(f"missing outcome frame: found {sorted(outcomes)}")
+
+          before = outcomes["before"]
+          after = outcomes["after"]
+          equivalent = (
+              before["exit_code"] == after["exit_code"] == 0
+              and before["route"] == after["route"] == "hermes update"
+              and before["transition"] == after["transition"]
+              and before["assertions"] == after["assertions"]
+              and all(before["assertions"].values())
+          )
+          report = {
+              "verdict": "equivalent" if equivalent else "different",
+              "before": before,
+              "after": after,
+          }
+          report_path = Path(os.environ["RUNNER_TEMP"], "e2e-equivalence-report.json")
+          report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if not equivalent:
+              raise SystemExit("before/after observable E2E contracts differ")
+          PY
+
+      - name: Upload equivalence report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: update-cmd-e2e-equivalence-report
+          path: ${{ runner.temp }}/e2e-equivalence-report.json
+          retention-days: 14
+          if-no-files-found: error

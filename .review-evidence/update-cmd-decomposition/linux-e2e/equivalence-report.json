@@ -1,0 +1,43 @@
+{
+  "after": {
+    "assertions": {
+      "launcher_works_after_update": true,
+      "launcher_works_before_update": true,
+      "real_install_completed": true,
+      "real_update_landed_on_target": true,
+      "repository_e2e_contract_passed": true
+    },
+    "exit_code": 0,
+    "frame": "after",
+    "harness_adjustments": [
+      "skip unrelated Node dependencies during updater E2E installation",
+      "pipefail-safe installer flag probe"
+    ],
+    "route": "hermes update",
+    "source_harness_sha": "a24bbca426c85996583b3cbee56828fcee353120",
+    "source_sha": "4dbdf314179f60999eb94e6ea5bc81367f2ea351",
+    "target_sha": "7487dc30e5a7ce9e698bdf0d187ffc866a67f4b3",
+    "transition": "one identical test-harness-only descendant commit"
+  },
+  "before": {
+    "assertions": {
+      "launcher_works_after_update": true,
+      "launcher_works_before_update": true,
+      "real_install_completed": true,
+      "real_update_landed_on_target": true,
+      "repository_e2e_contract_passed": true
+    },
+    "exit_code": 0,
+    "frame": "before",
+    "harness_adjustments": [
+      "skip unrelated Node dependencies during updater E2E installation",
+      "pipefail-safe installer flag probe"
+    ],
+    "route": "hermes update",
+    "source_harness_sha": "bfb5f683b66a89e56c3941f909616762e2890d62",
+    "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d",
+    "target_sha": "37ea0b0067cfe7c73749717c0c71f4b59e009b48",
+    "transition": "one identical test-harness-only descendant commit"
+  },
+  "verdict": "equivalent"
+}

@@ -1,0 +1,174 @@
+name: Update command Windows live E2E equivalence
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci/update-cmd-decomposition-standard-runners
+    paths:
+      - .github/workflows/update-cmd-windows-live-equivalence.yml
+
+permissions:
+  contents: read
+
+jobs:
+  windows-live:
+    name: ${{ matrix.frame }} Windows live E2E
+    runs-on: windows-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - frame: before
+            source_sha: ac6c8028e00d01ee2f299ba7fd03329c7f10382d
+          - frame: after
+            source_sha: 4dbdf314179f60999eb94e6ea5bc81367f2ea351
+
+    steps:
+      - name: Checkout exact updater frame
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ matrix.source_sha }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # 8.2.0
+        with:
+          version: "0.9.28"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
+      - name: Set up Python 3.11
+        uses: ./.github/actions/retry
+        with:
+          command: uv python install 3.11
+
+      - name: Install dependencies
+        uses: ./.github/actions/retry
+        with:
+          command: uv sync --locked --python 3.11 --extra dev
+
+      - name: Run all relevant Windows live E2E suites
+        id: live
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = Join-Path $env:RUNNER_TEMP 'windows-live-evidence'
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          $junit = Join-Path $evidence 'junit.xml'
+
+          & uv run --no-sync python -m pytest `
+            tests/hermes_cli/test_venv_holder_windows_live.py `
+            tests/hermes_cli/test_desktop_lifecycle_windows_live.py `
+            tests/hermes_cli/test_fleet_config_migration_windows_live.py `
+            tests/hermes_cli/test_plan_reconciliation_windows_live.py `
+            tests/hermes_cli/test_shim_fail_closed_windows_live.py `
+            -o addopts= -v -p no:cacheprovider --junitxml=$junit
+          $pytestExit = $LASTEXITCODE
+
+          $env:FRAME = '${{ matrix.frame }}'
+          $env:SOURCE_SHA = '${{ matrix.source_sha }}'
+          $env:PYTEST_EXIT = [string]$pytestExit
+          $env:JUNIT_PATH = $junit
+          $env:OUTCOME_PATH = Join-Path $evidence 'outcome.json'
+          @'
+          import json
+          import os
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          root = ET.parse(os.environ["JUNIT_PATH"]).getroot()
+          cases = []
+          for case in root.iter("testcase"):
+              status = "passed"
+              if case.find("failure") is not None:
+                  status = "failed"
+              elif case.find("error") is not None:
+                  status = "error"
+              elif case.find("skipped") is not None:
+                  status = "skipped"
+              cases.append({
+                  "id": f'{case.attrib.get("classname", "")}::{case.attrib.get("name", "")}',
+                  "status": status,
+              })
+          outcome = {
+              "frame": os.environ["FRAME"],
+              "source_sha": os.environ["SOURCE_SHA"],
+              "pytest_exit": int(os.environ["PYTEST_EXIT"]),
+              "cases": sorted(cases, key=lambda item: item["id"]),
+          }
+          Path(os.environ["OUTCOME_PATH"]).write_text(
+              json.dumps(outcome, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          print(json.dumps(outcome, indent=2, sort_keys=True))
+          '@ | uv run --no-sync python -
+
+          exit $pytestExit
+
+      - name: Upload Windows frame evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: update-cmd-windows-live-${{ matrix.frame }}-${{ matrix.source_sha }}
+          path: ${{ runner.temp }}/windows-live-evidence
+          retention-days: 14
+          if-no-files-found: error
+
+  compare-windows-live:
+    name: Compare Windows live observable cases
+    needs: windows-live
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download both Windows evidence sets
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: update-cmd-windows-live-*
+          path: ${{ runner.temp }}/frames
+
+      - name: Require identical successful live cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          outcomes = {}
+          for path in Path(os.environ["RUNNER_TEMP"], "frames").glob("*/outcome.json"):
+              outcome = json.loads(path.read_text(encoding="utf-8"))
+              outcomes[outcome["frame"]] = outcome
+          if set(outcomes) != {"before", "after"}:
+              raise SystemExit(f"missing Windows frame: found {sorted(outcomes)}")
+
+          before = outcomes["before"]
+          after = outcomes["after"]
+          equivalent = (
+              before["pytest_exit"] == after["pytest_exit"] == 0
+              and before["cases"] == after["cases"]
+              and before["cases"]
+              and all(case["status"] == "passed" for case in before["cases"])
+          )
+          report = {
+              "verdict": "equivalent" if equivalent else "different",
+              "before": before,
+              "after": after,
+          }
+          output = Path(os.environ["RUNNER_TEMP"], "windows-live-equivalence.json")
+          output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(report, indent=2, sort_keys=True))
+          if not equivalent:
+              raise SystemExit("before/after Windows live E2E cases differ")
+          PY
+
+      - name: Upload Windows equivalence report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: update-cmd-windows-live-equivalence-report
+          path: ${{ runner.temp }}/windows-live-equivalence.json
+          retention-days: 14
+          if-no-files-found: error

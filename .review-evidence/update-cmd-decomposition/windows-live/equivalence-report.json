@@ -1,0 +1,169 @@
+{
+  "after": {
+    "cases": [
+      {
+        "id": "tests.hermes_cli.test_desktop_lifecycle_windows_live::test_holder_scan_fallback_respects_token_classifier",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_desktop_lifecycle_windows_live::test_live_supervised_serve_suppresses_cold_start",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_fleet_config_migration_windows_live::test_fleet_config_migration_live_windows",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_plan_reconciliation_windows_live::test_plan_reconciliation_live_windows",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_locked_shim_really_cannot_be_renamed",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_recovery_installer_refuses_against_real_lock",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_release_then_strict_quarantine_succeeds",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_strict_quarantine_refuses_against_real_lock",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestAncestorExclusion::test_gateway_parent_visible_to_child_scan",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestClassification::test_pausable_exemption_sees_long_path_gateway",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestClassification::test_serve_backend_not_classified_pausable",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestConcurrentGateClassification::test_live_filter_drops_only_the_gateway",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestConcurrentGateClassification::test_live_gateway_process_classified_gateway",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestConcurrentGateClassification::test_live_non_gateway_processes_keep_the_abort",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestDetection::test_detects_hermes_argv_process",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestDetection::test_foreign_python_not_detected",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestDetection::test_long_runtime_path_gateway_detected_with_full_argv",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestHolderMessage::test_dashboard_not_labeled_desktop_backend",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestHolderMessage::test_substring_subcommand_not_mislabeled",
+        "status": "passed"
+      }
+    ],
+    "frame": "after",
+    "pytest_exit": 0,
+    "source_sha": "4dbdf314179f60999eb94e6ea5bc81367f2ea351"
+  },
+  "before": {
+    "cases": [
+      {
+        "id": "tests.hermes_cli.test_desktop_lifecycle_windows_live::test_holder_scan_fallback_respects_token_classifier",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_desktop_lifecycle_windows_live::test_live_supervised_serve_suppresses_cold_start",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_fleet_config_migration_windows_live::test_fleet_config_migration_live_windows",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_plan_reconciliation_windows_live::test_plan_reconciliation_live_windows",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_locked_shim_really_cannot_be_renamed",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_recovery_installer_refuses_against_real_lock",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_release_then_strict_quarantine_succeeds",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_shim_fail_closed_windows_live::test_strict_quarantine_refuses_against_real_lock",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestAncestorExclusion::test_gateway_parent_visible_to_child_scan",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestClassification::test_pausable_exemption_sees_long_path_gateway",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestClassification::test_serve_backend_not_classified_pausable",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestConcurrentGateClassification::test_live_filter_drops_only_the_gateway",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestConcurrentGateClassification::test_live_gateway_process_classified_gateway",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestConcurrentGateClassification::test_live_non_gateway_processes_keep_the_abort",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestDetection::test_detects_hermes_argv_process",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestDetection::test_foreign_python_not_detected",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestDetection::test_long_runtime_path_gateway_detected_with_full_argv",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestHolderMessage::test_dashboard_not_labeled_desktop_backend",
+        "status": "passed"
+      },
+      {
+        "id": "tests.hermes_cli.test_venv_holder_windows_live.TestHolderMessage::test_substring_subcommand_not_mislabeled",
+        "status": "passed"
+      }
+    ],
+    "frame": "before",
+    "pytest_exit": 0,
+    "source_sha": "ac6c8028e00d01ee2f299ba7fd03329c7f10382d"
+  },
+  "verdict": "equivalent"
+}
