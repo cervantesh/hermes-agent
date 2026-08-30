@@ -17,6 +17,7 @@ import {
   sealOpenToolParts,
   upsertToolPart
 } from '@/lib/chat-messages'
+import { concatToolPartsUnique } from '@/lib/chat-runtime'
 import type { ErrorSurface } from '@/lib/error-surface'
 import {
   dedupeGeneratedImageEchoesInParts,
@@ -650,8 +651,51 @@ export function useMessageStream({
         const prev = state.messages
         let nextMessages = prev
 
-        if (streamId && prev.some(m => m.id === streamId)) {
-          nextMessages = prev.map(m => (m.id === streamId ? completeMessage(m) : m))
+        const streamIndex = streamId ? prev.findIndex(message => message.id === streamId) : -1
+
+        if (streamIndex >= 0) {
+          const streamMessage = prev[streamIndex]
+
+          const priorInterimIndex = prev.findLastIndex(
+            (message, index) =>
+              index < streamIndex && message.role === 'assistant' && !message.hidden && message.interim === true
+          )
+
+          const priorInterim = priorInterimIndex >= 0 ? prev[priorInterimIndex] : null
+          const priorInterimText = priorInterim ? chatMessageText(priorInterim).trim() : ''
+          const streamCarriesTool = streamMessage.parts.some(part => part.type === 'tool-call')
+
+          // message.interim seals narration and clears streamId. A following
+          // tool.start therefore opens a new assistant row; completing that row
+          // with the same authoritative text used to leave the sealed copy a
+          // few rows earlier and paint the reply twice (#98524). This is one
+          // turn only (`interimBoundaryPending`), one exact body, and a real tool
+          // row — keep the earlier stable bubble id, carry its tool timeline
+          // forward, and remove only the redundant live row. Distinct pre-tool
+          // commentary and final answers remain separate.
+          if (
+            interimBoundaryPending &&
+            !completionError &&
+            streamCarriesTool &&
+            priorInterim &&
+            finalText &&
+            priorInterimText === finalText
+          ) {
+            const completed = completeMessage({
+              ...priorInterim,
+              parts: concatToolPartsUnique(priorInterim.parts, streamMessage.parts)
+            })
+
+            nextMessages = prev.flatMap((message, index) => {
+              if (index === priorInterimIndex) {
+                return [completed]
+              }
+
+              return index === streamIndex ? [] : [message]
+            })
+          } else {
+            nextMessages = prev.map((message, index) => (index === streamIndex ? completeMessage(message) : message))
+          }
         } else {
           const fallbackIndex = [...prev]
             .reverse()
