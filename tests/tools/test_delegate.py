@@ -147,6 +147,39 @@ class TestChildSystemPrompt(unittest.TestCase):
         self.assertIn("YOUR TASK", prompt)
         self.assertNotIn("CONTEXT", prompt)
 
+    def test_execution_contract_requires_direct_evidence_backed_work(self):
+        prompt = _build_child_system_prompt("Inspect the authentication flow")
+
+        self.assertIn("subagent executing a delegated task", prompt)
+        self.assertIn("Stay in that worker role", prompt)
+        self.assertIn("Do the work directly", prompt)
+        self.assertIn("Do not merely restate or paraphrase the task", prompt)
+        self.assertIn("concrete evidence appropriate to the task", prompt)
+
+    def test_execution_contract_rejects_role_flip_and_vague_completion(self):
+        prompt = _build_child_system_prompt("Review the authentication flow")
+
+        self.assertIn("Do not ask questions, request clarification", prompt)
+        self.assertIn("suggest that the parent do the work", prompt)
+        self.assertIn("Vague or empty summaries are not completion", prompt)
+        self.assertIn("Finish the requested deliverable", prompt)
+        self.assertIn("do not expand the task's scope", prompt)
+
+    def test_execution_contract_reports_blockers_without_user_interaction(self):
+        prompt = _build_child_system_prompt("Investigate the unavailable service")
+
+        self.assertIn("Do not ask the user directly", prompt)
+        self.assertIn("after inspecting relevant workspace evidence", prompt)
+        self.assertIn("report the exact blocker", prompt)
+        self.assertIn("what the parent needs", prompt)
+
+    def test_execution_contract_changes_strategy_or_stops_after_repeated_failure(self):
+        prompt = _build_child_system_prompt("Repair the failing command")
+
+        self.assertIn("same approach produces the same failure twice", prompt)
+        self.assertIn("materially different approach", prompt)
+        self.assertIn("report why progress is blocked", prompt)
+
 class TestStripBlockedTools(unittest.TestCase):
     def test_removes_blocked_toolsets(self):
         result = _strip_blocked_tools(["terminal", "file", "delegation", "clarify", "memory", "code_execution"])
