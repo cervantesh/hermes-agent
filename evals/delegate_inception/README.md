@@ -4,12 +4,16 @@ This harness measures whether a child-prompt change improves behavior through
 the real synchronous `delegate_task` lifecycle. It does not treat the presence
 of prompt phrases as evidence of model improvement.
 
-The four hermetic tasks cover:
+The preregistered pilot contains 12 hermetic tasks, three for each failure
+mode named by issue #375 and the CAMEL paper:
 
-- evidence-backed work with an on-disk artifact;
-- concrete diagnosis rather than a vague summary;
-- honest reporting when a required artifact is missing; and
-- convergence after the same executable approach fails twice.
+- role flipping: the worker must inspect sufficient local evidence instead of
+  asking the parent to do or clarify the work;
+- instruction echo: completion requires an exact on-disk artifact, so merely
+  paraphrasing the goal cannot pass;
+- flake replies: concrete values and source names are required; and
+- infinite loops: a failing primary command must converge through alternate
+  evidence without a third identical call.
 
 Task goals state only the requested outcome and task-specific safety limits.
 They intentionally do not repeat the candidate's anti-echo, blocker-reporting,
@@ -21,8 +25,29 @@ disposable workspace. No user files or real `HERMES_HOME` state are modified.
 
 ## Run
 
-Run the same model and repetitions against two worktrees. The only intended
-variable is the child system prompt.
+For the paper-aligned pilot, run both worktrees through the paired runner. It
+keeps each baseline/candidate observation adjacent, randomizes which arm runs
+first with a recorded seed, and is resume-safe. The only intended variable is
+the child system prompt.
+
+```bash
+python evals/delegate_inception/paired_runner.py \
+  --baseline-root /path/to/baseline \
+  --candidate-root /path/to/candidate \
+  --label haiku-pilot \
+  --provider claude-code \
+  --model claude-haiku-4-5 \
+  --reps 3 \
+  --seed 375
+```
+
+This produces 36 observations per arm. It is explicitly a pilot: CAMEL's
+reported prompt ablation used the same 100-task set and blind comparative
+judging. Hermes strengthens the primary endpoint with executable oracles, but
+does not treat this smaller sample as a confirmatory replication.
+
+The older single-arm runner remains useful for provider smoke tests and
+targeted debugging:
 
 ```bash
 python evals/delegate_inception/runner.py \
@@ -76,6 +101,12 @@ python evals/delegate_inception/runner.py \
 - Record the exact Git head and a digest when a tree is dirty.
 - Three repetitions are the minimum; inspect every failed transcript before
   attributing a one-run difference to the prompt.
+- Keep the task set, category definitions, repetition count, seed, model, and
+  primary pass/fail oracles fixed after the first scored observation.
+- Primary evidence is paired task success. Calls, duration, and individual
+  failure checks are secondary diagnostics, not substitutes for success.
+- Programmatic grading is arm-blind. If subjective judging is added later,
+  strip arm labels and prompt-specific formatting before presenting outputs.
 - A baseline failure is required before describing the candidate as a bug fix.
   Otherwise, report the change as defensive prompt hardening.
 - Unit tests that inspect prompt text are regression smoke tests, not the A/B

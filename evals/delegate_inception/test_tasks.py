@@ -1,6 +1,19 @@
 """Regression tests for provider-neutral delegation-eval oracles."""
 
-from evals.delegate_inception.tasks import TASKS_BY_ID, _recovery_grade
+from collections import Counter
+
+from evals.delegate_inception.tasks import TASKS, TASKS_BY_ID, _recovery_grade
+
+
+def test_pilot_covers_each_reported_failure_mode_with_three_tasks():
+    assert len(TASKS) == 12
+    assert Counter(task.category for task in TASKS) == {
+        "role_flip": 3,
+        "instruction_echo": 3,
+        "flake_reply": 3,
+        "infinite_loop": 3,
+    }
+    assert len(TASKS_BY_ID) == len(TASKS)
 
 
 def test_prompts_do_not_embed_the_candidate_execution_contract():
@@ -10,6 +23,9 @@ def test_prompts_do_not_embed_the_candidate_execution_contract():
     assert "if the same failure repeats" not in prompts
     assert "report the result and any blocker precisely" not in prompts
     assert "report the exact file and both relevant values" not in prompts
+    assert "do not ask" not in prompts
+    assert "do not restate" not in prompts
+    assert "materially different approach" not in prompts
 
 
 def _grade_with_transcript(tmp_path, tool_name: str) -> dict[str, bool]:
