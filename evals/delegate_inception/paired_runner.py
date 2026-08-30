@@ -16,6 +16,10 @@ from tasks import TASKS, TASKS_BY_ID
 
 
 def _task_catalog(suite: str):
+    if suite == "confirmation":
+        from confirmation import CONFIRMATION_TASKS, CONFIRMATION_TASKS_BY_ID
+
+        return CONFIRMATION_TASKS, CONFIRMATION_TASKS_BY_ID
     if suite == "long":
         from long_horizon import LONG_TASKS, LONG_TASKS_BY_ID
 
@@ -66,7 +70,9 @@ def main() -> int:
     parser.add_argument("--label", required=True)
     parser.add_argument("--provider", required=True)
     parser.add_argument("--model", required=True)
-    parser.add_argument("--suite", choices=("short", "long"), default="short")
+    parser.add_argument(
+        "--suite", choices=("short", "long", "confirmation"), default="short"
+    )
     parser.add_argument("--reps", type=int, default=3)
     parser.add_argument("--seed", type=int, default=375)
     parser.add_argument("--tasks", default="")

@@ -76,6 +76,30 @@ introduced. Repetitions do not turn six workflow shapes into 18 independent
 task designs, so this remains a long-horizon pilot rather than a replication
 of CAMEL's 100-task evaluation.
 
+## Pre-registered long-horizon confirmation
+
+`CONFIRMATION_PROTOCOL.md` freezes a separate confirmation before its first
+scored observation. It uses twenty new task definitions spanning five workflow
+archetypes, one observation per task and arm, rather than repeating the six v2
+shapes. Its primary endpoint and stopping rule cannot be changed after results
+are inspected.
+
+```bash
+python evals/delegate_inception/paired_runner.py \
+  --baseline-root /path/to/baseline \
+  --candidate-root /path/to/candidate \
+  --label haiku-confirmation-v3 \
+  --provider claude-code \
+  --model claude-haiku-4-5 \
+  --suite confirmation \
+  --reps 1 \
+  --seed 37503
+```
+
+The confirmation can establish only the measured single-child behavior. It is
+not a replication of CAMEL's multi-agent experiment or evidence for every
+provider and model.
+
 The older single-arm runner remains useful for provider smoke tests and
 targeted debugging:
 
