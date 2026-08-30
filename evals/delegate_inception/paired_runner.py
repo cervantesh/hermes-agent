@@ -15,6 +15,14 @@ from runner import EVAL_DIR, WORKER, _tree_id
 from tasks import TASKS, TASKS_BY_ID
 
 
+def _task_catalog(suite: str):
+    if suite == "long":
+        from long_horizon import LONG_TASKS, LONG_TASKS_BY_ID
+
+        return LONG_TASKS, LONG_TASKS_BY_ID
+    return TASKS, TASKS_BY_ID
+
+
 @dataclass(frozen=True)
 class ScheduleItem:
     arm: str
@@ -58,6 +66,7 @@ def main() -> int:
     parser.add_argument("--label", required=True)
     parser.add_argument("--provider", required=True)
     parser.add_argument("--model", required=True)
+    parser.add_argument("--suite", choices=("short", "long"), default="short")
     parser.add_argument("--reps", type=int, default=3)
     parser.add_argument("--seed", type=int, default=375)
     parser.add_argument("--tasks", default="")
@@ -68,10 +77,11 @@ def main() -> int:
         "candidate": Path(args.candidate_root).resolve(),
     }
     identities = {arm: _tree_id(root) for arm, root in roots.items()}
+    suite_tasks, suite_tasks_by_id = _task_catalog(args.suite)
     task_ids = [item for item in args.tasks.split(",") if item]
     if not task_ids:
-        task_ids = [task.task_id for task in TASKS]
-    unknown = sorted(set(task_ids) - TASKS_BY_ID.keys())
+        task_ids = [task.task_id for task in suite_tasks]
+    unknown = sorted(set(task_ids) - suite_tasks_by_id.keys())
     if unknown:
         raise SystemExit(f"unknown tasks: {', '.join(unknown)}")
 
@@ -97,6 +107,8 @@ def main() -> int:
                 str(WORKER),
                 "--repo-root",
                 str(roots[item.arm]),
+                "--suite",
+                args.suite,
                 "--task",
                 item.task_id,
                 "--provider",
@@ -127,7 +139,8 @@ def main() -> int:
                 {
                     "label": f"{args.label}-{item.arm}",
                     "arm": item.arm,
-                    "category": TASKS_BY_ID[item.task_id].category,
+                    "suite": args.suite,
+                    "category": suite_tasks_by_id[item.task_id].category,
                     "rep": item.rep,
                     "provider": args.provider,
                     "model": args.model,

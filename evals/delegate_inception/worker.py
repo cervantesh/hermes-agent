@@ -18,6 +18,17 @@ from fixtures import build_workspace  # noqa: E402
 from tasks import TASKS_BY_ID  # noqa: E402
 
 
+def _load_suite(suite: str, task_id: str):
+    """Resolve a task, its fixture builder, and the suite's iteration budget."""
+    if suite == "long":
+        from long_horizon import LONG_TASKS_BY_ID, build_long_workspace
+
+        task = LONG_TASKS_BY_ID[task_id]
+        return task, lambda root: build_long_workspace(root, task_id), 50
+    task = TASKS_BY_ID[task_id]
+    return task, build_workspace, 12
+
+
 def _enable_disposable_codex_workspace_write(workspace: Path) -> None:
     """Scope the eval-only Codex sandbox to the disposable workspace.
 
@@ -75,7 +86,8 @@ def _provider_key(provider: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
-    parser.add_argument("--task", required=True, choices=sorted(TASKS_BY_ID))
+    parser.add_argument("--suite", choices=("short", "long"), default="short")
+    parser.add_argument("--task", required=True)
     parser.add_argument("--provider", required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--codex-workspace-write", action="store_true")
@@ -83,7 +95,10 @@ def main() -> int:
 
     repo_root = Path(args.repo_root).resolve()
     sys.path.insert(0, str(repo_root))
-    task = TASKS_BY_ID[args.task]
+    try:
+        task, workspace_builder, iteration_budget = _load_suite(args.suite, args.task)
+    except KeyError:
+        raise SystemExit(f"unknown {args.suite} task: {args.task}") from None
     wanted_key = _provider_key(args.provider)
     if wanted_key and not os.environ.get(wanted_key):
         raise SystemExit(f"missing required credential: {wanted_key}")
@@ -91,10 +106,10 @@ def main() -> int:
     home_root = Path(tempfile.mkdtemp(prefix="delegate-inception-home-"))
     hermes_home = home_root / ".hermes"
     hermes_home.mkdir()
-    build_workspace(workspace)
+    workspace_builder(workspace)
     (hermes_home / "config.yaml").write_text(
         "delegation:\n"
-        "  max_iterations: 12\n"
+        f"  max_iterations: {iteration_budget}\n"
         "  max_spawn_depth: 2\n"
         "  orchestrator_enabled: false\n",
         encoding="utf-8",
@@ -186,6 +201,8 @@ def main() -> int:
         checks = task.grade(summary, entry, workspace)
         output = {
             "task": task.task_id,
+            "suite": args.suite,
+            "category": task.category,
             "note": task.note,
             "ok": bool(checks) and all(checks.values()),
             "checks": checks,

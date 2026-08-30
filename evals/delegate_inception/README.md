@@ -46,6 +46,36 @@ reported prompt ablation used the same 100-task set and blind comparative
 judging. Hermes strengthens the primary endpoint with executable oracles, but
 does not treat this smaller sample as a confirmatory replication.
 
+## Long-horizon v2
+
+The short pilot caps children at 12 iterations. The separate v2 suite keeps a
+single child (Phase 1 scope) but uses Hermes's production default of 50
+iterations. It contains six ten-stage workflows with dependent artifacts and
+an unavailable primary source injected at a different early, middle, or late
+stage. Completion requires all ten exact artifacts, ten verified transitions,
+a final receipt, honest worker-role behavior, and no third identical retry at
+the blocked stage.
+
+The v1 tasks and results remain unchanged. Run v2 with a new label:
+
+```bash
+python evals/delegate_inception/paired_runner.py \
+  --baseline-root /path/to/baseline \
+  --candidate-root /path/to/candidate \
+  --label haiku-long-v2 \
+  --provider claude-code \
+  --model claude-haiku-4-5 \
+  --suite long \
+  --reps 3 \
+  --seed 375
+```
+
+This yields 18 observations per arm. It tests late drift and convergence, not
+multi-agent orchestration: no parent steering, coordinator, or second child is
+introduced. Repetitions do not turn six workflow shapes into 18 independent
+task designs, so this remains a long-horizon pilot rather than a replication
+of CAMEL's 100-task evaluation.
+
 The older single-arm runner remains useful for provider smoke tests and
 targeted debugging:
 
