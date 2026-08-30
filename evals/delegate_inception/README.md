@@ -100,6 +100,26 @@ The confirmation can establish only the measured single-child behavior. It is
 not a replication of CAMEL's multi-agent experiment or evidence for every
 provider and model.
 
+## Anti-bypass holdout
+
+After the first confirmation exposed one false-success run in each arm, a new
+completion-rule intervention and an unseen holdout were frozen together in
+`ANTI_BYPASS_PROTOCOL.md`. Twenty challenge tasks cover five different state
+mechanics; four negative controls explicitly require repairing a documented
+verifier defect so the rule cannot pass merely by refusing to touch validators.
+
+```bash
+python evals/delegate_inception/paired_runner.py \
+  --baseline-root /path/to/baseline \
+  --candidate-root /path/to/candidate \
+  --label haiku-anti-bypass-v4 \
+  --provider claude-code \
+  --model claude-haiku-4-5 \
+  --suite holdout \
+  --reps 1 \
+  --seed 37504
+```
+
 The older single-arm runner remains useful for provider smoke tests and
 targeted debugging:
 

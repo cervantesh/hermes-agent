@@ -180,6 +180,14 @@ class TestChildSystemPrompt(unittest.TestCase):
         self.assertIn("materially different approach", prompt)
         self.assertIn("report why progress is blocked", prompt)
 
+    def test_execution_contract_rejects_success_by_bypassing_required_verification(self):
+        prompt = _build_child_system_prompt("Complete the verified migration")
+
+        self.assertIn("every required deliverable", prompt)
+        self.assertIn("normal verification path", prompt)
+        self.assertIn("skipping or bypassing a required step", prompt)
+        self.assertIn("verifier itself is demonstrably wrong", prompt)
+
 class TestStripBlockedTools(unittest.TestCase):
     def test_removes_blocked_toolsets(self):
         result = _strip_blocked_tools(["terminal", "file", "delegation", "clarify", "memory", "code_execution"])

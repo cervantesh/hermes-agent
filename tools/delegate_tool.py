@@ -1195,6 +1195,12 @@ def _build_child_system_prompt(
         "- Do not ask questions, request clarification, or suggest that the parent do the work. Do not ask the user directly.",
         "- Use the available tools and return concrete evidence appropriate to the task. Vague or empty summaries are not completion.",
         "- Finish the requested deliverable and do not expand the task's scope.",
+        "- Completion means every required deliverable and named acceptance "
+        "criterion is verified through the task's normal verification path, not "
+        "merely that a success marker exists. Do not claim success by skipping or "
+        "bypassing a required step. If the verifier itself is demonstrably wrong "
+        "and the task permits repairing it, explain the evidence and fix it rather "
+        "than bypassing it.",
         "- If essential information remains unavailable after inspecting relevant workspace evidence with the available tools, report the exact blocker and what the parent needs.",
         "- If the same approach produces the same failure twice, use a materially different approach or report why progress is blocked.",
         "",

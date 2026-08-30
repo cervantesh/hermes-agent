@@ -33,6 +33,11 @@ def _load_suite(suite: str, task_id: str):
 
         task = CONFIRMATION_TASKS_BY_ID[task_id]
         return task, lambda root: build_confirmation_workspace(root, task_id), 50
+    if suite == "holdout":
+        from anti_bypass_holdout import HOLDOUT_TASKS_BY_ID, build_holdout_workspace
+
+        task = HOLDOUT_TASKS_BY_ID[task_id]
+        return task, lambda root: build_holdout_workspace(root, task_id), 50
     task = TASKS_BY_ID[task_id]
     return task, build_workspace, 12
 
@@ -95,7 +100,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument(
-        "--suite", choices=("short", "long", "confirmation"), default="short"
+        "--suite",
+        choices=("short", "long", "confirmation", "holdout"),
+        default="short",
     )
     parser.add_argument("--task", required=True)
     parser.add_argument("--provider", required=True)
