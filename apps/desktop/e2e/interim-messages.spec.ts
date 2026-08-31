@@ -36,7 +36,7 @@ import {
   setupMockBackend,
   waitForAppReady,
 } from './fixtures'
-import { INTERIM_TEXTS, restartMockServer } from './mock-server'
+import { INTERIM_DUPLICATE_TEXT, INTERIM_TEXTS, restartMockServer } from './mock-server'
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -125,6 +125,13 @@ async function countTranscriptMessagesContaining(page: Page, text: string): Prom
   )
 }
 
+async function countAssistantBubblesContaining(page: Page, text: string): Promise<number> {
+  return page.locator('[data-slot="aui_assistant-message-root"]').evaluateAll(
+    (messages, search) => messages.filter(message => (message.textContent ?? '').includes(search)).length,
+    text,
+  )
+}
+
 // ─── Flag ON: interim_assistant_messages = true (default) ─────────────
 
 test.describe('interim assistant messages — flag ON (default)', () => {
@@ -165,6 +172,81 @@ test.describe('interim assistant messages — flag ON (default)', () => {
         { timeout: 15_000, message: 'final text should be visible' },
       )
       .toBeGreaterThanOrEqual(1)
+  })
+})
+
+// Full Electron-path regression for #98524. Unlike the hook-level test, this
+// drives the real mock inference server, agent loop, tui_gateway websocket,
+// renderer state, and final assistant-ui transcript.
+test.describe('interim assistant messages — identical final after tool', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  let fixture: MockBackendFixture
+
+  test.beforeAll(async () => {
+    restartMockServer()
+    fixture = await setupMockBackend()
+    await waitForAppReady(fixture, 120_000)
+  })
+
+  test.afterAll(async () => {
+    await fixture?.cleanup()
+  })
+
+  test('renders one final bubble after the tool lifecycle (#98524)', async () => {
+    const page = fixture.page
+    await page.evaluate((search) => {
+      const state = window as typeof window & {
+        __e2eDuplicateObserver?: MutationObserver
+        __e2eMaxDuplicateBubbles?: number
+      }
+      const sample = () => {
+        const count = [...document.querySelectorAll('[data-slot="aui_assistant-message-root"]')]
+          .filter(message => (message.textContent ?? '').includes(search)).length
+        state.__e2eMaxDuplicateBubbles = Math.max(state.__e2eMaxDuplicateBubbles ?? 0, count)
+      }
+      state.__e2eDuplicateObserver?.disconnect()
+      state.__e2eMaxDuplicateBubbles = 0
+      state.__e2eDuplicateObserver = new MutationObserver(sample)
+      state.__e2eDuplicateObserver.observe(document.body, { childList: true, subtree: true, characterData: true })
+      sample()
+    }, INTERIM_DUPLICATE_TEXT)
+
+    const composer = page.locator('[contenteditable="true"]').first()
+    await composer.waitFor({ state: 'visible', timeout: 10_000 })
+    await composer.fill('E2E_INTERIM_DUPLICATE_TRIGGER')
+    await page.keyboard.press('Enter')
+
+    // The same text is already visible at message.interim, so text presence is
+    // not a completion barrier. Wait until the mock has received the post-tool
+    // model request and the session's foreground-running marker has cleared.
+    await expect
+      .poll(() => fixture.mock.receivedPrompts.length, { timeout: 90_000 })
+      .toBeGreaterThanOrEqual(3)
+    await expect
+      .poll(
+        () => page.locator('[aria-label="Session running"]').count(),
+        { timeout: 30_000, message: 'the turn should settle before counting transcript bubbles' },
+      )
+      .toBe(0)
+    await page.waitForTimeout(2000)
+
+    const maxVisibleCopies = await page.evaluate(() => {
+      const state = window as typeof window & {
+        __e2eDuplicateObserver?: MutationObserver
+        __e2eMaxDuplicateBubbles?: number
+      }
+      state.__e2eDuplicateObserver?.disconnect()
+      return state.__e2eMaxDuplicateBubbles ?? 0
+    })
+    expect(maxVisibleCopies, 'the live transcript must never paint two copies').toBe(1)
+
+    await expect
+      .poll(
+        () => countAssistantBubblesContaining(page, INTERIM_DUPLICATE_TEXT),
+        { timeout: 90_000, message: 'the settled final should render exactly once' },
+      )
+      .toBe(1)
   })
 })
 
