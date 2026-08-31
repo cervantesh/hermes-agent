@@ -6,6 +6,7 @@ import type { ComposerAttachment } from '@/store/composer'
 import {
   attachmentDisplayText,
   attachmentId,
+  coalescePendingInterimEchoes,
   coalesceToolOnlyAssistants,
   coerceThinkingText,
   createToolMergeCache,
@@ -305,5 +306,45 @@ describe('coalesceToolOnlyAssistants toolCallId uniqueness', () => {
       .map(part => (part as { toolCallId: string }).toolCallId)
 
     expect(ids).toEqual(['call-a', 'call-b'])
+  })
+})
+
+describe('coalescePendingInterimEchoes', () => {
+  const tool = (toolCallId: string): ChatMessagePart =>
+    ({ type: 'tool-call', toolCallId, toolName: 'todo', args: {} as never, argsText: '' }) as ChatMessagePart
+
+  const assistant = (id: string, parts: ChatMessagePart[], state: Partial<ChatMessage> = {}): ChatMessage =>
+    ({ id, role: 'assistant', parts, ...state }) as ChatMessage
+
+  it('projects a matching pending post-tool echo onto the interim row', () => {
+    const projected = coalescePendingInterimEchoes([
+      assistant('interim', [{ type: 'text', text: 'Same final answer.' } as ChatMessagePart], { interim: true }),
+      assistant('live', [tool('todo-1'), { type: 'text', text: 'Same final' } as ChatMessagePart], { pending: true })
+    ])
+
+    expect(projected).toHaveLength(1)
+    expect(projected[0]).toMatchObject({ id: 'interim', interim: false, pending: true })
+    expect(projected[0].parts).toEqual([
+      { type: 'text', text: 'Same final answer.' },
+      expect.objectContaining({ type: 'tool-call', toolCallId: 'todo-1' })
+    ])
+  })
+
+  it('keeps a divergent post-tool answer separate', () => {
+    const projected = coalescePendingInterimEchoes([
+      assistant('interim', [{ type: 'text', text: 'Initial commentary.' } as ChatMessagePart], { interim: true }),
+      assistant('live', [tool('todo-1'), { type: 'text', text: 'Different final.' } as ChatMessagePart], { pending: true })
+    ])
+
+    expect(projected.map(message => message.id)).toEqual(['interim', 'live'])
+  })
+
+  it('does not coalesce matching adjacent messages without a tool boundary', () => {
+    const projected = coalescePendingInterimEchoes([
+      assistant('interim', [{ type: 'text', text: 'Same final answer.' } as ChatMessagePart], { interim: true }),
+      assistant('live', [{ type: 'text', text: 'Same final' } as ChatMessagePart], { pending: true })
+    ])
+
+    expect(projected.map(message => message.id)).toEqual(['interim', 'live'])
   })
 })

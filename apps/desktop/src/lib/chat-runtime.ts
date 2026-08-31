@@ -556,6 +556,56 @@ export function concatToolPartsUnique(
 }
 
 /**
+ * Project a pending assistant echo onto the immediately preceding interim
+ * message while the streamed text still matches its prefix. The gateway can
+ * seal prose before a tool call and then stream that same prose again as the
+ * final answer; rendering both rows briefly paints a duplicate even if the
+ * settled store later collapses them.
+ *
+ * This is render-only. It deliberately requires a real tool call on the live
+ * row and stops coalescing as soon as the text diverges, so an independent
+ * post-tool answer remains a separate message.
+ */
+export function coalescePendingInterimEchoes(messages: ChatMessage[]): ChatMessage[] {
+  const out: ChatMessage[] = []
+
+  for (const message of messages) {
+    const prev = out.at(-1)
+    const pendingText = chatMessageText(message).trim()
+    const interimText = prev ? chatMessageText(prev).trim() : ''
+    const carriesToolCall = message.parts.some(part => part.type === 'tool-call')
+
+    if (
+      prev?.role === 'assistant' &&
+      prev.interim === true &&
+      !prev.hidden &&
+      message.role === 'assistant' &&
+      message.pending === true &&
+      !message.hidden &&
+      carriesToolCall &&
+      pendingText.length > 0 &&
+      interimText.startsWith(pendingText)
+    ) {
+      out[out.length - 1] = {
+        ...prev,
+        interim: false,
+        pending: true,
+        parts: concatToolPartsUnique(
+          prev.parts,
+          message.parts.filter(part => part.type !== 'text')
+        )
+      }
+
+      continue
+    }
+
+    out.push(message)
+  }
+
+  return out
+}
+
+/**
  * Fold each settled tool-only assistant message into the preceding assistant
  * message so its calls join that message's tool group (and can collapse into
  * the auto-scrolling window). Render-only — never mutates the `$messages` store

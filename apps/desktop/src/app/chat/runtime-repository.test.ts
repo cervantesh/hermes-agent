@@ -194,4 +194,33 @@ describe('useRuntimeMessageRepository', () => {
       'assistant-2'
     ])
   })
+
+  it('exports one running assistant while a matching post-tool echo streams', () => {
+    const interim: ChatMessage = {
+      id: 'assistant-interim',
+      role: 'assistant',
+      interim: true,
+      parts: [{ type: 'text', text: 'Same final answer.' }]
+    }
+
+    const live: ChatMessage = {
+      id: 'assistant-live',
+      role: 'assistant',
+      pending: true,
+      parts: [
+        { type: 'tool-call', toolCallId: 'todo-1', toolName: 'todo', args: {}, argsText: '' },
+        { type: 'text', text: 'Same final' }
+      ] as ChatMessage['parts']
+    }
+
+    const { result } = renderHook(() => useRuntimeMessageRepository([text('user-1', 'user', 'go'), interim, live]))
+    const assistants = result.current.messages.filter(item => item.message.role === 'assistant')
+
+    expect(assistants).toHaveLength(1)
+    expect(assistants[0].message).toMatchObject({ id: 'assistant-interim', status: { type: 'running' } })
+    expect(assistants[0].message.content).toEqual([
+      { type: 'text', text: 'Same final answer.' },
+      expect.objectContaining({ type: 'tool-call', toolCallId: 'todo-1' })
+    ])
+  })
 })
