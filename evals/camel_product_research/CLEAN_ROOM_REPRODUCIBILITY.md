@@ -49,9 +49,26 @@ evals/camel_product_research/evidence/*.jsonl text eol=lf
 ```
 
 This is deliberately scoped to the published research receipts rather than
-changing line-ending behavior for every JSONL file in Hermes. The post-fix
-tree must be checked again from the clean clone before this receipt is treated
-as complete.
+changing line-ending behavior for every JSONL file in Hermes.
+
+## Post-fix clean-room confirmation
+
+The correction commit
+`5765782175752b17a2a6f7dca84a8ab8ffee64cf` was then cloned into a second,
+new checkout using the same Windows environment and `core.autocrlf=true`.
+The first audit checkout was not reused.
+
+| Claim | Verdict | Raw evidence |
+|---|---|---|
+| Exact correction tree checked out | Confirmed | `5765782175752b17a2a6f7dca84a8ab8ffee64cf` |
+| Evaluation suite | Confirmed | `26 passed in 7.08s` |
+| Ruff lint and format | Confirmed | `All checks passed!`; `27 files already formatted` |
+| Clean checkout before and after validation | Confirmed | empty `git status --porcelain=v1` |
+| All four worktree receipt hashes match `evidence_sha256` | Confirmed | `7`, `3`, `7`, and `2` records; four hash matches |
+| Receipt line endings remain LF | Confirmed | zero CRLF sequences across all 19 JSONL rows |
+| Declared private fields remain absent | Confirmed | zero forbidden fields across all 19 rows |
+| Haiku aggregates reconstruct | Confirmed | `3/3` versus `1/3`; two false successes; `3.74x` calls; `8.41x` observed wall time; discordance `2/0` |
+| Sonnet aggregates reconstruct | Confirmed | `2/2` versus `2/2`; zero false successes; `2.92x` calls; `2.02x` observed wall time; discordance `0/0` |
 
 ## Overall verdict at the audited commit
 
@@ -59,6 +76,6 @@ The executable tests, static checks, public-row privacy boundary, record
 counts, and published aggregate comparisons are reproducible. Byte-level
 receipt verification was not reproducible in a default Windows checkout at
 `00ecca1`; the committed blobs were correct, and the narrowly scoped
-`.gitattributes` correction addresses the checkout defect. Final confirmation
-requires a fresh checkout of the correction commit with all four worktree
-hashes matching their metadata.
+`.gitattributes` correction fixed the checkout defect. A second clean clone of
+the correction commit confirmed that all four checked-out receipts now match
+their published metadata hashes.
