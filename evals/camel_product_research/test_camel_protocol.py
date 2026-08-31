@@ -55,20 +55,22 @@ def test_exact_done_does_not_accept_prose_or_assistant_claims():
 
 def test_protocol_alternates_and_only_user_terminates():
     bundle = load_paper_prompts(CAMEL_REPO)
-    replies = iter(
-        [
-            "Create an exact artifact",
-            "Instruction: create output.txt\nInput: VALUE=ok",
-            "Solution: created output.txt. Next request.",
-            TASK_DONE,
-        ]
-    )
+    replies = iter([
+        "Create an exact artifact",
+        "Instruction: create output.txt\nInput: VALUE=ok",
+        "Solution: created output.txt. Next request.",
+        TASK_DONE,
+    ])
 
     def turn(role, system, message, history):
         text = next(replies)
         return TurnResult(
             text=text,
-            history=[*history, {"role": "user", "content": message}, {"role": "assistant", "content": text}],
+            history=[
+                *history,
+                {"role": "user", "content": message},
+                {"role": "assistant", "content": text},
+            ],
         )
 
     run = run_role_playing(

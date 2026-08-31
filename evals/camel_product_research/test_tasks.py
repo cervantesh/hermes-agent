@@ -54,7 +54,9 @@ def test_manifest_oracle_requires_exact_external_artifact(tmp_path: Path):
 
     assert all(checks.values())
     (tmp_path / "output" / "result.json").write_text("{}", encoding="utf-8")
-    assert task.grade("Created result.json", _entry(), tmp_path)["manifest_exact"] is False
+    assert (
+        task.grade("Created result.json", _entry(), tmp_path)["manifest_exact"] is False
+    )
 
 
 def test_each_workflow_normal_path_satisfies_oracle(tmp_path: Path):

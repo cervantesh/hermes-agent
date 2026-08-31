@@ -36,12 +36,10 @@ def _tool_trace(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
             continue
         for call in message.get("tool_calls") or []:
             function = call.get("function") or {}
-            trace.append(
-                {
-                    "name": function.get("name") or call.get("name") or "unknown",
-                    "id": call.get("id") or "",
-                }
-            )
+            trace.append({
+                "name": function.get("name") or call.get("name") or "unknown",
+                "id": call.get("id") or "",
+            })
     return trace
 
 
@@ -54,7 +52,9 @@ def _provider_failure(entry: dict[str, Any]) -> str | None:
     material = "\n".join(
         str(entry.get(key) or "") for key in ("summary", "error", "exit_reason")
     ).lower()
-    return next((marker for marker in _PROVIDER_FAILURE_MARKERS if marker in material), None)
+    return next(
+        (marker for marker in _PROVIDER_FAILURE_MARKERS if marker in material), None
+    )
 
 
 def _provider_key(provider: str) -> str:

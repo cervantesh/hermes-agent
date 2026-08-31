@@ -40,17 +40,44 @@ def tree_id(repo: Path) -> dict[str, str | bool]:
     }
 
 
-def _completed(path: Path) -> set[tuple[str, str, int]]:
+def _load_existing(path: Path) -> list[dict]:
     if not path.is_file():
-        return set()
-    return {
-        (item["strategy"], item["task"], item["rep"])
-        for item in (
-            json.loads(line)
-            for line in path.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        )
+        return []
+    return [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+
+
+def _completed(
+    records: list[dict],
+    *,
+    label: str,
+    provider: str,
+    model: str,
+    seed: int,
+    identity: dict[str, str | bool],
+) -> set[tuple[str, str, int]]:
+    expected = {
+        "label": label,
+        "provider": provider,
+        "model": model,
+        "schedule_seed": seed,
+        **identity,
     }
+    completed: set[tuple[str, str, int]] = set()
+    for item in records:
+        for field, value in expected.items():
+            if item.get(field) != value:
+                raise ValueError(
+                    f"existing result mixes {field}: {item.get(field)!r} != {value!r}"
+                )
+        key = (str(item["strategy"]), str(item["task"]), int(item["rep"]))
+        if key in completed:
+            raise ValueError(f"duplicate existing result: {key!r}")
+        completed.add(key)
+    return completed
 
 
 def main() -> int:
@@ -88,8 +115,15 @@ def main() -> int:
     slug = args.model.replace("/", "_").replace("\\", "_")
     output = EVAL_DIR / "results" / args.label / f"{slug}.jsonl"
     output.parent.mkdir(parents=True, exist_ok=True)
-    completed = _completed(output)
     identity = tree_id(repo)
+    completed = _completed(
+        _load_existing(output),
+        label=args.label,
+        provider=args.provider,
+        model=args.model,
+        seed=args.seed,
+        identity=identity,
+    )
     with output.open("a", encoding="utf-8") as sink:
         for strategy, task_id, rep in schedule:
             key = (strategy, task_id, rep)
@@ -131,18 +165,16 @@ def main() -> int:
                 )
             lines = [line for line in run.stdout.splitlines() if line.strip()]
             result = json.loads(lines[-1])
-            result.update(
-                {
-                    "label": args.label,
-                    "rep": rep,
-                    "provider": args.provider,
-                    "model": args.model,
-                    "schedule_seed": args.seed,
-                    "repo": str(repo),
-                    "camel_repo": str(camel),
-                    **identity,
-                }
-            )
+            result.update({
+                "label": args.label,
+                "rep": rep,
+                "provider": args.provider,
+                "model": args.model,
+                "schedule_seed": args.seed,
+                "repo": str(repo),
+                "camel_repo": str(camel),
+                **identity,
+            })
             sink.write(json.dumps(result, ensure_ascii=False) + "\n")
             sink.flush()
             completed.add(key)

@@ -27,7 +27,7 @@ claims/deduplication, progressing/stalled runner behavior, and gateway
 reinjection. They are characterization evidence, not production fault
 injection across two live machines.
 
-## What is already overlapping
+## What is structurally overlapping
 
 Hermes already persists an async dispatch before submitting the daemon runner
 (`tools/async_delegation.py:861-897`), classifies an abandoned owner as
@@ -41,6 +41,10 @@ publication (`backend/app/utils/workforce.py:78`, invoked before assignment at
 `:658`), enables CAMEL retry and replan (`:206-208`), and uses a
 progress-sensitive stall timeout (`:188-194`, `:1015`). These are concrete
 mechanisms, but several overlap Hermes at a different boundary.
+
+These are source-level and native-suite observations. They do not establish
+runtime equivalence or relative recovery efficacy because no identical
+end-to-end workload or fault was executed against both products.
 
 ## The remaining boundaries
 
@@ -64,7 +68,8 @@ mechanisms, but several overlap Hermes at a different boundary.
 
 ## Product disposition
 
-- Do not add a second durability, completion-delivery, claim, or stall stack.
+- Do not add a second durability, completion-delivery, claim, or stall stack
+  without first proving that the existing boundary cannot serve the use case.
 - Do not treat the pinned Eigent quality score as verified completion.
 - Evaluate task-level replan/reassignment only on a cohort where current
   Hermes reaches a terminal externally incorrect result or a recoverable
@@ -74,6 +79,7 @@ mechanisms, but several overlap Hermes at a different boundary.
 - Reuse current Hermes async state and delivery ownership if either mechanism
   is later implemented.
 
-The smallest current conclusion is negative architecture evidence: most of
-the generic Workforce control plane already exists in Hermes, while the two
-remaining mechanisms require their own opportunity and safety proof.
+The smallest current conclusion is negative architecture evidence: substantial
+generic Workforce surface is already represented in Hermes at related
+boundaries, while the two remaining mechanisms require their own opportunity
+and safety proof. This is not a comparative Workforce benchmark.

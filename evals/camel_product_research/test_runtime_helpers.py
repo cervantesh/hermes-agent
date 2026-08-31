@@ -31,12 +31,10 @@ def test_tokens_rejects_non_integer_metadata() -> None:
 
 def test_provider_failure_invalidates_observation() -> None:
     assert (
-        _provider_failure(
-            {
-                "summary": "Gemini HTTP 429 (RESOURCE_EXHAUSTED): quota exceeded",
-                "status": "failed",
-            }
-        )
+        _provider_failure({
+            "summary": "Gemini HTTP 429 (RESOURCE_EXHAUSTED): quota exceeded",
+            "status": "failed",
+        })
         == "resource_exhausted"
     )
     assert _provider_failure({"summary": "completed", "error": None}) is None
@@ -44,7 +42,14 @@ def test_provider_failure_invalidates_observation() -> None:
 
 def test_tree_id_changes_when_untracked_evidence_changes(tmp_path: Path) -> None:
     subprocess.check_call(["git", "init", "-q", str(tmp_path)])
-    subprocess.check_call(["git", "-C", str(tmp_path), "config", "user.email", "eval@example.invalid"])
+    subprocess.check_call([
+        "git",
+        "-C",
+        str(tmp_path),
+        "config",
+        "user.email",
+        "eval@example.invalid",
+    ])
     subprocess.check_call(["git", "-C", str(tmp_path), "config", "user.name", "Eval"])
     tracked = tmp_path / "tracked.txt"
     tracked.write_text("stable\n", encoding="utf-8")

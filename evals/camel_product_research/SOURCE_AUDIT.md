@@ -53,6 +53,21 @@ No CAMEL code or prompt text is copied into Hermes production code by this
 research. The source is Apache-2.0, but provenance and experimental isolation
 remain explicit.
 
+## Evaluator fidelity after adversarial review
+
+The evaluator loaded and rendered the three pinned templates and preserved the
+visible AI User/AI Assistant alternation, user-owned termination token, and
+40-message cap. It did not reproduce the historical hidden
+`assistant_agent.step()` performed during `RolePlaying.init_chat()`. It also
+passed each rendered role prompt through Hermes's normal system-prompt builder,
+which surrounds caller text with Hermes guidance; only the raw source-template
+hashes were recorded.
+
+Accordingly, the observations identify a Hermes-composed,
+CAMEL-template-derived product adaptation. They do not identify the historical
+runtime byte-for-byte or isolate the effect of CAMEL prompts from the Hermes
+execution path.
+
 ## Eigent production contract
 
 At the pinned revision Eigent subclasses CAMEL `Workforce` and uses
@@ -106,4 +121,3 @@ much smaller delegation surface described when issue #375 was opened.
 
 Research results may clarify these owners but do not silently expand or close
 their contracts.
-

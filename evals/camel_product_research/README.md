@@ -7,13 +7,17 @@ to fix NousResearch/hermes-agent#375.
 
 The research deliberately separates:
 
-1. protocol-faithful CAMEL RolePlaying;
+1. a CAMEL-template-derived Hermes RolePlaying adaptation;
 2. mechanism attribution through ablation;
 3. Eigent-style operational resilience; and
 4. a later Hermes product-integration decision.
 
-No model observation is scored until the corresponding protocol, cohorts,
-graders, models, stopping rules, and file hashes are frozen in a receipt.
+Each scored observation followed a committed freeze for its protocol, cohort,
+graders, model, stopping rule, and source-template hashes. A later adversarial
+review found that the adapter omitted one hidden historical assistant-priming
+call and did not hash Hermes's effective composed system prompts. The results
+therefore characterize the evaluated adaptation, not historically exact or
+component-isolated CAMEL.
 
 ## Read the package
 
@@ -25,6 +29,9 @@ graders, models, stopping rules, and file hashes are frozen in a receipt.
 - `PRODUCT_DECISION.md`: product adjudication and reopening criteria
 - `REPRODUCIBILITY.md`: commands and local evidence hashes
 
-The raw `results/` directory is intentionally ignored. Nothing in this branch
+The raw `results/` directory remains intentionally ignored because it contains
+local paths and full model transcripts. Privacy-safe row-level receipts are
+committed under `evidence/`; they retain external-oracle checks and run
+identity so the published aggregates can be recomputed. Nothing in this branch
 is production code, and no result should be presented as a CAMEL-paper
 replication or as a fix for issue #375.

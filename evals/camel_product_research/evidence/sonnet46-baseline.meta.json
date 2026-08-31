@@ -1,0 +1,40 @@
+{
+  "evidence_sha256": "0c361b2759e2d52c228053550964f5879c1e09d1103691409f923f95a15abd1f",
+  "excluded_sensitive_fields": [
+    "repo",
+    "camel_repo",
+    "summary",
+    "error",
+    "tool_trace",
+    "protocol.messages"
+  ],
+  "included_fields": [
+    "task",
+    "cohort",
+    "strategy",
+    "ok",
+    "false_success",
+    "checks",
+    "status",
+    "exit_reason",
+    "api_calls",
+    "tokens",
+    "duration_seconds",
+    "label",
+    "rep",
+    "provider",
+    "model",
+    "schedule_seed",
+    "head",
+    "dirty",
+    "tree_digest"
+  ],
+  "included_protocol_fields": [
+    "specified_task",
+    "termination",
+    "message_count",
+    "prompt_hashes"
+  ],
+  "records": 7,
+  "source_sha256": "ffa87c079f75134b7f8aae994d5a0ecc50187ca89de806d61b3d171e1a4753f7"
+}

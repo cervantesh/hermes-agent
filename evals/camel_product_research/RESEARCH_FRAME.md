@@ -1,6 +1,13 @@
 # Research frame: CAMEL/Eigent as a Hermes product improvement
 
-Status: pilot protocol frozen; no scored observations.
+Status: historical frame frozen; observations complete; claims narrowed after
+adversarial review.
+
+Post-review note: the evaluated treatment is a Hermes-composed,
+CAMEL-template-derived adaptation. It is not a component-isolated treatment or
+an exact execution of the historical `RolePlaying.init_chat()` state sequence.
+The original hypotheses and gates below are retained as the preregistered
+decision frame rather than rewritten after observing results.
 
 ## Product decision
 
@@ -19,7 +26,7 @@ The decision outcomes are:
 
 ## Primary questions
 
-1. Does protocol-faithful CAMEL RolePlaying improve externally verified
+1. Does the evaluated CAMEL-derived RolePlaying adaptation improve externally verified
    completion over current Hermes on tasks with baseline opportunity?
 2. If it does, is the gain caused by task specification, symmetric role
    interaction, response format, explicit termination, or their interaction?
@@ -81,7 +88,7 @@ repetitions, not independent tasks.
 
 ## Sequential gates
 
-1. Conformance: the CAMEL arm must implement all three prompts, two roles,
+1. Conformance: the CAMEL arm must implement all three source templates, two roles,
    alternation, user-owned termination, and the 40-message cap.
 2. Opportunity: run current Hermes first. Ceiling cohorts stop before a
    candidate call.
@@ -154,6 +161,7 @@ must prove the units behave as intended.
    cross-family confirmation only after that. A CAMEL observation is bounded
    at 40 role messages plus one task-specifier call.
 
-The pilot cannot establish equivalence. A ceiling result stops candidate
+The pilot cannot establish equivalence or isolate a CAMEL component effect.
+A ceiling result stops candidate
 spend for that cohort; an unfavorable pilot stops adoption but remains
 descriptive rather than a universal claim about CAMEL.

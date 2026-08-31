@@ -1,8 +1,10 @@
 # Reproducibility and evidence inventory
 
 Nothing in this package requires publishing raw provider traces. `results/` is
-git-ignored and contains local JSONL observations. The committed analysis code
-recomputes descriptive comparisons from those files.
+git-ignored and contains local JSONL observations. Privacy-safe row-level
+receipts are committed in `evidence/`; they retain the external-oracle checks,
+run identity, source-template hashes, calls, tokens when available, and wall
+time required to recompute the published descriptive comparisons.
 
 ## Core validation
 
@@ -16,12 +18,14 @@ git diff --check
 
 ```text
 python evals/camel_product_research/analysis.py \
-  --baseline evals/camel_product_research/results/economic-haiku45/claude-haiku-4-5.jsonl \
-  --candidate evals/camel_product_research/results/ceiling-camel-haiku45/claude-haiku-4-5.jsonl
+  --baseline evals/camel_product_research/evidence/haiku45-baseline.jsonl \
+  --candidate evals/camel_product_research/evidence/haiku45-camel-adaptation.jsonl \
+  --tasks simple_manifest,ambiguous_handoff,false_success_shortcut
 
 python evals/camel_product_research/analysis.py \
-  --baseline evals/camel_product_research/results/pilot-v2-claude-sonnet46/claude-sonnet-4-6.jsonl \
-  --candidate evals/camel_product_research/results/robustness-camel-sonnet46/claude-sonnet-4-6.jsonl
+  --baseline evals/camel_product_research/evidence/sonnet46-baseline.jsonl \
+  --candidate evals/camel_product_research/evidence/sonnet46-camel-adaptation.jsonl \
+  --tasks simple_manifest,false_success_shortcut
 ```
 
 On Windows PowerShell, place each command on one line or replace the backslash
@@ -38,8 +42,17 @@ ffa87c079f75134b7f8aae994d5a0ecc50187ca89de806d61b3d171e1a4753f7  pilot-v2-claud
 ```
 
 The hashes cover raw local evidence at adjudication time. The files include
-temporary local paths and model text, so they should be sanitized before any
-future publication. No credentials are stored in them.
+temporary local paths and model text, so they remain local. Each committed
+`evidence/*.meta.json` links its sanitized receipt to the corresponding raw
+hash and lists every excluded field. No credentials are stored in either form.
+
+The raw source-template hashes do not identify the effective Hermes-composed
+system prompts seen by the provider. Historical assistant priming was also not
+implemented. Reproducing either stronger claim requires a revised frozen run;
+the committed receipts intentionally describe only the evaluated adaptation.
+
+Wall-time ratios compare sequential batches. They are exact observed totals,
+not randomized or interleaved latency treatment estimates.
 
 ## External source-suite commands
 

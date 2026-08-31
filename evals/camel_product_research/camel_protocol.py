@@ -1,7 +1,9 @@
-"""Protocol-faithful CAMEL RolePlaying orchestration for product research.
+"""CAMEL-template-derived RolePlaying orchestration for product research.
 
 The production Hermes tree is not modified. Prompt templates are loaded at
-runtime from an independently cloned, pinned Apache-2.0 CAMEL checkout.
+runtime from an independently cloned, pinned Apache-2.0 CAMEL checkout. This
+adapter preserves the visible two-role loop but does not reproduce the hidden
+historical assistant-priming call performed by ``RolePlaying.init_chat()``.
 """
 
 from __future__ import annotations
@@ -78,9 +80,14 @@ def _git_show(repo: Path, revision: str, path: str) -> str:
 def load_paper_prompts(camel_repo: Path) -> PromptBundle:
     """Load and content-pin the paper-era prompt templates."""
     camel_repo = camel_repo.resolve()
-    subprocess.check_call(
-        ["git", "-C", str(camel_repo), "cat-file", "-e", PAPER_CAMEL_COMMIT]
-    )
+    subprocess.check_call([
+        "git",
+        "-C",
+        str(camel_repo),
+        "cat-file",
+        "-e",
+        PAPER_CAMEL_COMMIT,
+    ])
     content = {
         name: _git_show(camel_repo, PAPER_CAMEL_COMMIT, path)
         for name, path in _PROMPT_PATHS.items()
@@ -106,7 +113,8 @@ def render_specifier_prompt(
     user_role: str,
 ) -> str:
     return (
-        template.replace("<ASSISTANT_ROLE>", assistant_role)
+        template
+        .replace("<ASSISTANT_ROLE>", assistant_role)
         .replace("<USER_ROLE>", user_role)
         .replace("<TASK>", task)
         .replace("<WORD_LIMIT>", "50")
@@ -223,9 +231,7 @@ def run_role_playing(
         user_history = user_result.history
         accumulate(user_result)
         user_text = user_result.text.strip()
-        messages.append(
-            ProtocolMessage(len(messages) + 1, "ai_user", user_text)
-        )
+        messages.append(ProtocolMessage(len(messages) + 1, "ai_user", user_text))
         if is_exact_done(user_text):
             termination = "task_done"
             break
