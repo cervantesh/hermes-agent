@@ -581,6 +581,7 @@ export function coalescePendingInterimEchoes(messages: ChatMessage[]): ChatMessa
       !prev.hidden &&
       message.role === 'assistant' &&
       message.pending === true &&
+      message.interimEchoCandidate === true &&
       !message.hidden &&
       carriesToolCall &&
       pendingText.length > 0 &&
@@ -590,10 +591,11 @@ export function coalescePendingInterimEchoes(messages: ChatMessage[]): ChatMessa
         ...prev,
         interim: false,
         pending: true,
-        parts: concatToolPartsUnique(
-          prev.parts,
-          message.parts.filter(part => part.type !== 'text')
-        )
+        parts: [
+          textPart(pendingText),
+          ...prev.parts.filter(part => part.type !== 'text'),
+          ...message.parts.filter(part => part.type !== 'text')
+        ]
       }
 
       continue

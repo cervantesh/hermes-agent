@@ -207,6 +207,7 @@ describe('useRuntimeMessageRepository', () => {
       id: 'assistant-live',
       role: 'assistant',
       pending: true,
+      interimEchoCandidate: true,
       parts: [
         { type: 'tool-call', toolCallId: 'todo-1', toolName: 'todo', args: {}, argsText: '' },
         { type: 'text', text: 'Same final' }
@@ -219,7 +220,7 @@ describe('useRuntimeMessageRepository', () => {
     expect(assistants).toHaveLength(1)
     expect(assistants[0].message).toMatchObject({ id: 'assistant-interim', status: { type: 'running' } })
     expect(assistants[0].message.content).toEqual([
-      { type: 'text', text: 'Same final answer.' },
+      { type: 'text', text: 'Same final' },
       expect.objectContaining({ type: 'tool-call', toolCallId: 'todo-1' })
     ])
   })

@@ -225,6 +225,37 @@ describe('useMessageStream interim text sealing', () => {
     expect(assistants.flatMap(message => message.parts).filter(part => part.type === 'tool-call')).toHaveLength(1)
   })
 
+  it('preserves distinct tool calls when a provider reuses ids across responses', async () => {
+    mountStream()
+    await start()
+
+    await delta('same reply')
+    await toolStart('terminal_0')
+    await interim('same reply')
+    await toolStart('terminal_0')
+    await complete('same reply')
+
+    const tools = getState()
+      .messages.flatMap(message => message.parts)
+      .filter(part => part.type === 'tool-call')
+
+    expect(tools).toHaveLength(2)
+    expect(new Set(tools.map(tool => tool.toolCallId)).size).toBe(2)
+  })
+
+  it('does not mark a tool row as an interim echo candidate after a new turn starts', async () => {
+    mountStream()
+    await start()
+    await interim('same reply')
+
+    await start()
+    await toolStart()
+
+    const live = getState().messages.at(-1)
+    expect(live?.pending).toBe(true)
+    expect(live?.interimEchoCandidate).not.toBe(true)
+  })
+
   it('keeps distinct pre-tool commentary and final text as separate assistant segments', async () => {
     mountStream()
     await start()

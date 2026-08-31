@@ -15,9 +15,9 @@ import {
   reasoningPart,
   renderMediaTags,
   sealOpenToolParts,
-  upsertToolPart
+  upsertToolPart,
+  withUniqueToolCallIdsWithinMessage
 } from '@/lib/chat-messages'
-import { concatToolPartsUnique } from '@/lib/chat-runtime'
 import type { ErrorSurface } from '@/lib/error-surface'
 import {
   dedupeGeneratedImageEchoesInParts,
@@ -91,6 +91,7 @@ export function useMessageStream({
       transform: (parts: ChatMessagePart[], message: ChatMessage) => ChatMessagePart[],
       seed: () => ChatMessagePart[],
       opts: {
+        markInterimEchoCandidate?: boolean
         pending?: (message: ChatMessage) => boolean
       } = {},
       occurredAt = Date.now() / 1000
@@ -117,9 +118,12 @@ export function useMessageStream({
                 id: streamId,
                 role: 'assistant',
                 parts: seed(),
-                timestamp: occurredAt,
-                pending: true,
-                branchGroupId: groupId
+                  timestamp: occurredAt,
+                  pending: true,
+                  ...(opts.markInterimEchoCandidate && state.interimBoundaryPending
+                    ? { interimEchoCandidate: true }
+                    : {}),
+                  branchGroupId: groupId
               }
             ]
           } else {
@@ -485,7 +489,10 @@ export function useMessageStream({
         sessionId,
         parts => dedupeGeneratedImageEchoesInParts(upsertToolPart(parts, payload, phase, occurredAt)),
         () => upsertToolPart([], payload, phase, occurredAt),
-        { pending: m => phase !== 'complete' || (m.pending ?? false) },
+        {
+          markInterimEchoCandidate: true,
+          pending: m => phase !== 'complete' || (m.pending ?? false)
+        },
         occurredAt
       )
     },
@@ -681,10 +688,12 @@ export function useMessageStream({
             finalText &&
             priorInterimText === finalText
           ) {
-            const completed = completeMessage({
-              ...priorInterim,
-              parts: concatToolPartsUnique(priorInterim.parts, streamMessage.parts)
-            })
+            const completed = completeMessage(
+              withUniqueToolCallIdsWithinMessage({
+                ...priorInterim,
+                parts: [...priorInterim.parts, ...streamMessage.parts]
+              })
+            )
 
             nextMessages = prev.flatMap((message, index) => {
               if (index === priorInterimIndex) {

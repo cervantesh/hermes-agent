@@ -159,6 +159,7 @@ const COMPARED_FIELDS = [
   'hidden',
   'branchGroupId',
   'interim',
+  'interimEchoCandidate',
   'reactions',
   'timestamp',
   'completedAt',
