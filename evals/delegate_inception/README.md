@@ -23,6 +23,13 @@ behavior being evaluated.
 Each task uses programmatic checks over the child result, tool trace, and
 disposable workspace. No user files or real `HERMES_HOME` state are modified.
 
+The issue also cites Eigent as a production use of CAMEL patterns. The pinned
+source comparison in [`EIGENT_PRODUCTION_REFERENCE.md`](EIGENT_PRODUCTION_REFERENCE.md)
+separates prompt inheritance from Eigent's orchestration, task state, recovery,
+liveness, and quality-analysis mechanisms, then maps those mechanisms to
+current Hermes code and existing ownership. It is design evidence, not another
+scored arm or proof that the prompt candidate improves Hermes.
+
 ## Run
 
 For the paper-aligned pilot, run both worktrees through the paired runner. It
