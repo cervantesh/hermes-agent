@@ -91,7 +91,6 @@ export function useMessageStream({
       transform: (parts: ChatMessagePart[], message: ChatMessage) => ChatMessagePart[],
       seed: () => ChatMessagePart[],
       opts: {
-        markInterimEchoCandidate?: boolean
         pending?: (message: ChatMessage) => boolean
       } = {},
       occurredAt = Date.now() / 1000
@@ -117,12 +116,9 @@ export function useMessageStream({
               {
                 id: streamId,
                 role: 'assistant',
-                parts: seed(),
+                  parts: seed(),
                   timestamp: occurredAt,
                   pending: true,
-                  ...(opts.markInterimEchoCandidate && state.interimBoundaryPending
-                    ? { interimEchoCandidate: true }
-                    : {}),
                   branchGroupId: groupId
               }
             ]
@@ -489,10 +485,7 @@ export function useMessageStream({
         sessionId,
         parts => dedupeGeneratedImageEchoesInParts(upsertToolPart(parts, payload, phase, occurredAt)),
         () => upsertToolPart([], payload, phase, occurredAt),
-        {
-          markInterimEchoCandidate: true,
-          pending: m => phase !== 'complete' || (m.pending ?? false)
-        },
+        { pending: m => phase !== 'complete' || (m.pending ?? false) },
         occurredAt
       )
     },

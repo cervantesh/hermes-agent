@@ -243,19 +243,6 @@ describe('useMessageStream interim text sealing', () => {
     expect(new Set(tools.map(tool => tool.toolCallId)).size).toBe(2)
   })
 
-  it('does not mark a tool row as an interim echo candidate after a new turn starts', async () => {
-    mountStream()
-    await start()
-    await interim('same reply')
-
-    await start()
-    await toolStart()
-
-    const live = getState().messages.at(-1)
-    expect(live?.pending).toBe(true)
-    expect(live?.interimEchoCandidate).not.toBe(true)
-  })
-
   it('keeps distinct pre-tool commentary and final text as separate assistant segments', async () => {
     mountStream()
     await start()

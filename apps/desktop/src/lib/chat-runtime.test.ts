@@ -6,7 +6,6 @@ import type { ComposerAttachment } from '@/store/composer'
 import {
   attachmentDisplayText,
   attachmentId,
-  coalescePendingInterimEchoes,
   coalesceToolOnlyAssistants,
   coerceThinkingText,
   createToolMergeCache,
@@ -306,115 +305,5 @@ describe('coalesceToolOnlyAssistants toolCallId uniqueness', () => {
       .map(part => (part as { toolCallId: string }).toolCallId)
 
     expect(ids).toEqual(['call-a', 'call-b'])
-  })
-})
-
-describe('coalescePendingInterimEchoes', () => {
-  const tool = (toolCallId: string): ChatMessagePart =>
-    ({ type: 'tool-call', toolCallId, toolName: 'todo', args: {} as never, argsText: '' }) as ChatMessagePart
-
-  const assistant = (id: string, parts: ChatMessagePart[], state: Partial<ChatMessage> = {}): ChatMessage =>
-    ({ id, role: 'assistant', parts, ...state }) as ChatMessage
-
-  it('projects a matching pending post-tool echo onto the interim row', () => {
-    const projected = coalescePendingInterimEchoes([
-      assistant('interim', [{ type: 'text', text: 'Same final answer.' } as ChatMessagePart], { interim: true }),
-      assistant('live', [tool('todo-1'), { type: 'text', text: 'Same final' } as ChatMessagePart], {
-        interimEchoCandidate: true,
-        pending: true
-      })
-    ])
-
-    expect(projected).toHaveLength(1)
-    expect(projected[0]).toMatchObject({ id: 'interim', interim: false, pending: true })
-    expect(projected[0].parts).toEqual([
-      { type: 'text', text: 'Same final' },
-      expect.objectContaining({ type: 'tool-call', toolCallId: 'todo-1' })
-    ])
-  })
-
-  it('keeps a divergent post-tool answer separate', () => {
-    const projected = coalescePendingInterimEchoes([
-      assistant('interim', [{ type: 'text', text: 'Initial commentary.' } as ChatMessagePart], { interim: true }),
-      assistant('live', [tool('todo-1'), { type: 'text', text: 'Different final.' } as ChatMessagePart], {
-        interimEchoCandidate: true,
-        pending: true
-      })
-    ])
-
-    expect(projected.map(message => message.id)).toEqual(['interim', 'live'])
-  })
-
-  it('does not coalesce matching adjacent messages without a tool boundary', () => {
-    const projected = coalescePendingInterimEchoes([
-      assistant('interim', [{ type: 'text', text: 'Same final answer.' } as ChatMessagePart], { interim: true }),
-      assistant('live', [{ type: 'text', text: 'Same final' } as ChatMessagePart], { pending: true })
-    ])
-
-    expect(projected.map(message => message.id)).toEqual(['interim', 'live'])
-  })
-
-  it('does not coalesce a matching tool row without the same-turn boundary marker', () => {
-    const projected = coalescePendingInterimEchoes([
-      assistant('interim', [{ type: 'text', text: 'Same final answer.' } as ChatMessagePart], { interim: true }),
-      assistant('live', [tool('todo-1'), { type: 'text', text: 'Same final' } as ChatMessagePart], { pending: true })
-    ])
-
-    expect(projected.map(message => message.id)).toEqual(['interim', 'live'])
-  })
-
-  it('shows the live prefix instead of stale longer interim commentary', () => {
-    const projected = coalescePendingInterimEchoes([
-      assistant('interim', [{ type: 'text', text: 'The answer is 42. I will verify it.' } as ChatMessagePart], {
-        interim: true
-      }),
-      assistant('live', [tool('todo-1'), { type: 'text', text: 'The answer is 42.' } as ChatMessagePart], {
-        interimEchoCandidate: true,
-        pending: true
-      })
-    ])
-
-    expect(projected).toHaveLength(1)
-    expect(projected[0].parts[0]).toEqual({ type: 'text', text: 'The answer is 42.' })
-  })
-
-  it('restores both segments as soon as a streamed prefix diverges', () => {
-    const interim = assistant('interim', [{ type: 'text', text: 'I checked the value.' } as ChatMessagePart], {
-      interim: true
-    })
-
-    const candidate = { interimEchoCandidate: true, pending: true }
-
-    expect(
-      coalescePendingInterimEchoes([
-        interim,
-        assistant('live', [tool('todo-1'), { type: 'text', text: 'I checked' } as ChatMessagePart], candidate)
-      ])
-    ).toHaveLength(1)
-
-    expect(
-      coalescePendingInterimEchoes([
-        interim,
-        assistant(
-          'live',
-          [tool('todo-1'), { type: 'text', text: 'I checked and found a mismatch.' } as ChatMessagePart],
-          candidate
-        )
-      ]).map(message => message.id)
-    ).toEqual(['interim', 'live'])
-  })
-
-  it('keeps distinct reused tool ids for per-message-id providers', () => {
-    const projected = coalescePendingInterimEchoes([
-      assistant('interim', [{ type: 'text', text: 'Same final.' } as ChatMessagePart, tool('terminal_0')], {
-        interim: true
-      }),
-      assistant('live', [tool('terminal_0'), { type: 'text', text: 'Same final.' } as ChatMessagePart], {
-        interimEchoCandidate: true,
-        pending: true
-      })
-    ])
-
-    expect(projected[0].parts.filter(part => part.type === 'tool-call')).toHaveLength(2)
   })
 })

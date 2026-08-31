@@ -32,9 +32,6 @@ export type ChatMessage = {
    *  action footer so only the turn's final reply carries copy/refresh, and
    *  the live view matches rehydration (which merges the turn into one bubble). */
   interim?: boolean
-  /** Ephemeral render hint: this live row was opened by a tool event while an
-   *  interim boundary from the same turn was pending. Never hydrated. */
-  interimEchoCandidate?: boolean
   /** Whole-turn wall-clock seconds (message.start → message.complete),
    *  stamped by the desktop when it watched the turn run. Absent for
    *  messages hydrated from history — the backend doesn't persist it. */
