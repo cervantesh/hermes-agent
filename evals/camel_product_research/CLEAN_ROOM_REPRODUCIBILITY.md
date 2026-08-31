@@ -70,6 +70,22 @@ The first audit checkout was not reused.
 | Haiku aggregates reconstruct | Confirmed | `3/3` versus `1/3`; two false successes; `3.74x` calls; `8.41x` observed wall time; discordance `2/0` |
 | Sonnet aggregates reconstruct | Confirmed | `2/2` versus `2/2`; zero false successes; `2.92x` calls; `2.02x` observed wall time; discordance `0/0` |
 
+## Reusable Python verifier
+
+The receipt hash, line-ending, record-count, privacy-field, and aggregate
+checks from this audit are now implemented as a cross-platform command:
+
+```text
+python -B evals/camel_product_research/verify_public_evidence.py
+```
+
+The implementation was developed test-first. Five focused tests cover the
+confirmed package, a modified receipt hash, a missing receipt, an unreadable
+input, and an aggregate that drifts after its receipt metadata is rehashed.
+The verifier reports `CONFIRMED`, `REFUTED`, or `UNDETERMINED` per claim and
+returns exit code `0`, `1`, or `2`, respectively. Its first run over the
+published receipts returned six confirmed claims and `OVERALL: CONFIRMED`.
+
 ## Overall verdict at the audited commit
 
 The executable tests, static checks, public-row privacy boundary, record

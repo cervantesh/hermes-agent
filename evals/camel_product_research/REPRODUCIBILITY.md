@@ -6,6 +6,26 @@ receipts are committed in `evidence/`; they retain the external-oracle checks,
 run identity, source-template hashes, calls, tokens when available, and wall
 time required to recompute the published descriptive comparisons.
 
+## One-command public evidence verification
+
+```text
+python -B evals/camel_product_research/verify_public_evidence.py
+```
+
+This standard-library verifier replaces the platform-specific hash, JSONL,
+privacy-field, and aggregate checks used during the original clean-room audit.
+It prints one table with claim, check, verdict, and raw evidence, followed by a
+single overall verdict. Its exit codes are intentionally distinct:
+
+- `0`: every public-evidence claim was confirmed;
+- `1`: at least one claim was refuted; and
+- `2`: no claim was refuted, but at least one check could not determine a
+  result.
+
+The command verifies the committed projections. The private raw-result hashes
+remain recorded in metadata but cannot be independently recomputed without the
+private source transcripts.
+
 ## Core validation
 
 ```text

@@ -13,6 +13,18 @@ committed projection. Regenerate a receipt with:
 python evals/camel_product_research/sanitize_evidence.py --source <raw.jsonl> --output <evidence.jsonl>
 ```
 
+Verify every committed receipt and reconstruct both published comparisons
+with one cross-platform command:
+
+```text
+python -B evals/camel_product_research/verify_public_evidence.py
+```
+
+Exit `0` means confirmed, `1` means refuted, and `2` means the verifier could
+not determine at least one claim. The output identifies the exact failed or
+unreadable surface; it does not collapse an inspection failure into a negative
+result.
+
 The receipts support the descriptive tables in `RESULTS.md`. They do not make
 the sequential wall-time ratios causal, reconstruct deleted workspaces, or pin
 the effective Hermes-composed system prompt.
