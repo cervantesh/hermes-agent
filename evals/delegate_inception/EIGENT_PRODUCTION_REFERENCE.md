@@ -125,6 +125,13 @@ behavioral result. No model observation has been scored on this composition;
 the new tasks, oracles, model, seed, stopping rule, and baseline-smoke gate must
 be committed before that happens.
 
+The prospective inputs were subsequently frozen in
+`f47952b7f4b3cfef4433bbbf61bf13ad01ce4079`. The Luna baseline smoke completed
+all four long executable challenges on current main, with zero incomplete
+progress narrations. The preregistered gate therefore stopped before any
+candidate observation. See `COMPLETION_CONTRACT_SMOKE_RESULT.md` for the
+sanitized receipt and raw-evidence digest.
+
 ## Current adjudication
 
 - **Strict #375 Phase 1:** the Eigent reference does not change the frozen A/B
@@ -133,11 +140,12 @@ be committed before that happens.
   CAMEL-derived controls a production repository actually implements.
 - **Implementation value:** conditional. Reuse the invariants as test ideas
   only after a current Hermes witness and ownership check.
-- **Next executable work:** preregister a new progress-narration cohort for a
-  current-main composition of #79508, because its exact reported incident is
-  not publicly replayable; separately, use the frozen false-success cases to
+- **Completion-contract cohort:** stopped after a 4/4 clean current-main
+  baseline, as preregistered. Do not run the candidate on these fixtures.
+- **Remaining distinct work:** use the frozen false-success cases to
   characterize current `main`'s existing structured-output and verification
-  boundaries. Keep both cohorts separate from the completed prompt ablation.
+  boundaries. Keep that cohort separate from the completed prompt ablation and
+  from the stopped completion-contract smoke.
 
 ## Reproduction commands for this source audit
 

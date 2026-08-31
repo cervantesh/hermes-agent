@@ -30,6 +30,14 @@ liveness, and quality-analysis mechanisms, then maps those mechanisms to
 current Hermes code and existing ownership. It is design evidence, not another
 scored arm or proof that the prompt candidate improves Hermes.
 
+The separate #79508 completion-contract follow-up is frozen in
+[`COMPLETION_CONTRACT_PROTOCOL.md`](COMPLETION_CONTRACT_PROTOCOL.md) and
+[`COMPLETION_CONTRACT_FREEZE.md`](COMPLETION_CONTRACT_FREEZE.md). Its baseline
+smoke result is recorded in
+[`COMPLETION_CONTRACT_SMOKE_RESULT.md`](COMPLETION_CONTRACT_SMOKE_RESULT.md).
+The baseline passed all four challenges, so the preregistered STOP rule
+prevented an unsupported candidate run.
+
 ## Run
 
 For the paper-aligned pilot, run both worktrees through the paired runner. It
