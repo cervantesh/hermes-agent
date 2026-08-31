@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,7 @@ from camel_protocol import (
 )
 
 
-CAMEL_REPO = Path("C:/dev/camel-audit")
+CAMEL_REPO = Path(os.environ.get("CAMEL_RESEARCH_REPO", "C:/dev/camel-audit"))
 
 
 def test_loads_exact_paper_era_prompt_sources():

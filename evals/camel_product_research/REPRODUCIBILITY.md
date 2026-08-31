@@ -28,6 +28,13 @@ private source transcripts.
 
 ## Core validation
 
+The full test suite imports Hermes runtime code and reads the independently
+cloned CAMEL source templates. Run it from a normal Hermes development
+environment and point `CAMEL_RESEARCH_REPO` at a checkout containing
+`c402032a7f7cd27e196356fbcf413c521a8cb4ca`. On Windows, the historical local
+default remains `C:/dev/camel-audit`; other platforms should set the variable
+explicitly.
+
 ```text
 python -m pytest evals/camel_product_research -q
 python -m ruff check evals/camel_product_research
