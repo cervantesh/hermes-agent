@@ -16,6 +16,10 @@ from tasks import TASKS, TASKS_BY_ID
 
 
 def _task_catalog(suite: str):
+    if suite == "completion":
+        from completion_contract import COMPLETION_TASKS, COMPLETION_TASKS_BY_ID
+
+        return COMPLETION_TASKS, COMPLETION_TASKS_BY_ID
     if suite == "holdout":
         from anti_bypass_holdout import HOLDOUT_TASKS, HOLDOUT_TASKS_BY_ID
 
@@ -76,7 +80,7 @@ def main() -> int:
     parser.add_argument("--model", required=True)
     parser.add_argument(
         "--suite",
-        choices=("short", "long", "confirmation", "holdout"),
+        choices=("short", "long", "confirmation", "holdout", "completion"),
         default="short",
     )
     parser.add_argument("--reps", type=int, default=3)

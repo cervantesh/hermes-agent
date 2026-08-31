@@ -14,6 +14,28 @@ EVAL_DIR = Path(__file__).resolve().parent
 WORKER = EVAL_DIR / "worker.py"
 
 
+def _task_catalog(suite: str):
+    if suite == "completion":
+        from completion_contract import COMPLETION_TASKS, COMPLETION_TASKS_BY_ID
+
+        return COMPLETION_TASKS, COMPLETION_TASKS_BY_ID
+    if suite == "holdout":
+        from anti_bypass_holdout import HOLDOUT_TASKS, HOLDOUT_TASKS_BY_ID
+
+        return HOLDOUT_TASKS, HOLDOUT_TASKS_BY_ID
+    if suite == "confirmation":
+        from confirmation import CONFIRMATION_TASKS, CONFIRMATION_TASKS_BY_ID
+
+        return CONFIRMATION_TASKS, CONFIRMATION_TASKS_BY_ID
+    if suite == "long":
+        from long_horizon import LONG_TASKS, LONG_TASKS_BY_ID
+
+        return LONG_TASKS, LONG_TASKS_BY_ID
+    from tasks import TASKS, TASKS_BY_ID
+
+    return TASKS, TASKS_BY_ID
+
+
 def _tree_id(repo: Path) -> dict[str, str | bool]:
     head = subprocess.check_output(
         ["git", "-C", str(repo), "rev-parse", "HEAD"], text=True
@@ -46,6 +68,11 @@ def main() -> int:
     parser.add_argument("--label", required=True)
     parser.add_argument("--provider", required=True)
     parser.add_argument("--model", required=True)
+    parser.add_argument(
+        "--suite",
+        choices=("short", "long", "confirmation", "holdout", "completion"),
+        default="short",
+    )
     parser.add_argument("--reps", type=int, default=3)
     parser.add_argument("--tasks", default="")
     parser.add_argument(
@@ -59,11 +86,13 @@ def main() -> int:
     args = parser.parse_args()
 
     repo = Path(args.repo_root).resolve()
+    suite_tasks, suite_tasks_by_id = _task_catalog(args.suite)
     selected = [item for item in args.tasks.split(",") if item]
     if not selected:
-        from tasks import TASKS
-
-        selected = [task.task_id for task in TASKS]
+        selected = [task.task_id for task in suite_tasks]
+    unknown = sorted(set(selected) - suite_tasks_by_id.keys())
+    if unknown:
+        raise SystemExit(f"unknown tasks: {', '.join(unknown)}")
     identity = _tree_id(repo)
     slug = args.model.replace("/", "_").replace("\\", "_")
     out_dir = EVAL_DIR / "results" / args.label
@@ -87,6 +116,8 @@ def main() -> int:
                     str(WORKER),
                     "--repo-root",
                     str(repo),
+                    "--suite",
+                    args.suite,
                     "--task",
                     task_id,
                     "--provider",
@@ -121,6 +152,8 @@ def main() -> int:
                         "rep": rep,
                         "provider": args.provider,
                         "model": args.model,
+                        "suite": args.suite,
+                        "category": suite_tasks_by_id[task_id].category,
                         "repo": str(repo),
                         **identity,
                     }
