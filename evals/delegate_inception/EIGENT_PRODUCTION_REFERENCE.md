@@ -88,6 +88,26 @@ an unowned implementation by itself:
    parent/orchestrator cannot already recover, and identify an independently
    closable owner.
 
+## Initial follow-up status
+
+The first ownership check inspected #79508 at
+`1dede33ad12ae184ca293fc15160b24c7a18f534`. Its public description contains
+two verbatim progress-narration endings and reports an internal same-model
+re-dispatch that completed after adding a do-not-stop instruction. It does not
+publish the original task, the referenced 1,000-pair corpus, the commands,
+sanitized traces, or a replayable fixture. There are no public review comments
+or additional commits supplying that material at the inspected revision.
+
+Consequently, the exact production incident cannot currently be replayed
+independently from public evidence. This does not contradict the report; it
+limits what an external evaluator can claim. The next evaluation must be a
+prospective cohort of new progress-narration tasks, frozen before scoring and
+reported separately from both #79508's private incident and the completed #375
+prompt ablation. It should compare a current-main base with the smallest
+current-main composition of #79508's completion-contract block, rather than
+running its stale historical branch as though unrelated main changes did not
+exist.
+
 ## Current adjudication
 
 - **Strict #375 Phase 1:** the Eigent reference does not change the frozen A/B
@@ -96,11 +116,11 @@ an unowned implementation by itself:
   CAMEL-derived controls a production repository actually implements.
 - **Implementation value:** conditional. Reuse the invariants as test ideas
   only after a current Hermes witness and ownership check.
-- **Next executable work:** evaluate #79508 against its reported
-  progress-narration incident and, separately, use the frozen false-success
-  cases to characterize current `main`'s existing structured-output and
-  verification boundaries. Keep both cohorts separate from the completed
-  prompt ablation.
+- **Next executable work:** preregister a new progress-narration cohort for a
+  current-main composition of #79508, because its exact reported incident is
+  not publicly replayable; separately, use the frozen false-success cases to
+  characterize current `main`'s existing structured-output and verification
+  boundaries. Keep both cohorts separate from the completed prompt ablation.
 
 ## Reproduction commands for this source audit
 
@@ -115,4 +135,3 @@ gh api 'repos/eigent-ai/eigent/contents/backend/tests/app/utils/test_workforce.p
 git show d63f996a757f6255fc1454239616ab4b4435e0f5:tools/delegate_tool.py
 git show d63f996a757f6255fc1454239616ab4b4435e0f5:tools/delegation_output_schema.py
 ```
-
