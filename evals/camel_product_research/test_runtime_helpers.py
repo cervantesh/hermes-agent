@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 
 from runner import tree_id
-from worker import _tool_trace, _tokens
+from worker import _provider_failure, _tool_trace, _tokens
 
 
 def test_tool_trace_extracts_only_assistant_calls() -> None:
@@ -27,6 +27,19 @@ def test_tool_trace_extracts_only_assistant_calls() -> None:
 def test_tokens_rejects_non_integer_metadata() -> None:
     result = {"tokens": {"input": 3, "provider": "x", "estimated": 1.5}}
     assert _tokens(result) == {"input": 3}
+
+
+def test_provider_failure_invalidates_observation() -> None:
+    assert (
+        _provider_failure(
+            {
+                "summary": "Gemini HTTP 429 (RESOURCE_EXHAUSTED): quota exceeded",
+                "status": "failed",
+            }
+        )
+        == "resource_exhausted"
+    )
+    assert _provider_failure({"summary": "completed", "error": None}) is None
 
 
 def test_tree_id_changes_when_untracked_evidence_changes(tmp_path: Path) -> None:

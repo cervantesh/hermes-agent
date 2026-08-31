@@ -137,9 +137,12 @@ must prove the units behave as intended.
 ## Resolved protocol choices
 
 1. The thresholds above are research thresholds, not claimed product policy.
-2. The pilot model is Gemini 2.5 Flash. Cross-family confirmation uses Claude
-   Sonnet 4.6 through the valid Claude Code credential path, only after a
-   baseline opportunity and a favorable pilot signal exist.
+2. The valid pilot runtime is Claude Sonnet 4.6 through the Claude Code
+   credential path. Gemini 2.5 Flash was rejected during preflight because its
+   quota cannot sustain an agentic run. A Codex/Luna transfer may be used only
+   as a labeled product-applicability check: Codex app-server cannot inject the
+   paper's role text as a native system prompt, so it is not cross-family
+   protocol confirmation.
 3. Every frozen pilot cohort has executable truth. No model judge is used for
    the primary endpoint. A later open-ended transfer cohort would require a
    separate blind-judge freeze.

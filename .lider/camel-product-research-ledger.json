@@ -1,7 +1,7 @@
 {
   "kind": "inception-fallback-ledger",
   "run_id": "camel-product-research",
-  "status": "pilot_protocol_frozen",
+  "status": "pilot_protocol_v2_frozen",
   "reason": "The inception skill was selected, but no rungraph.py harness or LIDER_PLUGIN_ROOT was installed in this environment.",
   "frame": "evals/camel_product_research/RESEARCH_FRAME.md",
   "criteria": [
@@ -20,7 +20,7 @@
   },
   "resolved_questions": {
     "product_thresholds": "Frozen as research thresholds; final recommendation remains conditional on stakeholder acceptance.",
-    "model_families": "Gemini 2.5 Flash pilot; Claude Sonnet 4.6 confirmatory only after favorable opportunity and efficacy gates.",
+    "model_families": "Claude Sonnet 4.6 pilot. Gemini 2.5 Flash rejected at preflight for insufficient quota. Codex/Luna is a labeled non-confirmatory transfer because native system-role injection is unavailable.",
     "blind_judge": "Not used for the executable pilot endpoint.",
     "prompt_sourcing": "Runtime git-show from CAMEL c402032a7f7cd27e196356fbcf413c521a8cb4ca.",
     "spend": "Sequential gate: 7 baseline observations, candidate only on failures, ablation and confirmation only after favorable signal."

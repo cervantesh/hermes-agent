@@ -19,6 +19,16 @@ from camel_protocol import TurnResult, load_paper_prompts, run_role_playing  # n
 from tasks import TASKS_BY_ID  # noqa: E402
 
 
+_PROVIDER_FAILURE_MARKERS = (
+    "resource_exhausted",
+    "api call failed after",
+    "authentication failed",
+    "connection error",
+    "rate limit",
+    "quota exceeded",
+)
+
+
 def _tool_trace(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     trace: list[dict[str, Any]] = []
     for message in messages:
@@ -38,6 +48,13 @@ def _tool_trace(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _tokens(result: dict[str, Any]) -> dict[str, int]:
     raw = result.get("tokens") or result.get("token_usage") or {}
     return {str(key): value for key, value in raw.items() if isinstance(value, int)}
+
+
+def _provider_failure(entry: dict[str, Any]) -> str | None:
+    material = "\n".join(
+        str(entry.get(key) or "") for key in ("summary", "error", "exit_reason")
+    ).lower()
+    return next((marker for marker in _PROVIDER_FAILURE_MARKERS if marker in material), None)
 
 
 def _provider_key(provider: str) -> str:
@@ -206,6 +223,11 @@ def main() -> int:
         else:
             entry = _run_camel(
                 task, args.provider, args.model, Path(args.camel_root).resolve()
+            )
+        provider_failure = _provider_failure(entry)
+        if provider_failure:
+            raise SystemExit(
+                f"provider failure (invalid observation): {provider_failure}"
             )
         summary = entry["summary"]
         checks = task.grade(summary, entry, workspace)
