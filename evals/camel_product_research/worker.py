@@ -125,6 +125,7 @@ def _run_baseline(task, provider: str, model: str) -> dict[str, Any]:
 
 def _run_camel(task, provider: str, model: str, camel_repo: Path) -> dict[str, Any]:
     agents: dict[str, Any] = {}
+    seen_tool_ids: set[str] = set()
 
     def turn(role: str, system: str, message: str, history: list[dict]) -> TurnResult:
         if role not in agents:
@@ -140,12 +141,20 @@ def _run_camel(task, provider: str, model: str, camel_repo: Path) -> dict[str, A
             conversation_history=list(history),
         )
         messages = list(result.get("messages") or [])
+        trace = []
+        for item in _tool_trace(messages):
+            call_id = str(item.get("id") or "")
+            if call_id and call_id in seen_tool_ids:
+                continue
+            if call_id:
+                seen_tool_ids.add(call_id)
+            trace.append(item)
         return TurnResult(
             text=str(result.get("final_response") or ""),
             history=messages,
             api_calls=int(result.get("api_calls") or 0),
             tokens=_tokens(result),
-            tool_trace=_tool_trace(messages),
+            tool_trace=trace,
         )
 
     try:
