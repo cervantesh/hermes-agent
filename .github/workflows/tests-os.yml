@@ -48,7 +48,8 @@ jobs:
             runner: macos-latest
             marker: macos_only
           - name: Windows-only tests
-            runner: windows-latest-32-core
+            # Fork CI adapter: the private 32-core runner is unavailable outside upstream.
+            runner: windows-latest
             marker: windows_only
     steps:
       - name: Checkout code
