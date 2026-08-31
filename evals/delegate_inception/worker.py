@@ -15,6 +15,7 @@ EVAL_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(EVAL_DIR))
 
 from fixtures import build_workspace  # noqa: E402
+from structured_output_boundary import delegate_kwargs, is_false_success  # noqa: E402
 from tasks import TASKS_BY_ID  # noqa: E402
 
 
@@ -116,6 +117,11 @@ def main() -> int:
     parser.add_argument("--provider", required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--codex-workspace-write", action="store_true")
+    parser.add_argument(
+        "--output-contract",
+        choices=("none", "completion-claim-v1"),
+        default="none",
+    )
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -194,7 +200,7 @@ def main() -> int:
         )
         payload = json.loads(
             delegate_task(
-                goal=task.prompt,
+                **delegate_kwargs(task.prompt, args.output_contract),
                 background=False,
                 parent_agent=parent,
             )
@@ -224,12 +230,14 @@ def main() -> int:
                 encoding="utf-8", errors="replace"
             )
         checks = task.grade(summary, entry, workspace)
+        ok = bool(checks) and all(checks.values())
         output = {
             "task": task.task_id,
             "suite": args.suite,
             "category": task.category,
             "note": task.note,
-            "ok": bool(checks) and all(checks.values()),
+            "ok": ok,
+            "false_success": is_false_success(ok, entry, checks),
             "checks": checks,
             "summary": summary,
             "status": entry.get("status"),
@@ -240,6 +248,10 @@ def main() -> int:
             "tokens": entry.get("tokens") or {},
             "duration_seconds": round(time.monotonic() - started, 2),
             "error": entry.get("error"),
+            "output_contract": args.output_contract,
+            "schema_valid": entry.get("schema_valid"),
+            "schema_retries": entry.get("schema_retries", 0),
+            "schema_errors": entry.get("schema_errors") or [],
         }
         print(json.dumps(output, ensure_ascii=False))
         return 0

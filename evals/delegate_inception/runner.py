@@ -76,6 +76,11 @@ def main() -> int:
     parser.add_argument("--reps", type=int, default=3)
     parser.add_argument("--tasks", default="")
     parser.add_argument(
+        "--output-contract",
+        choices=("none", "completion-claim-v1"),
+        default="none",
+    )
+    parser.add_argument(
         "--codex-workspace-write",
         action="store_true",
         help=(
@@ -127,6 +132,7 @@ def main() -> int:
                 ]
                 if args.codex_workspace_write:
                     command.append("--codex-workspace-write")
+                command.extend(["--output-contract", args.output_contract])
                 worker_env = dict(os.environ)
                 worker_env["PYTHONUTF8"] = "1"
                 worker_env["PYTHONIOENCODING"] = "utf-8"
@@ -152,6 +158,7 @@ def main() -> int:
                         "rep": rep,
                         "provider": args.provider,
                         "model": args.model,
+                        "output_contract": args.output_contract,
                         "suite": args.suite,
                         "category": suite_tasks_by_id[task_id].category,
                         "repo": str(repo),
