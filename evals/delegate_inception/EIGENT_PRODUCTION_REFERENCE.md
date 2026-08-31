@@ -108,6 +108,23 @@ current-main composition of #79508's completion-contract block, rather than
 running its stale historical branch as though unrelated main changes did not
 exist.
 
+That composition is now prepared locally for evaluation:
+
+- base: `d63f996a757f6255fc1454239616ab4b4435e0f5`;
+- candidate: `87bb59a86a005874563c947cbe7a7452eb54a0d6`;
+- source: exact #79508 commit
+  `1dede33ad12ae184ca293fc15160b24c7a18f534`, cherry-picked with provenance;
+- delta: only `tools/delegate_tool.py` and `tests/tools/test_delegate.py`,
+  27 insertions; and
+- focused compatibility gate: `pytest tests/tools/test_delegate.py -q` —
+  `74 passed`.
+
+This proves that the contributor's smallest-footprint change composes cleanly
+with the pinned current main and preserves its focused test family. It is not a
+behavioral result. No model observation has been scored on this composition;
+the new tasks, oracles, model, seed, stopping rule, and baseline-smoke gate must
+be committed before that happens.
+
 ## Current adjudication
 
 - **Strict #375 Phase 1:** the Eigent reference does not change the frozen A/B
