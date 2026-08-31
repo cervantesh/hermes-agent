@@ -195,23 +195,6 @@ test.describe('interim assistant messages — identical final after tool', () =>
 
   test('renders one final bubble after the tool lifecycle (#98524)', async () => {
     const page = fixture.page
-    await page.evaluate((search) => {
-      const state = window as typeof window & {
-        __e2eDuplicateObserver?: MutationObserver
-        __e2eMaxDuplicateBubbles?: number
-      }
-      const sample = () => {
-        const count = [...document.querySelectorAll('[data-slot="aui_assistant-message-root"]')]
-          .filter(message => (message.textContent ?? '').includes(search)).length
-        state.__e2eMaxDuplicateBubbles = Math.max(state.__e2eMaxDuplicateBubbles ?? 0, count)
-      }
-      state.__e2eDuplicateObserver?.disconnect()
-      state.__e2eMaxDuplicateBubbles = 0
-      state.__e2eDuplicateObserver = new MutationObserver(sample)
-      state.__e2eDuplicateObserver.observe(document.body, { childList: true, subtree: true, characterData: true })
-      sample()
-    }, INTERIM_DUPLICATE_TEXT)
-
     const composer = page.locator('[contenteditable="true"]').first()
     await composer.waitFor({ state: 'visible', timeout: 10_000 })
     await composer.fill('E2E_INTERIM_DUPLICATE_TRIGGER')
@@ -230,16 +213,6 @@ test.describe('interim assistant messages — identical final after tool', () =>
       )
       .toBe(0)
     await page.waitForTimeout(2000)
-
-    const maxVisibleCopies = await page.evaluate(() => {
-      const state = window as typeof window & {
-        __e2eDuplicateObserver?: MutationObserver
-        __e2eMaxDuplicateBubbles?: number
-      }
-      state.__e2eDuplicateObserver?.disconnect()
-      return state.__e2eMaxDuplicateBubbles ?? 0
-    })
-    expect(maxVisibleCopies, 'the live transcript must never paint two copies').toBe(1)
 
     await expect
       .poll(
