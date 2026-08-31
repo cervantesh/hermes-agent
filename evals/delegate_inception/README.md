@@ -1,5 +1,10 @@
 # Delegate inception A/B evaluation
 
+The current-main structured-output boundary characterization is documented in
+`STRUCTURED_OUTPUT_BOUNDARY_PROTOCOL.md`, its freeze receipt, and
+`STRUCTURED_OUTPUT_BOUNDARY_RESULT.md`. It is separate from the prompt
+ablation and the #79508 completion-contract smoke.
+
 This harness measures whether a child-prompt change improves behavior through
 the real synchronous `delegate_task` lifecycle. It does not treat the presence
 of prompt phrases as evidence of model improvement.
