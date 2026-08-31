@@ -31,4 +31,5 @@ docker/entrypoint.sh text eol=lf
 *.css   text eol=lf
 *.html  text eol=lf
 *.svg   text eol=lf
+evals/camel_product_research/evidence/*.jsonl text eol=lf
 *.ps1   text eol=crlf
