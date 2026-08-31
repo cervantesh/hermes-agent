@@ -86,6 +86,43 @@ The verifier reports `CONFIRMED`, `REFUTED`, or `UNDETERMINED` per claim and
 returns exit code `0`, `1`, or `2`, respectively. Its first run over the
 published receipts returned six confirmed claims and `OVERALL: CONFIRMED`.
 
+## Linux clean-room confirmation
+
+The automated verifier and full evaluation suite were then run from a new
+Ubuntu 24.04 WSL2 checkout, not from the Windows worktree:
+
+- Hermes research commit:
+  `92f952d68069a070d03c514756db6ec00f8ea7dd`
+- CAMEL source commit:
+  `c402032a7f7cd27e196356fbcf413c521a8cb4ca`
+- Linux kernel: `6.6.87.2-microsoft-standard-WSL2`, `x86_64`
+- Git: `2.43.0`
+- Python: `3.12.3`
+- pytest: `9.1.1`
+- Ruff: `0.15.10`
+
+The isolated Linux virtual environment installed the Hermes project from the
+exact audited checkout, rather than borrowing dependencies from the Windows
+environment. `CAMEL_RESEARCH_REPO` pointed at a separate, detached clone of
+the pinned paper-era CAMEL source.
+
+An initial minimal environment correctly exposed two undeclared audit
+assumptions: four tests used the Windows-only `C:/dev/camel-audit` default,
+and the owner-death witness imported Hermes runtime dependencies that were not
+present when only pytest and Ruff were installed. The source path is now
+explicitly configurable, and the final audit installed Hermes's declared
+runtime dependencies before executing its integration witness. Neither issue
+changed evidence rows, aggregates, or production code.
+
+| Claim | Check | Verdict | Raw evidence |
+|---|---|---|---|
+| The published Linux audit commit is the tree under test | Detached clean checkout plus `git rev-parse HEAD` | Confirmed | `92f952d68069a070d03c514756db6ec00f8ea7dd` |
+| The Python verifier is platform-independent | Run the one-command verifier under Python 3.12 | Confirmed | six claims confirmed; `OVERALL: CONFIRMED` |
+| The full evaluation suite passes on Linux | Run pytest with the pinned CAMEL source and declared Hermes runtime | Confirmed | `31 passed in 8.53s` |
+| Static checks pass on Linux | Ruff check | Confirmed | `All checks passed!` |
+| Formatting is stable on Linux | Ruff format check | Confirmed | `29 files already formatted` |
+| The Linux checkout remains unchanged | `git diff --check` and `git status --porcelain=v1` | Confirmed | no output from either command |
+
 ## Overall verdict at the audited commit
 
 The executable tests, static checks, public-row privacy boundary, record
@@ -94,4 +131,6 @@ receipt verification was not reproducible in a default Windows checkout at
 `00ecca1`; the committed blobs were correct, and the narrowly scoped
 `.gitattributes` correction fixed the checkout defect. A second clean clone of
 the correction commit confirmed that all four checked-out receipts now match
-their published metadata hashes.
+their published metadata hashes. The later Linux clean-room run independently
+confirmed the same public evidence, aggregate reconstruction, evaluation
+tests, and clean-tree guarantees.
