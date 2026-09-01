@@ -29,6 +29,10 @@ else:
     # cwd, including a project that has same-named packages on its path.
     hermes_bootstrap.harden_import_path()
 
+from hermes_cli.restricted_bootstrap import guard_restricted_entrypoint as _restricted_guard
+
+_restricted_guard()
+
 import argparse
 import asyncio
 import logging

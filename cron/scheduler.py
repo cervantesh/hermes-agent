@@ -44,6 +44,10 @@ from typing import Any, Callable, List, Optional, Protocol
 # the module) fail with ModuleNotFoundError for hermes_time et al.
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from hermes_cli.restricted_bootstrap import guard_restricted_entrypoint as _restricted_guard
+
+_restricted_guard()
+
 from hermes_constants import get_hermes_home
 from hermes_cli._subprocess_compat import windows_hide_flags
 from hermes_cli.config import (

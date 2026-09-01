@@ -664,6 +664,9 @@ def init_agent(
             identity even when skip_context_files=True. Project context files from the cwd
             remain skipped.
     """
+    from hermes_cli.restricted_bootstrap import guard_restricted_entrypoint
+
+    guard_restricted_entrypoint()
     _install_safe_stdio()
 
     agent.model = model

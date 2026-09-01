@@ -47,6 +47,10 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Awaitable, Callable, Dict, Optional, Any, List, Tuple, Union, cast
 
+from hermes_cli.restricted_bootstrap import guard_restricted_entrypoint as _restricted_guard
+
+_restricted_guard()
+
 from agent.async_utils import consume_detached_task_result, safe_schedule_threadsafe
 from agent.conversation_compression import (
     COMPACTION_DONE_STATUS,

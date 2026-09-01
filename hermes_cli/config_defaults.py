@@ -5,6 +5,11 @@ verbatim from hermes_cli/config.py. Must not import from hermes_cli.config.
 """
 
 DEFAULT_CONFIG = {
+    "restricted_runtime": {
+        "enabled": False,
+        "expected_policy_epoch": None,
+        "expected_policy_digest": None,
+    },
     "model": "",
     "providers": {},
     "fallback_providers": [],
@@ -4013,7 +4018,7 @@ DEFAULT_CONFIG = {
     },
 
     # Config schema version - bump this when adding new required fields
-    "_config_version": 39,
+    "_config_version": 40,
 }
 
 # Optional environment variables that enhance functionality

@@ -31,6 +31,13 @@ except ModuleNotFoundError:
     # means UTF-8 stdio setup is skipped on Windows; POSIX is unaffected.
     pass
 
+# Restricted authority must be checked before dotenv, model_tools, tools, or
+# any agent import can execute.  This module is a forbidden alternate
+# entrypoint while the installation is armed.
+from hermes_cli.restricted_bootstrap import guard_restricted_entrypoint as _restricted_guard
+
+_restricted_guard()
+
 import asyncio
 import base64
 import copy
@@ -571,6 +578,9 @@ class AIAgent:
         capabilities: Dict[str, bool] | None = None,
     ):
         """Forwarder — see ``agent.agent_init.init_agent``."""
+        # A reference imported before enable must still fail when constructed
+        # after the global authority appears.
+        _restricted_guard()
         if tool_delay is not None:
             warnings.warn(
                 "tool_delay is deprecated and ignored; sequential tool calls "

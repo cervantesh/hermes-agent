@@ -513,6 +513,7 @@ from hermes_cli.subcommands.pairing import build_pairing_parser
 from hermes_cli.subcommands.plugins import build_plugins_parser
 from hermes_cli.subcommands.mcp import build_mcp_parser
 from hermes_cli.subcommands.claw import build_claw_parser
+from hermes_cli.subcommands.restricted import build_restricted_parser, cmd_restricted
 
 
 def _require_tty(command_name: str) -> None:
@@ -13291,6 +13292,12 @@ def _advertise_agent_env() -> None:
 
 def main():
     """Main entry point for hermes CLI."""
+    # Defensive second line of protection for direct references that bypass
+    # the stdlib-only console wrapper.  The wrapper normally decides before
+    # this large module is imported at all.
+    from hermes_cli.restricted_bootstrap import guard_restricted_entrypoint
+
+    guard_restricted_entrypoint()
     # Cosmetic: make the process show up as 'hermes' instead of 'python3.11'
     # in ps/top/htop.  Non-fatal — just a nicer UX.
     _set_process_title()
@@ -13356,6 +13363,7 @@ def main():
 
     parser, subparsers, chat_parser = build_top_level_parser()
     chat_parser.set_defaults(func=cmd_chat)
+    build_restricted_parser(subparsers, cmd_restricted=cmd_restricted)
 
     # =========================================================================
     # model command  (parser built in hermes_cli/subcommands/model.py)
