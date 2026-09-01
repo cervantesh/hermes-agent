@@ -81,7 +81,6 @@ def test_numeric_escapes_cannot_hide_any_reserved_key_character(tmp_path, key):
     [
         '\ufeff"\\u0072estricted_runtime":\n  enabled: true\n',
         '? "restric\\u0074ed_runtime"\n: {enabled: true}\n',
-        '"restric\\\n  ted_runtime":\n  enabled: true\n',
     ],
 )
 def test_escaped_reserved_key_forms_remain_closed_at_yaml_boundaries(tmp_path, payload):
@@ -90,6 +89,19 @@ def test_escaped_reserved_key_forms_remain_closed_at_yaml_boundaries(tmp_path, p
     path = tmp_path / "config.yaml"
     path.write_text(payload, encoding="utf-8")
     assert config_has_restricted_signal(path) is True
+
+
+def test_escaped_line_continuation_is_a_valid_reserved_yaml_key(tmp_path):
+    import yaml
+
+    from hermes_cli.restricted_bootstrap import config_has_restricted_signal
+
+    payload = '? "restric\\\n  ted_runtime"\n: {enabled: true}\n'
+    path = tmp_path / "config.yaml"
+    path.write_text(payload, encoding="utf-8")
+
+    assert config_has_restricted_signal(path) is True
+    assert list(yaml.safe_load(payload)) == ["restricted_runtime"]
 
 
 @pytest.mark.parametrize(
