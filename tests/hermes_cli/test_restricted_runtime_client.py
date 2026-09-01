@@ -226,6 +226,99 @@ def test_peer_credential_read_failure_is_runtime_unavailable(tmp_path, monkeypat
 
 
 @pytest.mark.linux_only
+@pytest.mark.parametrize(
+    ("pid", "uid", "gid", "accepted"),
+    [
+        (0, 10006, 20001, True),
+        (4321, 10006, 20001, True),
+        (-1, 10006, 20001, False),
+        (-(2**31), 10006, 20001, False),
+        (0, 10007, 20001, False),
+        (0, 10006, 20002, False),
+    ],
+)
+def test_peer_credentials_accept_nonnegative_pid_only_with_exact_identity(
+    monkeypatch, pid, uid, gid, accepted
+):
+    import struct
+    import time
+    from types import SimpleNamespace
+
+    import hermes_cli.restricted_runtime as restricted
+
+    identity = SimpleNamespace(st_dev=11, st_ino=22)
+    monkeypatch.setattr(restricted, "_socket_identity", lambda *_args: identity)
+
+    class PeerSocket:
+        closed = False
+
+        def settimeout(self, _timeout):
+            pass
+
+        def connect(self, _path):
+            pass
+
+        def getsockopt(self, *_args):
+            return struct.pack("3i", pid, uid, gid)
+
+        def close(self):
+            self.closed = True
+
+    peer = PeerSocket()
+    monkeypatch.setattr(restricted.socket, "socket", lambda *_args: peer)
+    client = restricted.RestrictedUdsClient(
+        expected_uid=restricted.RUNTIME_UID,
+        expected_gid=restricted.RUNTIME_GID,
+    )
+
+    if accepted:
+        assert client._connect(time.monotonic() + 1) is peer
+        assert peer.closed is False
+    else:
+        with pytest.raises(restricted.RestrictedRuntimeUnavailable) as raised:
+            client._connect(time.monotonic() + 1)
+        assert raised.value.exit_code == 74
+        assert peer.closed is True
+
+
+@pytest.mark.linux_only
+@pytest.mark.parametrize("peer_result", [b"\0" * 11, OSError("peer read failed")])
+def test_truncated_or_failed_peer_credentials_fail_with_74(monkeypatch, peer_result):
+    import time
+    from types import SimpleNamespace
+
+    import hermes_cli.restricted_runtime as restricted
+
+    identity = SimpleNamespace(st_dev=11, st_ino=22)
+    monkeypatch.setattr(restricted, "_socket_identity", lambda *_args: identity)
+
+    class PeerSocket:
+        def settimeout(self, _timeout):
+            pass
+
+        def connect(self, _path):
+            pass
+
+        def getsockopt(self, *_args):
+            if isinstance(peer_result, Exception):
+                raise peer_result
+            return peer_result
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(restricted.socket, "socket", lambda *_args: PeerSocket())
+    client = restricted.RestrictedUdsClient(
+        expected_uid=restricted.RUNTIME_UID,
+        expected_gid=restricted.RUNTIME_GID,
+    )
+
+    with pytest.raises(restricted.RestrictedRuntimeUnavailable) as raised:
+        client._connect(time.monotonic() + 1)
+    assert raised.value.exit_code == 74
+
+
+@pytest.mark.linux_only
 def test_socket_path_rejects_wrong_mode_type_and_symlink(tmp_path):
     from hermes_cli.restricted_runtime import (
         RestrictedRuntimeUnavailable,

@@ -735,7 +735,7 @@ class RestrictedUdsClient:
                 socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i")
             )
             pid, uid, gid = struct.unpack("3i", raw)
-            if pid <= 0 or uid != self.expected_uid or gid != self.expected_gid:
+            if pid < 0 or uid != self.expected_uid or gid != self.expected_gid:
                 raise RestrictedRuntimeUnavailable()
             after = _socket_identity(
                 self.socket_path, self.expected_uid, self.expected_gid
