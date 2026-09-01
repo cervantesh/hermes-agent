@@ -8,6 +8,17 @@ Uses a file-based lock (~/.hermes/cron/.tick.lock) so only one tick
 runs at a time if multiple processes overlap.
 """
 
+import os as _bootstrap_os
+import sys as _bootstrap_sys
+
+# Direct-file execution starts with ``cron/`` rather than the repository root
+# on sys.path. Make only the owner module reachable before admission.
+if __package__ in (None, ""):
+    _bootstrap_sys.path.insert(
+        0, _bootstrap_os.path.dirname(_bootstrap_os.path.dirname(_bootstrap_os.path.abspath(__file__)))
+    )
+import hermes_bootstrap  # noqa: F401, E402
+
 import asyncio
 import atexit
 import concurrent.futures

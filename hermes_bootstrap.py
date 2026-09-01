@@ -233,6 +233,12 @@ def activate_durable_lazy_target() -> None:
 apply_windows_utf8_bootstrap()
 suppress_platform_ver_console()
 
+# Enforce the durable installation boundary before importing the lazy target
+# or any normal Hermes subsystem. Unrelated library imports are a no-op.
+from hermes_application_boundary import bootstrap_admit
+
+bootstrap_admit()
+
 # Activate the durable lazy-install target (immutable Docker images) so
 # packages installed into the data volume on a previous run are importable
 # this run, before any backend module imports its SDK. No-op when unset.
