@@ -84,13 +84,14 @@ hermes restricted disable
 
 `status` separates configured/armed state from an active restricted process.
 `doctor` is read-only: it does not download, start, kill, or modify the runtime.
-Disable refuses while a request has an ambiguous pending outcome. It writes the
-root config disabled first and then removes the authority. A runner that was
-already alive remains restricted until it exits.
+Disable refuses while a request has an ambiguous pending outcome. It removes
+the complete reserved block from the root config first and then removes the
+authority. A runner that was already alive remains restricted until it exits.
 
-If a disable was interrupted after the config write, the authority and disabled
-config intentionally form an administrative fail-stop. Only `status`, `doctor`,
-and another idempotent `disable` are admitted; no conversation is served.
+If a disable was interrupted after the config write, the authority and absent
+reserved block intentionally form an administrative fail-stop. Only `status`,
+`doctor`, and another idempotent `disable` are admitted; no conversation is
+served.
 
 ## Persisted state
 
