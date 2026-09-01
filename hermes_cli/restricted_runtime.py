@@ -25,11 +25,13 @@ from types import MappingProxyType
 from typing import Any, BinaryIO, Mapping
 
 from hermes_cli.restricted_bootstrap import (
+    RestrictedConfigSnapshot,
     arm_process_authority,
     authority_artifact_exists,
     authority_path,
     resolve_global_hermes_root,
     restricted_directory,
+    read_config_snapshot,
     root_config_path,
 )
 
@@ -162,18 +164,53 @@ class RestrictedYamlConfigLoader:
 
     _KEYS = {"enabled", "expected_policy_epoch", "expected_policy_digest"}
 
-    def __init__(self, path: Path):
+    def __init__(
+        self,
+        path: Path,
+        *,
+        snapshot: RestrictedConfigSnapshot | None = None,
+    ):
         self.path = Path(path)
+        self.snapshot = (
+            snapshot if snapshot is not None else read_config_snapshot(self.path)
+        )
 
     def load(self) -> RestrictedConfig:
+        if not self.snapshot.stable:
+            raise RestrictedAuthorityError()
         try:
             import yaml
         except Exception as exc:
             raise RestrictedAuthorityError() from exc
+
+        class UniqueKeyLoader(yaml.SafeLoader):
+            pass
+
+        def construct_unique_mapping(loader, node, deep=False):
+            loader.flatten_mapping(node)
+            result = {}
+            for key_node, value_node in node.value:
+                key = loader.construct_object(key_node, deep=deep)
+                try:
+                    duplicate = key in result
+                except TypeError as exc:
+                    raise RestrictedAuthorityError() from exc
+                if duplicate:
+                    raise RestrictedAuthorityError()
+                result[key] = loader.construct_object(value_node, deep=deep)
+            return result
+
+        UniqueKeyLoader.add_constructor(
+            "tag:yaml.org,2002:map",
+            construct_unique_mapping,
+        )
         try:
-            raw = yaml.safe_load(self.path.read_text(encoding="utf-8"))
-        except FileNotFoundError:
-            raw = {}
+            text = self.snapshot.raw.decode("utf-8", "strict")
+            raw = (
+                yaml.load(text, Loader=UniqueKeyLoader) if self.snapshot.exists else {}
+            )
+        except RestrictedError:
+            raise
         except Exception as exc:
             raise RestrictedAuthorityError() from exc
         if raw is None:
@@ -208,11 +245,17 @@ def _validate_policy_pair(epoch: Any, digest: Any) -> None:
         raise RestrictedAuthorityError() from exc
 
 
-def load_root_config(root: Path | None = None) -> RestrictedConfig:
-    return RestrictedYamlConfigLoader(root_config_path(root)).load()
+def load_root_config(
+    root: Path | None = None,
+    *,
+    snapshot: RestrictedConfigSnapshot | None = None,
+) -> RestrictedConfig:
+    return RestrictedYamlConfigLoader(root_config_path(root), snapshot=snapshot).load()
 
 
-def _write_root_restricted_config(root: Path, config: RestrictedConfig) -> None:
+def _rewrite_root_restricted_config(
+    root: Path, config: RestrictedConfig | None
+) -> None:
     try:
         import yaml
     except Exception as exc:
@@ -225,11 +268,14 @@ def _write_root_restricted_config(root: Path, config: RestrictedConfig) -> None:
             data = {}
         if not isinstance(data, dict):
             raise RestrictedAuthorityError()
-        data["restricted_runtime"] = {
-            "enabled": config.enabled,
-            "expected_policy_epoch": config.expected_policy_epoch,
-            "expected_policy_digest": config.expected_policy_digest,
-        }
+        if config is None:
+            data.pop("restricted_runtime", None)
+        else:
+            data["restricted_runtime"] = {
+                "enabled": config.enabled,
+                "expected_policy_epoch": config.expected_policy_epoch,
+                "expected_policy_digest": config.expected_policy_digest,
+            }
         data["_config_version"] = 40
         payload = yaml.safe_dump(data, sort_keys=False, allow_unicode=True).encode(
             "utf-8"
@@ -253,6 +299,14 @@ def _write_root_restricted_config(root: Path, config: RestrictedConfig) -> None:
         raise
     except Exception as exc:
         raise RestrictedAuthorityError() from exc
+
+
+def _write_root_restricted_config(root: Path, config: RestrictedConfig) -> None:
+    _rewrite_root_restricted_config(root, config)
+
+
+def _remove_root_restricted_config(root: Path) -> None:
+    _rewrite_root_restricted_config(root, None)
 
 
 def platform_supports_restricted_runtime() -> bool:
@@ -313,27 +367,31 @@ def _ensure_private_directory(path: Path, *, create: bool) -> os.stat_result:
     return info
 
 
+def _validate_open_private_file(path: Path, fd: int) -> None:
+    before = os.lstat(path)
+    opened = os.fstat(fd)
+    if (
+        stat.S_ISLNK(before.st_mode)
+        or not stat.S_ISREG(before.st_mode)
+        or before.st_uid != os.geteuid()
+        or stat.S_IMODE(before.st_mode) != 0o600
+        or opened.st_dev != before.st_dev
+        or opened.st_ino != before.st_ino
+        or not stat.S_ISREG(opened.st_mode)
+        or opened.st_uid != os.geteuid()
+        or stat.S_IMODE(opened.st_mode) != 0o600
+    ):
+        raise RestrictedAuthorityError()
+
+
 def _open_private_file(path: Path, flags: int) -> int:
     try:
-        before = os.lstat(path)
-        if stat.S_ISLNK(before.st_mode) or not stat.S_ISREG(before.st_mode):
-            raise RestrictedAuthorityError()
-        if before.st_uid != os.geteuid() or stat.S_IMODE(before.st_mode) != 0o600:
-            raise RestrictedAuthorityError()
         fd = os.open(
             path,
             flags | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
         )
         try:
-            opened = os.fstat(fd)
-            if (
-                opened.st_dev != before.st_dev
-                or opened.st_ino != before.st_ino
-                or not stat.S_ISREG(opened.st_mode)
-                or opened.st_uid != os.geteuid()
-                or stat.S_IMODE(opened.st_mode) != 0o600
-            ):
-                raise RestrictedAuthorityError()
+            _validate_open_private_file(path, fd)
         except Exception:
             os.close(fd)
             raise
@@ -577,20 +635,34 @@ class RestrictedStateStore:
     def acquire_runner_lock(self):
         _require_supported_platform()
         self.ensure_directory()
-        if not os.path.lexists(self.lock_path):
-            _atomic_private_write(self.directory, self.lock_path, b"")
+        fd = -1
         try:
             import fcntl
 
-            fd = _open_private_file(self.lock_path, os.O_RDWR)
+            flags = (
+                os.O_RDWR
+                | os.O_CREAT
+                | os.O_EXCL
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_NOFOLLOW", 0)
+            )
+            try:
+                fd = os.open(self.lock_path, flags, 0o600)
+                _validate_open_private_file(self.lock_path, fd)
+                os.fsync(fd)
+                _fsync_directory(self.directory)
+            except FileExistsError:
+                fd = _open_private_file(self.lock_path, os.O_RDWR)
             if os.fstat(fd).st_size != 0:
                 raise RestrictedAuthorityError()
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except (ImportError, OSError) as exc:
-            try:
+        except RestrictedError:
+            if fd >= 0:
                 os.close(fd)
-            except Exception:
-                pass
+            raise
+        except (ImportError, OSError) as exc:
+            if fd >= 0:
+                os.close(fd)
             raise RestrictedAuthorityError() from exc
         return _RunnerLock(fd)
 
@@ -651,8 +723,9 @@ class RestrictedUdsClient:
         before = _socket_identity(
             self.socket_path, self.expected_uid, self.expected_gid
         )
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock = None
         try:
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise RestrictedRuntimeUnavailable()
@@ -670,9 +743,14 @@ class RestrictedUdsClient:
             if before.st_dev != after.st_dev or before.st_ino != after.st_ino:
                 raise RestrictedRuntimeUnavailable()
             return sock
-        except Exception:
-            sock.close()
+        except RestrictedError:
+            if sock is not None:
+                sock.close()
             raise
+        except Exception as exc:
+            if sock is not None:
+                sock.close()
+            raise RestrictedRuntimeUnavailable() from exc
 
     def _request(
         self,
@@ -1103,7 +1181,7 @@ def restricted_disable(root: Path | None = None) -> None:
     state = store.read_state()
     if state["pending_request_id"] is not None:
         raise RestrictedPendingError()
-    _write_root_restricted_config(actual_root, RestrictedConfig(False, None, None))
+    _remove_root_restricted_config(actual_root)
     store.remove_authority()
 
 

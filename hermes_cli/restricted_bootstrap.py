@@ -7,15 +7,17 @@ dotenv, YAML, providers, plugins, tools, recovery, or UI code can run.
 from __future__ import annotations
 
 import os
+import re
 import stat
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Sequence
 
 RESTRICTED_DIRNAME = "restricted-runtime"
 AUTHORITY_FILENAME = "enabled"
 RESERVED_CONFIG_NAME = b"restricted_runtime"
+MAX_CONFIG_SNAPSHOT_BYTES = 16 * 1024 * 1024
 ENTRYPOINT_BLOCKED = "RESTRICTED_ENTRYPOINT_BLOCKED"
 AUTHORITY_INVALID = "RESTRICTED_AUTHORITY_INVALID"
 
@@ -74,27 +76,57 @@ def authority_artifact_exists(root: Path | None = None) -> bool:
     return _lexists(authority_path(root))
 
 
-def config_has_restricted_signal(path: Path | None = None) -> bool:
-    """Conservatively detect the reserved name without interpreting YAML."""
+def _reserved_name_signal(raw: bytes) -> bool:
+    if RESERVED_CONFIG_NAME in raw:
+        return True
+    normalized = re.sub(
+        rb"\\(?:x5f|u005f|U0000005f)",
+        b"_",
+        raw,
+        flags=re.IGNORECASE,
+    )
+    return RESERVED_CONFIG_NAME in normalized
+
+
+@dataclass(frozen=True)
+class RestrictedConfigSnapshot:
+    raw: bytes
+    exists: bool
+    stable: bool
+
+    @property
+    def signal(self) -> bool:
+        return not self.stable or _reserved_name_signal(self.raw)
+
+
+def read_config_snapshot(path: Path | None = None) -> RestrictedConfigSnapshot:
+    """Read one stable config snapshot without interpreting YAML."""
 
     target = path or root_config_path()
     try:
         with open(target, "rb") as handle:
-            overlap = b""
-            while True:
-                block = handle.read(64 * 1024)
-                if not block:
-                    return False
-                combined = overlap + block
-                if RESERVED_CONFIG_NAME in combined:
-                    return True
-                overlap = combined[-(len(RESERVED_CONFIG_NAME) - 1) :]
+            before = os.fstat(handle.fileno())
+            raw = handle.read(MAX_CONFIG_SNAPSHOT_BYTES + 1)
+            after = os.fstat(handle.fileno())
     except FileNotFoundError:
-        return False
+        return RestrictedConfigSnapshot(b"", exists=False, stable=True)
     except OSError:
-        # An unreadable config cannot safely establish that restricted mode is
-        # absent.  The safe resolver will later emit the closed authority error.
-        return True
+        return RestrictedConfigSnapshot(b"", exists=True, stable=False)
+    stable = (
+        len(raw) <= MAX_CONFIG_SNAPSHOT_BYTES
+        and before.st_dev == after.st_dev
+        and before.st_ino == after.st_ino
+        and before.st_size == after.st_size == len(raw)
+        and before.st_mtime_ns == after.st_mtime_ns
+        and before.st_ctime_ns == after.st_ctime_ns
+    )
+    return RestrictedConfigSnapshot(raw, exists=True, stable=stable)
+
+
+def config_has_restricted_signal(path: Path | None = None) -> bool:
+    """Conservatively detect the reserved name from one config snapshot."""
+
+    return read_config_snapshot(path).signal
 
 
 def _closed_invocation(argv: Sequence[str]) -> tuple[str, ...] | None:
@@ -122,6 +154,12 @@ class RestrictedBootstrapScanner:
 
     argv: Sequence[str]
     config_path: Path
+    config_snapshot: RestrictedConfigSnapshot = field(init=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "config_snapshot", read_config_snapshot(self.config_path)
+        )
 
     @property
     def restricted_invocation(self) -> tuple[str, ...] | None:
@@ -133,7 +171,7 @@ class RestrictedBootstrapScanner:
 
     @property
     def config_signal(self) -> bool:
-        return config_has_restricted_signal(self.config_path)
+        return self.config_snapshot.signal
 
     @property
     def authority_signal(self) -> bool:
@@ -226,6 +264,7 @@ def validate_private_authority_file(path: Path) -> os.stat_result:
 __all__ = [
     "AUTHORITY_INVALID",
     "RestrictedBootstrapScanner",
+    "RestrictedConfigSnapshot",
     "arm_process_authority",
     "authority_artifact_exists",
     "authority_path",
@@ -233,6 +272,7 @@ __all__ = [
     "emit_fixed_failure",
     "guard_restricted_entrypoint",
     "process_authority_is_armed",
+    "read_config_snapshot",
     "resolve_global_hermes_root",
     "restricted_directory",
     "root_config_path",

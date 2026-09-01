@@ -1,7 +1,9 @@
 import hashlib
 import json
+import multiprocessing
 import os
 import stat
+import time
 
 import pytest
 
@@ -38,6 +40,34 @@ def test_yaml_loader_rejects_unknown_key(tmp_path):
         "restricted_runtime:\n  enabled: false\n  socket: /tmp/unsafe.sock\n",
         encoding="utf-8",
     )
+    with pytest.raises(RestrictedAuthorityError):
+        RestrictedYamlConfigLoader(path).load()
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        (
+            "restricted_runtime:\n  enabled: false\n"
+            "restricted_runtime:\n  enabled: false\n"
+        ),
+        (
+            "restricted_runtime:\n"
+            "  enabled: false\n"
+            "  enabled: true\n"
+            f"  expected_policy_epoch: {EPOCH}\n"
+            f"  expected_policy_digest: {DIGEST}\n"
+        ),
+    ],
+)
+def test_yaml_loader_rejects_duplicate_root_or_block_keys(tmp_path, payload):
+    from hermes_cli.restricted_runtime import (
+        RestrictedAuthorityError,
+        RestrictedYamlConfigLoader,
+    )
+
+    path = tmp_path / "config.yaml"
+    path.write_text(payload, encoding="utf-8")
     with pytest.raises(RestrictedAuthorityError):
         RestrictedYamlConfigLoader(path).load()
 
@@ -146,6 +176,60 @@ def test_runner_lock_is_global_and_exclusive(tmp_path):
 
 
 @pytest.mark.linux_only
+def test_runner_lock_creation_never_uses_atomic_replace(tmp_path, monkeypatch):
+    import hermes_cli.restricted_runtime as restricted
+
+    store = restricted.RestrictedStateStore(tmp_path)
+    store.initialize(EPOCH, DIGEST)
+    monkeypatch.setattr(
+        restricted,
+        "_atomic_private_write",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("runner.lock must have a stable pathname")
+        ),
+    )
+    lock = store.acquire_runner_lock()
+    lock.close()
+
+
+@pytest.mark.linux_only
+def test_concurrent_processes_never_lock_different_runner_inodes(tmp_path):
+    from hermes_cli.restricted_runtime import RestrictedStateStore
+
+    store = RestrictedStateStore(tmp_path)
+    store.initialize(EPOCH, DIGEST)
+    ctx = multiprocessing.get_context("fork")
+
+    def compete(start, results):
+        from hermes_cli.restricted_runtime import RestrictedAuthorityError
+
+        start.wait()
+        try:
+            lock = RestrictedStateStore(tmp_path).acquire_runner_lock()
+        except RestrictedAuthorityError:
+            results.put(False)
+            return
+        results.put(True)
+        time.sleep(0.15)
+        lock.close()
+
+    for _ in range(8):
+        if store.lock_path.exists():
+            store.lock_path.unlink()
+        start = ctx.Event()
+        results = ctx.Queue()
+        workers = [ctx.Process(target=compete, args=(start, results)) for _ in range(2)]
+        for worker in workers:
+            worker.start()
+        start.set()
+        outcomes = [results.get(timeout=3) for _ in workers]
+        for worker in workers:
+            worker.join(timeout=3)
+            assert worker.exitcode == 0
+        assert outcomes.count(True) == 1
+
+
+@pytest.mark.linux_only
 def test_failed_file_fsync_does_not_replace_existing_state(tmp_path, monkeypatch):
     from hermes_cli.restricted_runtime import (
         RestrictedAuthorityError,
@@ -189,3 +273,29 @@ def test_enable_validates_runtime_before_publishing_any_authority(tmp_path):
         )
     assert not (tmp_path / "restricted-runtime").exists()
     assert not (tmp_path / "config.yaml").exists()
+
+
+@pytest.mark.linux_only
+def test_disable_removes_reserved_block_and_unblocks_normal_guards(tmp_path):
+    from hermes_cli.restricted_bootstrap import should_block_normal_entrypoint
+    from hermes_cli.restricted_runtime import restricted_disable, restricted_enable
+
+    class ReadyClient:
+        def ready(self, epoch, digest):
+            from hermes_cli.restricted_runtime import RESTRICTED_READINESS
+
+            return dict(RESTRICTED_READINESS, policy_epoch=epoch, policy_digest=digest)
+
+    restricted_enable(
+        EPOCH,
+        DIGEST,
+        confirm_stopped=True,
+        root=tmp_path,
+        client=ReadyClient(),
+    )
+    assert should_block_normal_entrypoint(tmp_path) is True
+    restricted_disable(tmp_path)
+    assert "restricted_runtime" not in (tmp_path / "config.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert should_block_normal_entrypoint(tmp_path) is False

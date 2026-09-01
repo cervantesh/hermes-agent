@@ -36,6 +36,86 @@ def test_config_signal_cannot_hide_across_read_boundary(tmp_path):
     assert config_has_restricted_signal(path) is True
 
 
+@pytest.mark.parametrize(
+    "key",
+    [
+        '"restricted_runtime"',
+        "'restricted_runtime'",
+        '"restricted\\u005fruntime"',
+        '"restricted\\x5fruntime"',
+    ],
+)
+def test_equivalent_quoted_or_escaped_reserved_keys_are_signals(tmp_path, key):
+    from hermes_cli.restricted_bootstrap import config_has_restricted_signal
+
+    path = tmp_path / "config.yaml"
+    path.write_text(f"{key}:\n  enabled: true\n", encoding="utf-8")
+    assert config_has_restricted_signal(path) is True
+
+
+def test_scanner_holds_one_config_snapshot_across_atomic_replace(tmp_path):
+    from hermes_cli.restricted_bootstrap import RestrictedBootstrapScanner
+    from hermes_cli.restricted_runtime import RestrictedYamlConfigLoader
+
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        "restricted_runtime:\n"
+        "  enabled: true\n"
+        "  expected_policy_epoch: snapshot-policy\n"
+        f"  expected_policy_digest: {'a' * 64}\n",
+        encoding="utf-8",
+    )
+    scanner = RestrictedBootstrapScanner(argv=["chat"], config_path=path)
+    replacement = tmp_path / "replacement.yaml"
+    replacement.write_text("model: normal\n", encoding="utf-8")
+    replacement.replace(path)
+
+    assert scanner.config_signal is True
+    assert (
+        RestrictedYamlConfigLoader(path, snapshot=scanner.config_snapshot)
+        .load()
+        .enabled
+        is True
+    )
+
+
+@pytest.mark.linux_only
+def test_wrapper_cannot_degrade_closed_snapshot_after_replace(
+    tmp_path, monkeypatch, capsys
+):
+    import hermes_cli.restricted_entry as entry
+
+    path = tmp_path / "config.yaml"
+    path.write_text(
+        "restricted_runtime:\n"
+        "  enabled: true\n"
+        "  expected_policy_epoch: snapshot-policy\n"
+        f"  expected_policy_digest: {'b' * 64}\n",
+        encoding="utf-8",
+    )
+    original = entry._prepare_closed_runtime
+
+    def replace_then_prepare(root, snapshot):
+        replacement = tmp_path / "normal.yaml"
+        replacement.write_text("model: normal\n", encoding="utf-8")
+        replacement.replace(path)
+        return original(root, snapshot)
+
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setattr(sys, "argv", ["hermes", "gateway"])
+    monkeypatch.setattr(entry, "_prepare_closed_runtime", replace_then_prepare)
+    monkeypatch.setattr(
+        entry.FullHermesArgparseParser,
+        "run",
+        staticmethod(lambda: (_ for _ in ()).throw(AssertionError("normal path"))),
+    )
+    with pytest.raises(SystemExit) as raised:
+        entry.main()
+    assert raised.value.code == 77
+    assert capsys.readouterr().err == "RESTRICTED_ENTRYPOINT_BLOCKED\n"
+    assert (tmp_path / "restricted-runtime" / "enabled").exists()
+
+
 def test_global_root_is_shared_by_named_profiles(tmp_path):
     from hermes_cli.restricted_bootstrap import resolve_global_hermes_root
 

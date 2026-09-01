@@ -157,6 +157,75 @@ def test_wrong_path_owner_contract_fails_before_http_bytes():
 
 
 @pytest.mark.linux_only
+def test_connect_failures_are_runtime_unavailable_and_preserve_restricted_errors(
+    tmp_path, monkeypatch
+):
+    import hermes_cli.restricted_runtime as restricted
+
+    path = tmp_path / "stale.sock"
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(path))
+    os.chmod(path, 0o660)
+    listener.close()
+    client = restricted.RestrictedUdsClient(
+        socket_path=path,
+        expected_uid=os.geteuid(),
+        expected_gid=os.getegid(),
+    )
+    with pytest.raises(restricted.RestrictedRuntimeUnavailable):
+        client._connect(__import__("time").monotonic() + 1)
+
+    monkeypatch.setattr(
+        restricted,
+        "_socket_identity",
+        lambda *_args: (_ for _ in ()).throw(restricted.RestrictedPolicyMismatch()),
+    )
+    with pytest.raises(restricted.RestrictedPolicyMismatch):
+        client._connect(__import__("time").monotonic() + 1)
+
+
+@pytest.mark.linux_only
+def test_peer_credential_read_failure_is_runtime_unavailable(tmp_path, monkeypatch):
+    import hermes_cli.restricted_runtime as restricted
+
+    path = tmp_path / "peer.sock"
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(path))
+    os.chmod(path, 0o660)
+
+    monkeypatch.setattr(
+        restricted.socket,
+        "socket",
+        lambda *_args: (_ for _ in ()).throw(OSError("synthetic socket failure")),
+    )
+    client = restricted.RestrictedUdsClient(
+        socket_path=path,
+        expected_uid=os.geteuid(),
+        expected_gid=os.getegid(),
+    )
+    with pytest.raises(restricted.RestrictedRuntimeUnavailable):
+        client._connect(__import__("time").monotonic() + 1)
+
+    class PeerFailureSocket:
+        def settimeout(self, _timeout):
+            pass
+
+        def connect(self, _path):
+            pass
+
+        def getsockopt(self, *_args):
+            raise OSError("synthetic SO_PEERCRED failure")
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(restricted.socket, "socket", lambda *_args: PeerFailureSocket())
+    with pytest.raises(restricted.RestrictedRuntimeUnavailable):
+        client._connect(__import__("time").monotonic() + 1)
+    listener.close()
+
+
+@pytest.mark.linux_only
 def test_socket_path_rejects_wrong_mode_type_and_symlink(tmp_path):
     from hermes_cli.restricted_runtime import (
         RestrictedRuntimeUnavailable,

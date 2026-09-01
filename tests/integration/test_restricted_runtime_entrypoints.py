@@ -158,6 +158,96 @@ def test_wrapper_rejects_invalid_authority_before_yaml_import(tmp_path):
 
 
 @pytest.mark.linux_only
+def test_python_m_main_delegates_before_early_import_side_effects(tmp_path):
+    _armed_root(tmp_path)
+    sentinel = tmp_path / "early-imported"
+    (tmp_path / "sitecustomize.py").write_text(
+        "import sys, types\n"
+        "class Sentinel(types.ModuleType):\n"
+        "    def __getattr__(self, name):\n"
+        f"        open({str(sentinel)!r}, 'w').write(name)\n"
+        "        return lambda *args, **kwargs: None\n"
+        "sys.modules['hermes_cli._subprocess_compat'] = Sentinel('hermes_cli._subprocess_compat')\n"
+        "sys.modules['hermes_cli.cli_output'] = Sentinel('hermes_cli.cli_output')\n",
+        encoding="utf-8",
+    )
+    env = os.environ.copy()
+    env["HERMES_HOME"] = str(tmp_path)
+    env["PYTHONPATH"] = os.pathsep.join([str(tmp_path), os.getcwd()])
+    result = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "gateway"],
+        text=True,
+        capture_output=True,
+        env=env,
+    )
+    assert (result.returncode, result.stdout, result.stderr) == (
+        77,
+        "",
+        "RESTRICTED_ENTRYPOINT_BLOCKED\n",
+    )
+    assert not sentinel.exists()
+
+
+@pytest.mark.linux_only
+def test_installed_console_script_uses_restricted_wrapper(tmp_path):
+    import shutil
+
+    _armed_root(tmp_path)
+    console_script = shutil.which("hermes")
+    assert console_script is not None
+    env = os.environ.copy()
+    env["HERMES_HOME"] = str(tmp_path)
+    result = subprocess.run(
+        [console_script, "gateway"], text=True, capture_output=True, env=env
+    )
+    assert (result.returncode, result.stdout, result.stderr) == (
+        77,
+        "",
+        "RESTRICTED_ENTRYPOINT_BLOCKED\n",
+    )
+
+
+@pytest.mark.linux_only
+def test_disable_restores_every_direct_guarded_entrypoint(tmp_path):
+    from hermes_cli.restricted_runtime import restricted_disable
+
+    _armed_root(tmp_path)
+    restricted_disable(tmp_path)
+    sentinel = tmp_path / "guard-passed"
+    (tmp_path / "sitecustomize.py").write_text(
+        "import os\n"
+        "from pathlib import Path\n"
+        "import hermes_cli.restricted_bootstrap as rb\n"
+        "original = rb.guard_restricted_entrypoint\n"
+        "def observed(*args, **kwargs):\n"
+        "    original(*args, **kwargs)\n"
+        "    Path(os.environ['RESTRICTED_GUARD_SENTINEL']).write_text('passed')\n"
+        "rb.guard_restricted_entrypoint = observed\n",
+        encoding="utf-8",
+    )
+    env = os.environ.copy()
+    env["HERMES_HOME"] = str(tmp_path)
+    env["PYTHONPATH"] = os.pathsep.join([str(tmp_path), os.getcwd()])
+    env["RESTRICTED_GUARD_SENTINEL"] = str(sentinel)
+    for module in (
+        "run_agent",
+        "gateway.run",
+        "tui_gateway.entry",
+        "acp_adapter.entry",
+        "cron.scheduler",
+    ):
+        sentinel.unlink(missing_ok=True)
+        subprocess.run(
+            [sys.executable, "-c", f"import {module}"],
+            text=True,
+            capture_output=True,
+            env=env,
+            timeout=20,
+        )
+        assert sentinel.read_text(encoding="utf-8") == "passed", module
+
+
+@pytest.mark.linux_only
 def test_preimported_agent_reference_is_blocked_after_enable(tmp_path):
     env = os.environ.copy()
     env["HERMES_HOME"] = str(tmp_path)

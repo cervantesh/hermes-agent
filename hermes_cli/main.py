@@ -61,6 +61,16 @@ try:
 except ModuleNotFoundError:
     pass
 
+# ``python -m hermes_cli.main`` is an alternate console entrypoint.  Delegate
+# before recovery, parser, Termux, TUI, or any other normal-startup import.
+# On an unarmed installation the wrapper lazily imports this module under its
+# canonical name and continues through the existing full CLI exactly once.
+if __name__ == "__main__":
+    from hermes_cli.restricted_entry import main as _restricted_console_main
+
+    _restricted_console_main()
+    raise SystemExit(0)
+
 # Windows: neutralize CPython's ``platform._syscmd_ver`` before anything else
 # imports — it shells out ``cmd /c ver`` (shell=True, no CREATE_NO_WINDOW), so
 # any dependency touching ``platform.uname()`` at import time flashes a

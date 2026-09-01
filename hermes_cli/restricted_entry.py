@@ -32,14 +32,14 @@ def _normal_main():
     return FullHermesArgparseParser.run()
 
 
-def _prepare_closed_runtime(root):
+def _prepare_closed_runtime(root, config_snapshot):
     from hermes_cli.restricted_runtime import (
         RestrictedAuthorityError,
         RestrictedStateStore,
         load_root_config,
     )
 
-    config = load_root_config(root)
+    config = load_root_config(root, snapshot=config_snapshot)
     has_authority = authority_artifact_exists(root)
     store = RestrictedStateStore(root)
     if config.enabled and not has_authority:
@@ -132,7 +132,7 @@ def main() -> None:
             run_repl,
         )
 
-        config, has_authority = _prepare_closed_runtime(root)
+        config, has_authority = _prepare_closed_runtime(root, scanner.config_snapshot)
         invocation = scanner.restricted_invocation
         if invocation is not None:
             # The interrupted-disable state deliberately admits only these
