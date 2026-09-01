@@ -53,13 +53,83 @@ def test_equivalent_quoted_or_escaped_reserved_keys_are_signals(tmp_path, key):
     assert config_has_restricted_signal(path) is True
 
 
+@pytest.mark.parametrize(
+    "key",
+    [
+        '"\\x72estricted_runtime"',
+        '"restric\\x74ed_runtime"',
+        '"restricted_runtim\\x65"',
+        '"\\u0072estricted_runtime"',
+        '"restric\\u0074ed_runtime"',
+        '"restricted_runtim\\u0065"',
+        '"\\U00000072estricted_runtime"',
+        '"restric\\U00000074ed_runtime"',
+        '"restricted_runtim\\U00000065"',
+        '"\\u0072estric\\x74ed\\U0000005frunt\\x69me"',
+    ],
+)
+def test_numeric_escapes_cannot_hide_any_reserved_key_character(tmp_path, key):
+    from hermes_cli.restricted_bootstrap import config_has_restricted_signal
+
+    path = tmp_path / "config.yaml"
+    path.write_text(f"{key}:\n  enabled: true\n", encoding="utf-8")
+    assert config_has_restricted_signal(path) is True
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '\ufeff"\\u0072estricted_runtime":\n  enabled: true\n',
+        '? "restric\\u0074ed_runtime"\n: {enabled: true}\n',
+        '"restric\\\n  ted_runtime":\n  enabled: true\n',
+    ],
+)
+def test_escaped_reserved_key_forms_remain_closed_at_yaml_boundaries(tmp_path, payload):
+    from hermes_cli.restricted_bootstrap import config_has_restricted_signal
+
+    path = tmp_path / "config.yaml"
+    path.write_text(payload, encoding="utf-8")
+    assert config_has_restricted_signal(path) is True
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        '# "restric\\u0074ed_runtime": is only a comment\nmodel: normal\n',
+        "'restric\\u0074ed_runtime': literal-backslash-key\nmodel: normal\n",
+        'description: "\\\\u0072estricted_runtime"\nmodel: normal\n',
+    ],
+)
+def test_nonsemantic_or_literal_backslash_spelling_is_not_a_signal(tmp_path, payload):
+    from hermes_cli.restricted_bootstrap import config_has_restricted_signal
+
+    path = tmp_path / "config.yaml"
+    path.write_text(payload, encoding="utf-8")
+    assert config_has_restricted_signal(path) is False
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        'description: "restric\\u0074ed_runtime"\nmodel: normal\n',
+        ('name: &reserved "restric\\u0074ed_runtime"\n*reserved:\n  enabled: true\n'),
+    ],
+)
+def test_escaped_reserved_value_is_a_conservative_alias_safe_signal(tmp_path, payload):
+    from hermes_cli.restricted_bootstrap import config_has_restricted_signal
+
+    path = tmp_path / "config.yaml"
+    path.write_text(payload, encoding="utf-8")
+    assert config_has_restricted_signal(path) is True
+
+
 def test_scanner_holds_one_config_snapshot_across_atomic_replace(tmp_path):
     from hermes_cli.restricted_bootstrap import RestrictedBootstrapScanner
     from hermes_cli.restricted_runtime import RestrictedYamlConfigLoader
 
     path = tmp_path / "config.yaml"
     path.write_text(
-        "restricted_runtime:\n"
+        '"restric\\u0074ed_runtime":\n'
         "  enabled: true\n"
         "  expected_policy_epoch: snapshot-policy\n"
         f"  expected_policy_digest: {'a' * 64}\n",
@@ -166,12 +236,19 @@ def test_wrapper_import_does_not_import_full_cli_or_yaml(monkeypatch):
     assert "model_tools" not in sys.modules
 
 
-def test_comment_signal_resolves_safely_then_uses_normal_path(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "# restricted_runtime example only\nmodel: nous\n",
+        'description: "restric\\u0074ed_runtime"\nmodel: nous\n',
+    ],
+)
+def test_conservative_signal_resolves_safely_then_uses_normal_path(
+    tmp_path, monkeypatch, payload
+):
     import hermes_cli.restricted_entry as entry
 
-    (tmp_path / "config.yaml").write_text(
-        "# restricted_runtime example only\nmodel: nous\n", encoding="utf-8"
-    )
+    (tmp_path / "config.yaml").write_text(payload, encoding="utf-8")
     monkeypatch.setenv("HERMES_HOME", str(tmp_path))
     monkeypatch.setattr(sys, "argv", ["hermes", "chat"])
     called = []

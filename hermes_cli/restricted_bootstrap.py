@@ -7,7 +7,6 @@ dotenv, YAML, providers, plugins, tools, recovery, or UI code can run.
 from __future__ import annotations
 
 import os
-import re
 import stat
 import sys
 from dataclasses import dataclass, field
@@ -76,16 +75,112 @@ def authority_artifact_exists(root: Path | None = None) -> bool:
     return _lexists(authority_path(root))
 
 
+def _is_hex_byte(value: int) -> bool:
+    return 48 <= value <= 57 or 65 <= value <= 70 or 97 <= value <= 102
+
+
+def _decode_double_quoted_scalar(raw: bytes, start: int) -> tuple[bytes | None, int]:
+    """Decode enough YAML double-quoted syntax to compare an exact key.
+
+    Numeric escapes are decoded generically rather than by enumerating the
+    characters in the reserved name. Other escapes cannot produce an ASCII
+    byte from that name and therefore leave a mismatch sentinel.
+    """
+
+    decoded = bytearray()
+    index = start + 1
+    while index < len(raw):
+        value = raw[index]
+        if value == ord('"'):
+            return bytes(decoded), index + 1
+        if value != ord("\\"):
+            decoded.append(value)
+            index += 1
+            continue
+        if index + 1 >= len(raw):
+            return None, len(raw)
+
+        marker = raw[index + 1]
+        width = {ord("x"): 2, ord("u"): 4, ord("U"): 8}.get(marker)
+        if width is not None:
+            digits = raw[index + 2 : index + 2 + width]
+            if len(digits) != width or not all(_is_hex_byte(item) for item in digits):
+                decoded.append(0)
+                index += 2
+                continue
+            try:
+                decoded.extend(chr(int(digits, 16)).encode("utf-8", "strict"))
+            except (UnicodeEncodeError, ValueError):
+                decoded.append(0)
+            index += 2 + width
+            continue
+        if marker in {ord('"'), ord("\\")}:
+            decoded.append(marker)
+            index += 2
+            continue
+        if marker in {ord("\r"), ord("\n")}:
+            index += 2
+            if marker == ord("\r") and index < len(raw) and raw[index] == ord("\n"):
+                index += 1
+            while index < len(raw) and raw[index] in {ord(" "), ord("\t")}:
+                index += 1
+            continue
+
+        decoded.append(0)
+        index += 2
+    return None, len(raw)
+
+
+def _skip_single_quoted_scalar(raw: bytes, start: int) -> int:
+    index = start + 1
+    while index < len(raw):
+        if raw[index] != ord("'"):
+            index += 1
+            continue
+        if index + 1 < len(raw) and raw[index + 1] == ord("'"):
+            index += 2
+            continue
+        return index + 1
+    return len(raw)
+
+
+def _escaped_reserved_scalar_signal(raw: bytes) -> bool:
+    """Find an escaped reserved scalar outside comments.
+
+    A matching scalar is a conservative signal even in value position because
+    YAML anchors can later reuse that scalar as a mapping key. The safe loader
+    decides whether the reserved root block actually exists.
+    """
+
+    index = 0
+    scalar_boundaries = b" \t\r\n[{,?:-"
+    while index < len(raw):
+        value = raw[index]
+        if value == ord("#") and (index == 0 or raw[index - 1] in b" \t\r\n"):
+            newline = raw.find(b"\n", index + 1)
+            index = len(raw) if newline < 0 else newline + 1
+            continue
+        at_scalar_boundary = (
+            index == 0
+            or (index == 3 and raw.startswith(b"\xef\xbb\xbf"))
+            or raw[index - 1] in scalar_boundaries
+        )
+        if value == ord("'") and at_scalar_boundary:
+            index = _skip_single_quoted_scalar(raw, index)
+            continue
+        if value != ord('"') or not at_scalar_boundary:
+            index += 1
+            continue
+
+        decoded, end = _decode_double_quoted_scalar(raw, index)
+        if decoded == RESERVED_CONFIG_NAME:
+            return True
+        index = max(end, index + 1)
+    return False
+
+
 def _reserved_name_signal(raw: bytes) -> bool:
-    if RESERVED_CONFIG_NAME in raw:
-        return True
-    normalized = re.sub(
-        rb"\\(?:x5f|u005f|U0000005f)",
-        b"_",
-        raw,
-        flags=re.IGNORECASE,
-    )
-    return RESERVED_CONFIG_NAME in normalized
+    return RESERVED_CONFIG_NAME in raw or _escaped_reserved_scalar_signal(raw)
 
 
 @dataclass(frozen=True)
