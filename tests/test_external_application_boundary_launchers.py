@@ -26,6 +26,15 @@ LAUNCHERS = [
     [sys.executable, "-m", "cli", "sentinel-arg"],
 ]
 
+GUARDED_LAUNCHERS = [
+    [sys.executable, "-S", os.fspath(ROOT / "batch_runner.py"), "sentinel-arg"],
+    [sys.executable, "-S", "-m", "acp_adapter.entry", "sentinel-arg"],
+    [sys.executable, "-S", os.fspath(ROOT / "cli.py"), "sentinel-arg"],
+    [sys.executable, "-S", os.fspath(ROOT / "run_agent.py"), "sentinel-arg"],
+    [sys.executable, "-S", "-m", "gateway.run", "sentinel-arg"],
+    [sys.executable, "-S", "-m", "hermes_cli.main", "chat", "sentinel-arg"],
+]
+
 
 def _armed_home(tmp_path: Path) -> tuple[Path, Path]:
     home = tmp_path / "home"
@@ -137,6 +146,28 @@ def test_invalid_marker_rejects_before_normal_launcher_imports(tmp_path):
     assert proc.returncode != 0
     assert "boundary rejected" in proc.stderr.lower()
     assert not sentinel.exists()
+
+
+@pytest.mark.parametrize("argv", GUARDED_LAUNCHERS)
+def test_guarded_bootstrap_import_never_swallows_transitive_missing_dependency(tmp_path, argv):
+    home, out = _armed_home(tmp_path)
+    env = os.environ.copy()
+    env.update(HERMES_HOME=os.fspath(home), BOUNDARY_OUT=os.fspath(out))
+    env.pop("_HERMES_EXTERNAL_APPLICATION_ACTIVE", None)
+    proc = subprocess.run(
+        argv,
+        cwd=ROOT,
+        env=env,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode != 0
+    assert "No module named 'yaml'" in proc.stderr
+    assert "No module named 'rich'" not in proc.stderr
+    assert not out.exists()
 
 
 @pytest.mark.parametrize(

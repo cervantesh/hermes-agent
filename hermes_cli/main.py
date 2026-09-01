@@ -58,8 +58,9 @@ Usage:
 # setup is skipped on Windows — degraded, not broken.  POSIX is unaffected.
 try:
     import hermes_bootstrap  # noqa: F401
-except ModuleNotFoundError:
-    pass
+except ModuleNotFoundError as exc:
+    if exc.name != "hermes_bootstrap":
+        raise
 
 # Windows: neutralize CPython's ``platform._syscmd_ver`` before anything else
 # imports — it shells out ``cmd /c ver`` (shell=True, no CREATE_NO_WINDOW), so
