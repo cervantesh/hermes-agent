@@ -61,8 +61,7 @@ def _armed_home(tmp_path: Path) -> tuple[Path, Path]:
     return home, out
 
 
-@pytest.mark.parametrize("argv", LAUNCHERS)
-def test_every_launcher_delegates_before_normal_lifecycle(tmp_path, argv):
+def _assert_armed_delegation(tmp_path: Path, argv: list[str]) -> None:
     home, out = _armed_home(tmp_path)
     env = os.environ.copy()
     env.update(HERMES_HOME=os.fspath(home), BOUNDARY_OUT=os.fspath(out))
@@ -82,6 +81,23 @@ def test_every_launcher_delegates_before_normal_lifecycle(tmp_path, argv):
     assert "sentinel-arg" in observed["argv"]
     assert observed["stdin"] == "inherited-input"
     assert observed["recursion"] == "1"
+
+
+@pytest.mark.parametrize("argv", LAUNCHERS)
+def test_every_launcher_delegates_before_normal_lifecycle(tmp_path, argv):
+    _assert_armed_delegation(tmp_path, argv)
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize("argv", LAUNCHERS)
+def test_native_windows_armed_delegation_preserves_exact_exit(tmp_path, argv):
+    _assert_armed_delegation(tmp_path, argv)
+
+
+@pytest.mark.macos_only
+@pytest.mark.parametrize("argv", LAUNCHERS)
+def test_native_macos_armed_delegation_preserves_exact_exit(tmp_path, argv):
+    _assert_armed_delegation(tmp_path, argv)
 
 
 @pytest.mark.parametrize("argv", LAUNCHERS)
