@@ -246,7 +246,9 @@ def detect_launcher(
     return selected
 
 
-def admit(argv: Sequence[str] | None = None, *, launcher: str | None = None) -> list[str] | None:
+def admit(
+    argv: Sequence[str] | None = None, *, launcher: str | None = None
+) -> tuple[list[str], str] | None:
     values = list(sys.argv if argv is None else argv)
     selected = launcher or detect_launcher(values)
     if selected is None:
@@ -256,8 +258,9 @@ def admit(argv: Sequence[str] | None = None, *, launcher: str | None = None) -> 
         return None
     if os.environ.get(_RECURSION_ENV):
         raise BoundaryRejected("recursive external application delegation is forbidden")
-    command, _ = _validate_armed_state(path)
-    return [*command, *values[1:]]
+    command, payload = _validate_armed_state(path)
+    validated_executable = payload["executable"]["path"]
+    return ([*command, *values[1:]], validated_executable)
 
 
 def manage(argv: Sequence[str]) -> int:
@@ -327,18 +330,22 @@ def _print_version() -> int:
     return 0
 
 
-def _delegate(command: Sequence[str]) -> int:
+def _delegate(command: Sequence[str], *, executable: str) -> int:
     environment = os.environ.copy()
     environment[_RECURSION_ENV] = "1"
     if os.name == "nt":
-        process = subprocess.Popen(list(command), env=environment, shell=False)
+        process = subprocess.Popen(
+            list(command), executable=executable, env=environment, shell=False
+        )
         return process.wait()
-    os.execvpe(command[0], list(command), environment)
-    raise AssertionError("execvpe returned unexpectedly")
+    os.execve(executable, list(command), environment)
+    raise AssertionError("execve returned unexpectedly")
 
 
 def _terminate(code: int, *, cause: BaseException | None = None) -> None:
     """End a terminal boundary decision even when Python inspect mode is active."""
+    if os.name == "nt" and 0x80000000 <= code <= 0xFFFFFFFF:
+        code -= 0x100000000
     if not sys.flags.inspect:
         if cause is not None:
             raise SystemExit(code) from cause
@@ -348,8 +355,6 @@ def _terminate(code: int, *, cause: BaseException | None = None) -> None:
             stream.flush()
         except (AttributeError, OSError, ValueError):
             pass
-    if os.name == "nt" and 0x80000000 <= code <= 0xFFFFFFFF:
-        code -= 0x100000000
     os._exit(code)
 
 
@@ -384,9 +389,10 @@ def bootstrap_admit(
     if path.exists() and launcher == "hermes" and arguments == ["--version"]:
         _terminate(_print_version())
     try:
-        command = admit(values, launcher=launcher)
-        if command is not None:
-            _terminate(_delegate(command))
+        admission = admit(values, launcher=launcher)
+        if admission is not None:
+            command, executable = admission
+            _terminate(_delegate(command, executable=executable))
     except (BoundaryRejected, OSError) as exc:
         print(f"Hermes application boundary rejected launch: {exc}", file=sys.stderr)
         _terminate(78, cause=exc)

@@ -274,6 +274,66 @@ def test_inspect_termination_converts_only_windows_dword_high_bit(monkeypatch):
     assert observed == [23, 0x7FFFFFFF, -1]
 
 
+def test_non_inspect_termination_converts_windows_dword_high_bit(monkeypatch):
+    monkeypatch.setattr(boundary.sys, "flags", SimpleNamespace(inspect=0))
+    monkeypatch.setattr(boundary.os, "name", "nt")
+
+    with pytest.raises(SystemExit) as raised:
+        boundary._terminate(0xFFFFFFFE)
+
+    assert raised.value.code == -2
+
+
+def test_posix_delegate_executes_validated_image_but_preserves_configured_argv0(
+    monkeypatch,
+):
+    observed = {}
+
+    def fake_execve(executable, argv, environment):
+        observed.update(executable=executable, argv=argv, environment=environment)
+        raise RuntimeError("exec intercepted")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(boundary.os, "name", "posix")
+        patch.setattr(boundary.os, "execve", fake_execve)
+        with pytest.raises(RuntimeError, match="exec intercepted"):
+            boundary._delegate(
+                ["/bin/sh", "-c", "echo delegated"], executable="/bin/busybox"
+            )
+
+    assert observed["executable"] == "/bin/busybox"
+    assert observed["argv"][0] == "/bin/sh"
+    assert observed["environment"][boundary._RECURSION_ENV] == "1"
+
+
+def test_windows_delegate_executes_validated_image_but_preserves_configured_argv0(
+    monkeypatch,
+):
+    observed = {}
+
+    class FakeProcess:
+        def wait(self):
+            return 23
+
+    def fake_popen(argv, **kwargs):
+        observed.update(argv=argv, kwargs=kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(boundary.subprocess, "Popen", fake_popen)
+
+    assert (
+        boundary._delegate(
+            ["python.exe", "/d", "/c", "exit /b 23"],
+            executable=r"C:\validated\python.exe",
+        )
+        == 23
+    )
+    assert observed["argv"][0] == "python.exe"
+    assert observed["kwargs"]["executable"] == r"C:\validated\python.exe"
+    assert observed["kwargs"]["shell"] is False
+    assert observed["kwargs"]["env"][boundary._RECURSION_ENV] == "1"
+
+
 def test_inspect_termination_leaves_non_windows_code_unchanged(monkeypatch):
     observed = []
     monkeypatch.setattr(boundary.sys, "flags", SimpleNamespace(inspect=1))

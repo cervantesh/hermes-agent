@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LAUNCHERS = [
     [sys.executable, "-m", "hermes_cli.main", "chat", "sentinel-arg"],
     [sys.executable, os.fspath(ROOT / "run_agent.py"), "--query", "sentinel-arg"],
+    [sys.executable, "-m", "acp_adapter", "sentinel-arg"],
     [sys.executable, "-m", "acp_adapter.entry", "sentinel-arg"],
     [sys.executable, "-m", "gateway.run", "sentinel-arg"],
     [sys.executable, "-m", "tui_gateway.entry", "sentinel-arg"],
@@ -29,6 +30,7 @@ LAUNCHERS = [
 
 GUARDED_LAUNCHERS = [
     [sys.executable, "-S", os.fspath(ROOT / "batch_runner.py"), "sentinel-arg"],
+    [sys.executable, "-S", "-m", "acp_adapter", "sentinel-arg"],
     [sys.executable, "-S", "-m", "acp_adapter.entry", "sentinel-arg"],
     [sys.executable, "-S", os.fspath(ROOT / "cli.py"), "sentinel-arg"],
     [sys.executable, "-S", os.fspath(ROOT / "run_agent.py"), "sentinel-arg"],
@@ -118,6 +120,60 @@ def test_every_launcher_delegates_before_normal_lifecycle(tmp_path, argv):
 @pytest.mark.parametrize("argv", LAUNCHERS)
 def test_native_windows_armed_delegation_preserves_exact_exit(tmp_path, argv):
     _assert_armed_delegation(tmp_path, argv)
+
+
+@pytest.mark.windows_only
+def test_native_windows_non_inspect_preserves_high_bit_exit_code():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import hermes_application_boundary as b; b._terminate(0xFFFFFFFE)",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+
+    assert proc.returncode == 0xFFFFFFFE, proc.stderr
+
+
+@pytest.mark.windows_only
+def test_native_windows_delegates_to_the_validated_executable_identity(
+    tmp_path, monkeypatch
+):
+    home = tmp_path / "home"
+    home.mkdir()
+    validated_executable = tmp_path / "python.exe"
+    shutil.copy2(
+        Path(os.environ["SystemRoot"]) / "System32" / "cmd.exe", validated_executable
+    )
+    command = ["python.exe", "/d", "/c", "echo HANDLER_D & exit /b 23"]
+    (home / "config.yaml").write_text(
+        "application:\n  external:\n    command:\n"
+        + "".join(f"      - {json.dumps(part)}\n" for part in command),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    marker = home / "state" / "application-boundary.json"
+    _strict_atomic_json_write(marker, _build_marker(command))
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "gateway.run", "sentinel-arg"],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "HERMES_HOME": os.fspath(home),
+            "PYTHONPATH": os.fspath(ROOT),
+        },
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+
+    assert proc.returncode == 23, proc.stderr
+    assert "HANDLER_D" in proc.stdout
 
 
 @pytest.mark.macos_only
