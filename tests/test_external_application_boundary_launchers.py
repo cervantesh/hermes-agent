@@ -62,6 +62,27 @@ def _armed_home(tmp_path: Path) -> tuple[Path, Path]:
     return home, out
 
 
+def _armed_nonreading_home(tmp_path: Path) -> tuple[Path, Path]:
+    home = tmp_path / "home"
+    out = tmp_path / "observed.json"
+    handler = tmp_path / "handler-no-stdin.py"
+    handler.write_text(
+        "import json, os, sys\n"
+        "open(os.environ['BOUNDARY_OUT'],'w',encoding='utf-8').write(json.dumps(sys.argv[1:]))\n"
+        "raise SystemExit(23)\n",
+        encoding="utf-8",
+    )
+    command = [sys.executable, os.fspath(handler)]
+    home.mkdir()
+    (home / "config.yaml").write_text(
+        "application:\n  external:\n    command:\n"
+        + "".join(f"      - {json.dumps(part)}\n" for part in command),
+        encoding="utf-8",
+    )
+    _strict_atomic_json_write(home / "state" / "application-boundary.json", _build_marker(command))
+    return home, out
+
+
 def _assert_armed_delegation(tmp_path: Path, argv: list[str]) -> None:
     home, out = _armed_home(tmp_path)
     env = os.environ.copy()
@@ -601,6 +622,141 @@ def test_interpreter_option_value_cannot_become_module_selector(tmp_path):
     assert proc.returncode == 0, proc.stderr
     assert "consumer-ok" in proc.stdout
     assert not out.exists()
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize("version", ["3.11", "3.13"])
+@pytest.mark.parametrize("selector", [["-i", "-m", "gateway.run"], ["-im", "gateway.run"]])
+def test_inspect_mode_cannot_resume_after_delegated_handler(tmp_path, version, selector):
+    home, out = _armed_nonreading_home(tmp_path)
+    sentinel = tmp_path / "stdin-executed"
+    proc = subprocess.run(
+        ["py", f"-{version}", *selector, "sentinel-arg"],
+        cwd=ROOT,
+        env={
+            **os.environ,
+            "HERMES_HOME": os.fspath(home),
+            "BOUNDARY_OUT": os.fspath(out),
+            "PYTHONPATH": os.fspath(ROOT),
+        },
+        input=f"open({os.fspath(sentinel)!r}, 'w').write('executed')\n",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 23, proc.stderr
+    assert json.loads(out.read_text(encoding="utf-8")) == ["sentinel-arg"]
+    assert not sentinel.exists()
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize("version", ["3.11", "3.13"])
+@pytest.mark.parametrize("selector", [["-i", "-m", "gateway.run"], ["-im", "gateway.run"]])
+def test_inspect_mode_cannot_resume_after_armed_rejection(tmp_path, version, selector):
+    home = tmp_path / "home"
+    marker = home / "state" / "application-boundary.json"
+    marker.parent.mkdir(parents=True)
+    marker.write_text("{", encoding="utf-8")
+    sentinel = tmp_path / "stdin-executed"
+    proc = subprocess.run(
+        ["py", f"-{version}", *selector],
+        cwd=ROOT,
+        env={**os.environ, "HERMES_HOME": os.fspath(home), "PYTHONPATH": os.fspath(ROOT)},
+        input=f"open({os.fspath(sentinel)!r}, 'w').write('executed')\n",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 78, proc.stderr
+    assert "boundary rejected" in proc.stderr.lower()
+    assert not sentinel.exists()
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize(
+    ("action", "expected", "malformed_marker", "expected_text"),
+    [
+        ("status", 1, True, "application boundary invalid"),
+        ("enable", 0, False, "application boundary enabled"),
+        ("disable", 0, True, "application boundary disabled"),
+    ],
+)
+def test_inspect_mode_cannot_resume_after_recovery_command(
+    tmp_path, action, expected, malformed_marker, expected_text
+):
+    home = tmp_path / "home"
+    handler = tmp_path / "handler.py"
+    handler.write_text("raise SystemExit(23)\n", encoding="utf-8")
+    home.mkdir()
+    (home / "config.yaml").write_text(
+        "application:\n  external:\n    command:\n"
+        f"      - {json.dumps(sys.executable)}\n"
+        f"      - {json.dumps(os.fspath(handler))}\n",
+        encoding="utf-8",
+    )
+    if malformed_marker:
+        marker = home / "state" / "application-boundary.json"
+        marker.parent.mkdir()
+        marker.write_text("{", encoding="utf-8")
+    sentinel = tmp_path / "stdin-executed"
+    proc = subprocess.run(
+        [sys.executable, "-i", "-m", "hermes_cli.main", "application", action],
+        cwd=ROOT,
+        env={**os.environ, "HERMES_HOME": os.fspath(home), "PYTHONPATH": os.fspath(ROOT)},
+        input=f"open({os.fspath(sentinel)!r}, 'w').write('executed')\n",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == expected, proc.stderr
+    assert expected_text in proc.stdout + proc.stderr
+    assert not sentinel.exists()
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize("marker_present", [False, True])
+@pytest.mark.parametrize("link_kind", ["junction", "symlink"])
+def test_missing_owner_probe_canonicalizes_linked_profile_root(
+    tmp_path, marker_present, link_kind
+):
+    install = tmp_path / "install"
+    profile = install / "profiles" / "coder"
+    profile.mkdir(parents=True)
+    alias = tmp_path / "profile-link"
+    if link_kind == "junction":
+        linked = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", os.fspath(alias), os.fspath(profile)],
+            text=True,
+            capture_output=True,
+            timeout=20,
+        )
+        assert linked.returncode == 0, linked.stderr
+    else:
+        try:
+            alias.symlink_to(profile, target_is_directory=True)
+        except OSError as exc:
+            pytest.skip(f"Windows symlink creation is unavailable: {exc}")
+    if marker_present:
+        marker = install / "state" / "application-boundary.json"
+        marker.parent.mkdir(parents=True)
+        marker.write_text("{}", encoding="utf-8")
+    mixed = tmp_path / "mixed"
+    mixed.mkdir()
+    shutil.copy2(ROOT / "hermes_bootstrap.py", mixed / "hermes_bootstrap.py")
+    shutil.copy2(ROOT / "hermes_entrypoints.py", mixed / "hermes_entrypoints.py")
+    proc = subprocess.run(
+        [sys.executable, "-c", "import hermes_entrypoints; hermes_entrypoints._admit('hermes')"],
+        cwd=mixed,
+        env={**os.environ, "HERMES_HOME": os.fspath(alias), "PYTHONPATH": os.fspath(mixed)},
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    if marker_present:
+        assert proc.returncode != 0
+        assert "hermes_application_boundary" in proc.stderr
+    else:
+        assert proc.returncode == 0, proc.stderr
 
 
 @pytest.mark.parametrize("marker_state", ["absent", "present", "inaccessible"])

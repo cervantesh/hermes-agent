@@ -334,6 +334,20 @@ def _delegate(command: Sequence[str]) -> int:
     raise AssertionError("execvpe returned unexpectedly")
 
 
+def _terminate(code: int, *, cause: BaseException | None = None) -> None:
+    """End a terminal boundary decision even when Python inspect mode is active."""
+    if not sys.flags.inspect:
+        if cause is not None:
+            raise SystemExit(code) from cause
+        raise SystemExit(code)
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.flush()
+        except (AttributeError, OSError, ValueError):
+            pass
+    os._exit(code)
+
+
 def bootstrap_admit(
     argv: Sequence[str] | None = None,
     *,
@@ -355,14 +369,14 @@ def bootstrap_admit(
     if launcher == "hermes" and len(arguments) == 2 and arguments[0] == "application" and arguments[1] in {
         "status", "enable", "disable"
     }:
-        raise SystemExit(manage(arguments))
+        _terminate(manage(arguments))
     path = marker_path()
     if path.exists() and launcher == "hermes" and arguments == ["--version"]:
-        raise SystemExit(_print_version())
+        _terminate(_print_version())
     try:
         command = admit(values, launcher=launcher)
     except BoundaryRejected as exc:
         print(f"Hermes application boundary rejected launch: {exc}", file=sys.stderr)
-        raise SystemExit(78) from exc
+        _terminate(78, cause=exc)
     if command is not None:
-        raise SystemExit(_delegate(command))
+        _terminate(_delegate(command))

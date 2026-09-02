@@ -238,7 +238,7 @@ suppress_platform_ver_console()
 def _boundary_marker_is_provably_absent() -> bool:
     configured = os.environ.get("HERMES_HOME", "").strip()
     if configured:
-        root = os.path.abspath(os.path.expanduser(configured))
+        root = os.path.realpath(os.path.expanduser(configured))
         if os.path.basename(os.path.dirname(root)) == "profiles":
             root = os.path.dirname(os.path.dirname(root))
     elif _IS_WINDOWS:
