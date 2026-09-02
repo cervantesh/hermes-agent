@@ -677,6 +677,41 @@ def test_inspect_mode_preserves_negative_windows_handler_exit_bits(tmp_path):
 @pytest.mark.windows_only
 @pytest.mark.parametrize("version", ["3.11", "3.13"])
 @pytest.mark.parametrize("selector", [["-i", "-m", "gateway.run"], ["-im", "gateway.run"]])
+def test_inspect_mode_fails_closed_if_armed_executable_disappears(
+    tmp_path, version, selector
+):
+    home = tmp_path / "home"
+    home.mkdir()
+    executable = tmp_path / "removed-python.exe"
+    shutil.copy2(sys.executable, executable)
+    handler = tmp_path / "handler.py"
+    handler.write_text("raise SystemExit(23)\n", encoding="utf-8")
+    command = [os.fspath(executable), os.fspath(handler)]
+    (home / "config.yaml").write_text(
+        "application:\n  external:\n    command:\n"
+        + "".join(f"      - {json.dumps(part)}\n" for part in command),
+        encoding="utf-8",
+    )
+    _strict_atomic_json_write(home / "state" / "application-boundary.json", _build_marker(command))
+    executable.unlink()
+    sentinel = tmp_path / "stdin-executed"
+    proc = subprocess.run(
+        ["py", f"-{version}", *selector],
+        cwd=ROOT,
+        env={**os.environ, "HERMES_HOME": os.fspath(home), "PYTHONPATH": os.fspath(ROOT)},
+        input=f"open({os.fspath(sentinel)!r}, 'w').write('executed')\n",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 78, proc.stderr
+    assert "boundary rejected" in proc.stderr.lower()
+    assert not sentinel.exists()
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize("version", ["3.11", "3.13"])
+@pytest.mark.parametrize("selector", [["-i", "-m", "gateway.run"], ["-im", "gateway.run"]])
 def test_inspect_mode_cannot_resume_after_armed_rejection(tmp_path, version, selector):
     home = tmp_path / "home"
     marker = home / "state" / "application-boundary.json"

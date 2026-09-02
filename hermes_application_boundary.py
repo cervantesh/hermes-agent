@@ -377,8 +377,8 @@ def bootstrap_admit(
         _terminate(_print_version())
     try:
         command = admit(values, launcher=launcher)
-    except BoundaryRejected as exc:
+        if command is not None:
+            _terminate(_delegate(command))
+    except (BoundaryRejected, OSError) as exc:
         print(f"Hermes application boundary rejected launch: {exc}", file=sys.stderr)
         _terminate(78, cause=exc)
-    if command is not None:
-        _terminate(_delegate(command))
