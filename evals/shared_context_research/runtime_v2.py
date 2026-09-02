@@ -373,6 +373,23 @@ def _consumer_body_v2(
     )
 
 
+def _cleanup_timed_out_consumer(kb, conn, task_id: str) -> None:
+    """Terminate and account for a consumer that exceeded the fixture deadline."""
+
+    timed_out = set(kb.enforce_max_runtime(conn))
+    if task_id not in timed_out:
+        reclaimed = kb.reclaim_task(
+            conn,
+            task_id,
+            reason="shared-context research fixture deadline exceeded",
+        )
+        if not reclaimed:
+            raise RuntimeError(
+                f"consumer {task_id} exceeded its deadline but could not be reclaimed"
+            )
+    kb.reap_worker_zombies()
+
+
 def _run_card_with_preview(
     kb,
     conn,
@@ -421,6 +438,7 @@ def _run_card_with_preview(
         if current is not None and current.status in terminal:
             break
     else:
+        _cleanup_timed_out_consumer(kb, conn, task_id)
         raise TimeoutError(f"consumer {task_id} did not finish")
     _wait_worker_exit(current)
     kb.reap_worker_zombies()
