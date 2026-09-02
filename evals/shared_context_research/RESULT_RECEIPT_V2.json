@@ -1,0 +1,21 @@
+{
+  "adversarial_review_sha256": "731affe4251bc76140101a86cda5f511caef503d9709892140bf82eae1953e05",
+  "decision": {
+    "controls_ok": true,
+    "expanded": false,
+    "formal_outcome": "INCONCLUSIVE",
+    "invalid_fixtures": [
+      "ordered_dependency_plan"
+    ],
+    "product_label": null,
+    "reason": "invalid_common_producer_pair_or_integrity"
+  },
+  "observations_sha256": "9f12e2acea6ce5ba413edb191ee277c543345d02a3cc63f48c67c048512cfbcf",
+  "ownership_refresh_sha256": "ef10699d559e6fd10a5e00508ba6c3f88e90f319b49ac981c50bf4a61cff4d74",
+  "pilot_result_sha256": "245703c47b71b08ecade3c731b24e2f0c91e614bc62e3100168d747108eed6c1",
+  "private_raw_sha256": "407f96b9251cd5d2e7ea531893078314e8d297c2287f01e620a34d0561527335",
+  "product_adjudication_sha256": "19658d8763acab07cd4264ef7e788080b84e23c17bcb9324527ebdfd88bb7f68",
+  "protocol_seal": "PROTOCOL_SEAL_V2.json",
+  "source_manifest_sha256": "a911c9d52492e1c7a0a3aeb3d02acf120f7514fa52e4a115c66c2d7b4a45df12",
+  "target_revision": "180291162ff4df0d42b5dc4fecd08005cf7cebf9"
+}

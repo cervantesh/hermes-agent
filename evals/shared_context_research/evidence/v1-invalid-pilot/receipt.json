@@ -1,0 +1,33 @@
+{
+  "decision": {
+    "gate": {
+      "complete": false,
+      "expand": false,
+      "invalid_pairs": [
+        "compact_release_map",
+        "ordered_dependency_plan",
+        "artifact_policy_join",
+        "distractor_filtered_catalog"
+      ],
+      "reason": "producer_validation_invalidated_pairs"
+    },
+    "integrity_ok": false,
+    "verdict": "INCONCLUSIVE"
+  },
+  "observation_count": 18,
+  "observations_sha256": "a4527331aacf6a85917f88cb5bf7b0ed664d32c8b3bb9116d36deab1dca0c779",
+  "pilot_gate": {
+    "complete": false,
+    "expand": false,
+    "invalid_pairs": [
+      "compact_release_map",
+      "ordered_dependency_plan",
+      "artifact_policy_join",
+      "distractor_filtered_catalog"
+    ],
+    "reason": "producer_validation_invalidated_pairs"
+  },
+  "protocol_sha256": "0607802bebfe03404e4c9b02b3aef0c31e1b61f2587d0a3e182a28c4a3873ed1",
+  "raw_sha256": "37c42f7fb6f5d0cd8a3d9ae004e92df6f44418342cb368389416edbe2eee1a41",
+  "target_revision": "180291162ff4df0d42b5dc4fecd08005cf7cebf9"
+}

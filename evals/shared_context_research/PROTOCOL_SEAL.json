@@ -1,0 +1,12 @@
+{
+  "sealed_at": "2026-09-01",
+  "target_revision": "180291162ff4df0d42b5dc4fecd08005cf7cebf9",
+  "harness_base_revision": "34931694f2f44597a862bea48114b316cb09ab71",
+  "files": {
+    "OWNERSHIP_AUDIT.md": "6fed084636d31b811bdd6710d5666c173f63a754c454af2bf05fc0cfc654ae6d",
+    "PREFLIGHT_RECEIPT.md": "01933589150be2ce07a58d28bcb72f10c00763442c8d8a8926770cea47c66c57",
+    "PROTOCOL_ADVERSARIAL_REVIEW.md": "d5f3f05bca4f534170ecf6fa1cfbcc98a821eaa9e725d2d949e42854dd8bbe58",
+    "PROTOCOL_FREEZE.md": "0607802bebfe03404e4c9b02b3aef0c31e1b61f2587d0a3e182a28c4a3873ed1",
+    "RESEARCH_FRAME.md": "8bfeb1705763f34be769c998e01e208ed8b567fc1e4063562a01f8dda47c216d"
+  }
+}

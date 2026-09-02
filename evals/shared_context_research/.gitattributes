@@ -1,0 +1,4 @@
+# Evidence receipts and their manifests are byte-bound. Preserve every file in
+# this package exactly as committed across Windows and POSIX checkouts.
+* -text
+** -text
