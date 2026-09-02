@@ -416,3 +416,164 @@ def test_gate_owned_recovery_bypasses_invalid_marker(tmp_path, arguments, expect
         timeout=20,
     )
     assert proc.returncode == expected, proc.stderr
+
+
+@pytest.mark.windows_only
+def test_windows_native_fallback_root_marker_cannot_be_missed(tmp_path):
+    userprofile = tmp_path / "profile"
+    marker = userprofile / "AppData" / "Local" / "hermes" / "state" / "application-boundary.json"
+    marker.parent.mkdir(parents=True)
+    marker.write_text("{", encoding="utf-8")
+    env = os.environ.copy()
+    env.pop("HERMES_HOME", None)
+    env.pop("LOCALAPPDATA", None)
+    env["USERPROFILE"] = os.fspath(userprofile)
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "chat"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 78, proc.stderr
+    assert "boundary rejected" in proc.stderr.lower()
+
+
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "run_agent.py",
+        "hermes_cli/main.py",
+        "gateway/run.py",
+        "acp_adapter/entry.py",
+        "tui_gateway/entry.py",
+        "cron/scheduler.py",
+    ],
+)
+def test_suffix_collision_script_has_no_launcher_authority(tmp_path, relative):
+    home, out = _armed_home(tmp_path)
+    script = tmp_path / relative
+    script.parent.mkdir(parents=True, exist_ok=True)
+    script.write_text("import hermes_bootstrap\nprint('consumer-ok')\n", encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        HERMES_HOME=os.fspath(home),
+        BOUNDARY_OUT=os.fspath(out),
+        PYTHONPATH=os.fspath(ROOT),
+    )
+    proc = subprocess.run(
+        [sys.executable, os.fspath(script), "sentinel-arg"],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "consumer-ok" in proc.stdout
+    assert not out.exists()
+
+
+def test_gateway_module_pair_in_consumer_arguments_is_not_execution_selector(tmp_path):
+    home, out = _armed_home(tmp_path)
+    consumer = tmp_path / "consumer.py"
+    consumer.write_text("import gateway\nprint('consumer-ok')\n", encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        HERMES_HOME=os.fspath(home),
+        BOUNDARY_OUT=os.fspath(out),
+        PYTHONPATH=os.fspath(ROOT),
+    )
+    proc = subprocess.run(
+        [sys.executable, os.fspath(consumer), "-m", "gateway.run"],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "consumer-ok" in proc.stdout
+    assert not out.exists()
+
+
+@pytest.mark.parametrize("marker_state", ["absent", "present", "inaccessible"])
+def test_lightweight_shim_missing_owner_is_marker_aware(tmp_path, marker_state):
+    mixed = tmp_path / "mixed"
+    mixed.mkdir()
+    shutil.copy2(ROOT / "hermes_bootstrap.py", mixed / "hermes_bootstrap.py")
+    shutil.copy2(ROOT / "hermes_entrypoints.py", mixed / "hermes_entrypoints.py")
+    home = tmp_path / "home"
+    if marker_state == "present":
+        marker = home / "state" / "application-boundary.json"
+        marker.parent.mkdir(parents=True)
+        marker.write_text("{}", encoding="utf-8")
+    statement = "import hermes_entrypoints; hermes_entrypoints._admit('hermes')"
+    if marker_state == "inaccessible":
+        statement = (
+            "import hermes_bootstrap, hermes_entrypoints; "
+            "hermes_bootstrap._boundary_marker_is_provably_absent="
+            "lambda: (_ for _ in ()).throw(PermissionError('denied')); "
+            "hermes_entrypoints._admit('hermes')"
+        )
+    proc = subprocess.run(
+        [sys.executable, "-c", statement],
+        cwd=mixed,
+        env={**os.environ, "HERMES_HOME": os.fspath(home), "PYTHONPATH": os.fspath(mixed)},
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    if marker_state == "absent":
+        assert proc.returncode == 0, proc.stderr
+    elif marker_state == "present":
+        assert proc.returncode != 0
+    else:
+        assert proc.returncode != 0
+        assert "PermissionError" in proc.stderr
+
+
+def test_lightweight_shim_propagates_transitive_owner_dependency_loss(tmp_path):
+    mixed = tmp_path / "mixed"
+    mixed.mkdir()
+    shutil.copy2(ROOT / "hermes_bootstrap.py", mixed / "hermes_bootstrap.py")
+    shutil.copy2(ROOT / "hermes_entrypoints.py", mixed / "hermes_entrypoints.py")
+    (mixed / "hermes_application_boundary.py").write_text(
+        "raise ModuleNotFoundError(\"No module named 'yaml'\", name='yaml')\n",
+        encoding="utf-8",
+    )
+    proc = subprocess.run(
+        [sys.executable, "-c", "import hermes_entrypoints; hermes_entrypoints._admit('hermes')"],
+        cwd=mixed,
+        env={**os.environ, "HERMES_HOME": os.fspath(tmp_path / "home"), "PYTHONPATH": os.fspath(mixed)},
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode != 0
+    assert "No module named 'yaml'" in proc.stderr
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["application"],
+        ["application", "unknown"],
+        ["application", "status", "extra"],
+        ["application", "enable", "extra"],
+        ["application", "disable", "extra"],
+    ],
+)
+def test_unsupported_application_arguments_delegate_when_armed(tmp_path, arguments):
+    home, out = _armed_home(tmp_path)
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", *arguments],
+        cwd=ROOT,
+        env={**os.environ, "HERMES_HOME": os.fspath(home), "BOUNDARY_OUT": os.fspath(out)},
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 23, proc.stderr
+    assert json.loads(out.read_text(encoding="utf-8"))["argv"] == arguments

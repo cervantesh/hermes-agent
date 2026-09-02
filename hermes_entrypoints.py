@@ -8,7 +8,15 @@ import hermes_bootstrap  # noqa: F401
 
 
 def _admit(launcher: str) -> None:
-    from hermes_application_boundary import bootstrap_admit
+    try:
+        from hermes_application_boundary import bootstrap_admit
+    except ModuleNotFoundError as exc:
+        if (
+            exc.name == "hermes_application_boundary"
+            and hermes_bootstrap._boundary_marker_is_provably_absent()
+        ):
+            return
+        raise
 
     bootstrap_admit(
         sys.argv,

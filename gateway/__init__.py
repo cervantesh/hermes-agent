@@ -21,7 +21,11 @@ try:
     _module_index = _original_argv.index("-m")
 except ValueError:
     _module_index = -1
-if _module_index >= 0 and tuple(_original_argv[_module_index + 1 : _module_index + 2]) == ("gateway.run",):
+if (
+    _sys.argv[0] == "-m"
+    and _module_index >= 0
+    and tuple(_original_argv[_module_index + 1 : _module_index + 2]) == ("gateway.run",)
+):
     _hermes_bootstrap.bootstrap_admit(
         [__file__.replace("__init__.py", "run.py"), *_original_argv[_module_index + 2 :]],
         importer_path=__file__,

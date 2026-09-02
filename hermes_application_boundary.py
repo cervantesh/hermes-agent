@@ -43,7 +43,11 @@ def installation_root() -> Path:
         return root
     if os.name == "nt":
         local = os.environ.get("LOCALAPPDATA", "").strip()
-        return (Path(local) / "hermes" if local else Path.home() / ".hermes").resolve()
+        if local:
+            return (Path(local) / "hermes").resolve()
+        profile = os.environ.get("USERPROFILE", "").strip()
+        base = Path(profile) if profile else Path.home()
+        return (base / "AppData" / "Local" / "hermes").resolve()
     return (Path.home() / ".hermes").resolve()
 
 
@@ -220,17 +224,21 @@ def detect_launcher(
         return selected
     if not importer_is_main:
         return None
-    importer = os.fspath(importer_path).replace("\\", "/").lower()
+    root = Path(__file__).resolve().parent
     provenance = {
-        "hermes": ("hermes_cli/main.py", "cli.py"),
-        "hermes-agent": ("run_agent.py",),
-        "hermes-acp": ("acp_adapter/entry.py",),
-        "batch-runner": ("batch_runner.py",),
-        "gateway": ("gateway/run.py", "gateway/__init__.py"),
-        "tui-gateway": ("tui_gateway/entry.py",),
-        "cron-scheduler": ("cron/scheduler.py",),
+        "hermes": (root / "hermes_cli" / "main.py", root / "cli.py"),
+        "hermes-agent": (root / "run_agent.py",),
+        "hermes-acp": (root / "acp_adapter" / "entry.py",),
+        "batch-runner": (root / "batch_runner.py",),
+        "gateway": (root / "gateway" / "run.py", root / "gateway" / "__init__.py"),
+        "tui-gateway": (root / "tui_gateway" / "entry.py",),
+        "cron-scheduler": (root / "cron" / "scheduler.py",),
     }
-    if not any(importer.endswith(suffix) for suffix in provenance[selected]):
+    importer = os.path.normcase(os.path.realpath(os.fspath(importer_path)))
+    authorized = {
+        os.path.normcase(os.path.realpath(os.fspath(path))) for path in provenance[selected]
+    }
+    if importer not in authorized:
         return None
     return selected
 
@@ -344,7 +352,9 @@ def bootstrap_admit(
         return
     _bootstrap_decided = True
     arguments = values[1:]
-    if launcher == "hermes" and arguments[:1] == ["application"]:
+    if launcher == "hermes" and len(arguments) == 2 and arguments[0] == "application" and arguments[1] in {
+        "status", "enable", "disable"
+    }:
         raise SystemExit(manage(arguments))
     path = marker_path()
     if path.exists() and launcher == "hermes" and arguments == ["--version"]:

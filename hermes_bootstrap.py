@@ -243,11 +243,11 @@ def _boundary_marker_is_provably_absent() -> bool:
             root = os.path.dirname(os.path.dirname(root))
     elif _IS_WINDOWS:
         local = os.environ.get("LOCALAPPDATA", "").strip()
-        root = (
-            os.path.join(local, "hermes")
-            if local
-            else os.path.join(os.path.expanduser("~"), ".hermes")
-        )
+        if local:
+            root = os.path.join(local, "hermes")
+        else:
+            profile = os.environ.get("USERPROFILE", "").strip() or os.path.expanduser("~")
+            root = os.path.join(profile, "AppData", "Local", "hermes")
     else:
         root = os.path.join(os.path.expanduser("~"), ".hermes")
     marker = os.path.join(root, "state", "application-boundary.json")
