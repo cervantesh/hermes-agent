@@ -498,6 +498,29 @@ def test_gateway_module_pair_in_consumer_arguments_is_not_execution_selector(tmp
     assert not out.exists()
 
 
+def test_gateway_module_pair_after_double_dash_is_not_execution_selector(tmp_path):
+    home, out = _armed_home(tmp_path)
+    consumer = tmp_path / "-m"
+    consumer.write_text("import gateway\nprint('consumer-ok')\n", encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        HERMES_HOME=os.fspath(home),
+        BOUNDARY_OUT=os.fspath(out),
+        PYTHONPATH=os.fspath(ROOT),
+    )
+    proc = subprocess.run(
+        [sys.executable, "--", "-m", "gateway.run"],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "consumer-ok" in proc.stdout
+    assert not out.exists()
+
+
 @pytest.mark.parametrize("marker_state", ["absent", "present", "inaccessible"])
 def test_lightweight_shim_missing_owner_is_marker_aware(tmp_path, marker_state):
     mixed = tmp_path / "mixed"

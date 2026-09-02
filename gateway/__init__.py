@@ -17,15 +17,25 @@ import sys as _sys
 import hermes_bootstrap as _hermes_bootstrap  # noqa: E402
 
 _original_argv = getattr(_sys, "orig_argv", ())
-try:
-    _module_index = _original_argv.index("-m")
-except ValueError:
-    _module_index = -1
-if (
-    _sys.argv[0] == "-m"
-    and _module_index >= 0
-    and tuple(_original_argv[_module_index + 1 : _module_index + 2]) == ("gateway.run",)
-):
+
+
+def _python_module_selector(argv):
+    index = 1
+    while index < len(argv):
+        value = argv[index]
+        if value == "-m":
+            return index if tuple(argv[index + 1 : index + 2]) == ("gateway.run",) else -1
+        if value in {"--", "-c", "-"} or not value.startswith("-"):
+            return -1
+        if value in {"-W", "-X", "--check-hash-based-pycs"}:
+            index += 2
+        else:
+            index += 1
+    return -1
+
+
+_module_index = _python_module_selector(_original_argv)
+if _module_index >= 0:
     _hermes_bootstrap.bootstrap_admit(
         [__file__.replace("__init__.py", "run.py"), *_original_argv[_module_index + 2 :]],
         importer_path=__file__,
