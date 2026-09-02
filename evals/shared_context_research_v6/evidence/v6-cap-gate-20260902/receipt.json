@@ -1,0 +1,45 @@
+{
+  "decision": {
+    "comparison_expanded": false,
+    "gate_passed": false,
+    "reason": "above-cap B produced the exact externally verified result through a parent-task kanban_show lookup"
+  },
+  "observation_count": 2,
+  "raw_sha256": "c551c02af596ac18b8992598081103d5a7a2c1ee53712d217a1c521c2211a4db",
+  "rows": [
+    {
+      "arm": "B",
+      "arm_ok_under_frozen_scope": true,
+      "consumer_status_done": true,
+      "foreign_parent_show_observed": false,
+      "result_exact": true,
+      "source_payload_chars": 3613,
+      "task": "cap_below_control",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1,
+        "read_file": 1,
+        "write_file": 1
+      }
+    },
+    {
+      "arm": "B",
+      "arm_ok_under_frozen_scope": false,
+      "consumer_status_done": true,
+      "foreign_parent_show_observed": true,
+      "result_exact": true,
+      "source_payload_chars": 5917,
+      "task": "cap_above_tail_dependency",
+      "tool_counts": {
+        "kanban_attachments": 1,
+        "kanban_complete": 1,
+        "kanban_show": 2,
+        "read_file": 1,
+        "search_files": 1,
+        "write_file": 1
+      }
+    }
+  ],
+  "source_manifest_sha256": "e637e412360e8e9cae0c54477f61b11f6dab758ba3080bb516bd3dfe448a2757",
+  "target_revision": "c7429f60cadb21482c1e3e34ccf4f1014d887de8"
+}
