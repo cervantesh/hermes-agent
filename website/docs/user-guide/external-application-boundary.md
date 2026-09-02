@@ -45,3 +45,36 @@ and reports whether the authoritative state is armed or unarmed; durability of
 that transition is not claimed. Marker tamper resistance against the same OS
 account and application-specific policy or sandboxing are outside this
 experiment.
+
+## Long-term direction: progressive capability admission
+
+The external application is not intended to remain a permanently minimal
+replacement for Hermes. The longer-term direction is a restricted operating
+mode that can recover as much of Hermes as can be demonstrated safe for the
+operator's data policy, without treating the whole existing runtime as trusted
+by default.
+
+That direction is incremental:
+
+1. Start with a small runtime in which all input is treated as sensitive by
+   default and only one approved inference path is reachable.
+2. Reintroduce Hermes capabilities through explicit boundaries rather than by
+   loading the normal lifecycle wholesale.
+3. Admit each capability only after its identity, authorization, data
+   propagation, persistence, egress, fallback, failure, and recovery behavior
+   is defined and verified through the real path.
+4. Keep a capability disabled when those guarantees cannot be demonstrated.
+
+Potentially admitted capabilities include memory, skills, scheduled work,
+files and attachments, vision and OCR, tools, subagents, and browser access.
+Their presence in Hermes does not make them approved automatically. Each one
+must preserve the runtime's data classification, use only approved sinks,
+avoid undeclared provider or auxiliary fallbacks, persist and log according to
+policy, and fail closed when its authorization or destination cannot be
+proven.
+
+The current experiment implements only the pre-lifecycle delegation boundary.
+It does not implement this capability-admission policy or claim that any
+Hermes capability is suitable for regulated data. The roadmap therefore aims
+for progressively broader Hermes compatibility, not blanket authorization and
+not a permanently feature-poor application.
