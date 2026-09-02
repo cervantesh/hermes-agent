@@ -521,6 +521,88 @@ def test_gateway_module_pair_after_double_dash_is_not_execution_selector(tmp_pat
     assert not out.exists()
 
 
+def test_attached_gateway_module_selector_delegates(tmp_path):
+    _assert_armed_delegation(
+        tmp_path,
+        [sys.executable, "-mgateway.run", "sentinel-arg"],
+    )
+
+
+def test_valid_short_option_cluster_before_attached_module_selector_delegates(tmp_path):
+    _assert_armed_delegation(
+        tmp_path,
+        [sys.executable, "-bbq", "-mgateway.run", "sentinel-arg"],
+    )
+
+
+def test_attached_command_selector_ends_gateway_authority_scan(tmp_path):
+    home, out = _armed_home(tmp_path)
+    env = {
+        **os.environ,
+        "HERMES_HOME": os.fspath(home),
+        "BOUNDARY_OUT": os.fspath(out),
+        "PYTHONPATH": os.fspath(ROOT),
+    }
+    proc = subprocess.run(
+        [sys.executable, "-cimport gateway; print('consumer-ok')", "-m", "gateway.run"],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "consumer-ok" in proc.stdout
+    assert not out.exists()
+
+
+def test_stdin_selector_ends_gateway_authority_scan(tmp_path):
+    home, out = _armed_home(tmp_path)
+    proc = subprocess.run(
+        [sys.executable, "-", "-m", "gateway.run"],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "HERMES_HOME": os.fspath(home),
+            "BOUNDARY_OUT": os.fspath(out),
+            "PYTHONPATH": os.fspath(ROOT),
+        },
+        input="import gateway\nprint('consumer-ok')\n",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "consumer-ok" in proc.stdout
+    assert not out.exists()
+
+
+def test_interpreter_option_value_cannot_become_module_selector(tmp_path):
+    home, out = _armed_home(tmp_path)
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-W",
+            "-m",
+            "-cimport gateway; print('consumer-ok')",
+            "gateway.run",
+        ],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            "HERMES_HOME": os.fspath(home),
+            "BOUNDARY_OUT": os.fspath(out),
+            "PYTHONPATH": os.fspath(ROOT),
+        },
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "consumer-ok" in proc.stdout
+    assert not out.exists()
+
+
 @pytest.mark.parametrize("marker_state", ["absent", "present", "inaccessible"])
 def test_lightweight_shim_missing_owner_is_marker_aware(tmp_path, marker_state):
     mixed = tmp_path / "mixed"
