@@ -1,0 +1,14 @@
+{
+  "diagnostic_seed": 379,
+  "exception_type": "OperationalError",
+  "failure_phase": "session_evidence_lookup",
+  "first_unretained_slot": {
+    "cohort": "haiku-s377",
+    "phase": "gate",
+    "task": "cap_below_control"
+  },
+  "provider_outcome_established": false,
+  "reason": "session database candidate lacked sessions table",
+  "replacement_forbidden": true,
+  "status": "inconclusive_harness_compatibility_failure"
+}
