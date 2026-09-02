@@ -1,0 +1,15 @@
+{
+  "cohort": "haiku-s377",
+  "evidence_label": "issue377-v3-preflight-20260902",
+  "fixtures": [
+    "preflight_detached_echo",
+    "preflight_shared_echo"
+  ],
+  "kind": "unscored_provider_topology_preflight",
+  "observation_count": 2,
+  "observations_sha256": "b913a6271f922f70c313031a7c31eeabbbcc4c0b2c0712bd4b1bec3b2c32566b",
+  "passed": true,
+  "remote_seal_source_commit": "d8f4423eb4fa62ac3fe3e192c1aeaaccb9d19262",
+  "source_manifest_sha256": "5b0ec842222c9e0cfa85e9f8e8121c94a97ce56db2d0c60a2385d0e123466677",
+  "target_revision": "c5c9aa8d44e03f4e8b5fe7f230cfd97ab2dde0bf"
+}
