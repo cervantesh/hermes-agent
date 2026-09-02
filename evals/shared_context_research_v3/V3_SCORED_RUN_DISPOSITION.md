@@ -7,7 +7,7 @@ presented as a complete experiment.
 - Target: `NousResearch/hermes-agent@c5c9aa8d44e03f4e8b5fe7f230cfd97ab2dde0bf`
 - Retained scored observations: 15 of 18
 - Sanitized observation SHA-256:
-  `44b4f6dbc83ec607bb999321e027011aba3e5b3d20c528d43708907257ffa5b7`
+  `7a0bb7bc375c3999e49357f2b7bee39dc13eedd4d3d0e782ab1e2dc5f83aaa6d`
 - Private raw SHA-256:
   `c935e17fb1196e1ae85e464c59c20700f1fbd1d05e060674c76fd47040efa305`
 

@@ -1,0 +1,27 @@
+{
+  "decision": {
+    "complete": false,
+    "duplicates": [],
+    "invalid": [],
+    "missing": [
+      "sonnet-s377/compact_release_map",
+      "sonnet-s377/distractor_filtered_catalog",
+      "sonnet-s377/ordered_dependency_plan"
+    ],
+    "unexpected": [],
+    "verdict": "INCONCLUSIVE"
+  },
+  "observation_count": 15,
+  "observations_sha256": "7a0bb7bc375c3999e49357f2b7bee39dc13eedd4d3d0e782ab1e2dc5f83aaa6d",
+  "raw_sha256": "c935e17fb1196e1ae85e464c59c20700f1fbd1d05e060674c76fd47040efa305",
+  "remote_seal": {
+    "github_commit_url": "https://github.com/cervantesh/hermes-agent/commit/d8f4423eb4fa62ac3fe3e192c1aeaaccb9d19262",
+    "github_committed_at_utc": "2026-09-02T06:21:02Z",
+    "repository": "cervantesh/hermes-agent",
+    "source_commit": "d8f4423eb4fa62ac3fe3e192c1aeaaccb9d19262",
+    "source_manifest_sha256": "5b0ec842222c9e0cfa85e9f8e8121c94a97ce56db2d0c60a2385d0e123466677",
+    "verified_at_utc": "2026-09-02T06:21:47Z"
+  },
+  "source_manifest_sha256": "5b0ec842222c9e0cfa85e9f8e8121c94a97ce56db2d0c60a2385d0e123466677",
+  "target_revision": "c5c9aa8d44e03f4e8b5fe7f230cfd97ab2dde0bf"
+}
