@@ -46,7 +46,19 @@ jobs:
       - name: Install focal test dependencies
         uses: ./.github/actions/retry
         with:
-          command: uv sync --locked --python 3.11 --extra dev
+          # Keep the project itself out of site-packages. Several mixed-install
+          # controls intentionally copy only the lightweight shims and prove
+          # that the boundary owner is absent; an editable install would make
+          # that owner reachable from the venv and invalidate the fixture.
+          command: uv sync --locked --python 3.11 --extra dev --no-install-project
+
+      - name: Prepare native Windows interpreter controls
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          uv python install 3.13
+          py -3.11 -m pip install "PyYAML==6.0.3"
+          py -3.13 -m pip install "PyYAML==6.0.3"
 
       - name: Run boundary and configuration tests
         run: >-
