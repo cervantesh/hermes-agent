@@ -140,7 +140,10 @@ def _file_sha256(path: Path) -> str:
 
 
 def _load_command(root: Path | None = None) -> list[str]:
-    import yaml
+    try:
+        import yaml
+    except ImportError as exc:
+        raise BoundaryRejected("external application command cannot be loaded") from exc
 
     config_path = (root or installation_root()) / "config.yaml"
     try:
