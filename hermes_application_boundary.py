@@ -371,7 +371,12 @@ def bootstrap_admit(
     if launcher == "hermes" and len(arguments) == 2 and arguments[0] == "application" and arguments[1] in {
         "status", "enable", "disable"
     }:
-        _terminate(manage(arguments))
+        try:
+            recovery_code = manage(arguments)
+        except OSError as exc:
+            print(f"Hermes application boundary recovery failed: {exc}", file=sys.stderr)
+            _terminate(1, cause=exc)
+        _terminate(recovery_code)
     path = marker_path()
     if path.exists() and launcher == "hermes" and arguments == ["--version"]:
         _terminate(_print_version())
