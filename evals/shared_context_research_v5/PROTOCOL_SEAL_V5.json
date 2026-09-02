@@ -1,0 +1,20 @@
+{
+  "source_manifest": {
+    "shared_context_research/runtime.py": "3d1dd2bc6de39f0f05a2090af1bae63332c15e5937dc07ad3810659496e8cb7f",
+    "shared_context_research/runtime_v2.py": "442bad6101c7b2a4c59337e6e26711dba2d851ccbd1cdf8268a5b97cbe4e29d8",
+    "shared_context_research/shared_context.py": "9ce9524bb50e6fa651683429d5b45054de7f5c136e68b1a8d54a3d25b7fc9b4d",
+    "shared_context_research/tasks.py": "e6cbe110c9d5903f67c1f224d4ec0f7e4e6d75d9554867a3cc2a8311eb7cde25",
+    "shared_context_research_v3/durable_reader_v3.py": "ecedf0280f81442e0ef9f5ed2be2113917d617b5b17bdb5fc45d17c28b9148bb",
+    "shared_context_research_v3/runtime_v3.py": "ca1ae2f32d66a42e872af3ffcdad5df1f46fce33c0534f0747f44bbd860a41e7",
+    "shared_context_research_v5/PROTOCOL_FREEZE_V5.md": "aef25a31a3c9c68dfa5b6a16e240750692128aa4bba1033677edd239ee09b536",
+    "shared_context_research_v5/RESEARCH_FRAME_V5.md": "3f055c99ddda8dfa3b0b5e6060e066dbf782063e437193c63a693a483bc11e47",
+    "shared_context_research_v5/fixture_worker_v5.py": "bd8e137c7b6dc85855534bac8f7e8744672d2e3cfe6e12a11675ad35d40dd010",
+    "shared_context_research_v5/protocol_v5.py": "3af9e064888cbf55dd6759c1a392a73cb85bfd76f3569183ec319bca935688b4",
+    "shared_context_research_v5/runner_v5.py": "db10eb8f645b7cb860cbed4988a17402b7e3ddf3d83e8d0cd863798d84b02252",
+    "shared_context_research_v5/runtime_v5.py": "156ad51a9cf5ee0ec2f19003bd75761e1e9212c1f251358e64e2dac7820df64e",
+    "shared_context_research_v5/structural_gate_v5.py": "c12d5bc5661d6b9f44b866f97763ffd4be5ce7b87ee42a1e94a88efc57f3bea0",
+    "shared_context_research_v5/tasks_v5.py": "e08b85878b77432bfb6fa39d20948fa64c272c1df0d450ce57cc9f830cb5cfd9"
+  },
+  "source_manifest_sha256": "78184287a4d34553542e9ed9ee310094ceec831f7e79dc704ce0ab9df1cd2164",
+  "target_revision": "c7429f60cadb21482c1e3e34ccf4f1014d887de8"
+}
