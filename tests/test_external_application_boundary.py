@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import errno
 import os
 from pathlib import Path
 import subprocess
@@ -176,3 +177,84 @@ def test_recovery_commands_work_with_invalid_armed_state(tmp_path, monkeypatch, 
     assert boundary.manage(["application", "disable"]) == 0
     assert not marker.exists()
     assert "invalid" in capsys.readouterr().err
+
+
+def test_directory_sync_suppresses_only_known_unsupported_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        boundary.os,
+        "open",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError(errno.EINVAL, "unsupported")),
+    )
+    boundary._sync_directory(tmp_path)
+
+
+def test_directory_sync_propagates_real_io_failure(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        boundary.os,
+        "open",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError(errno.EIO, "device error")),
+    )
+    with pytest.raises(OSError, match="device error"):
+        boundary._sync_directory(tmp_path)
+
+
+@pytest.mark.windows_only
+@pytest.mark.parametrize("suffix", [".txt", ".py", ".ps1"])
+def test_windows_enable_rejects_non_native_direct_handler(tmp_path, monkeypatch, suffix):
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    handler = tmp_path / f"handler{suffix}"
+    handler.write_text("exit 0\n", encoding="utf-8")
+    _write_config(tmp_path, [os.fspath(handler)])
+    assert boundary.manage(["application", "enable"]) == 1
+    assert not boundary.marker_path().exists()
+
+
+def test_enable_reports_armed_uncertainty_after_post_publish_sync_failure(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    handler = _handler(tmp_path)
+    _write_config(tmp_path, [os.sys.executable, os.fspath(handler)])
+    monkeypatch.setattr(
+        boundary,
+        "_sync_directory",
+        lambda *_: (_ for _ in ()).throw(OSError(errno.EIO, "device error")),
+    )
+    assert boundary.manage(["application", "enable"]) == 1
+    assert boundary.marker_path().exists()
+    error = capsys.readouterr().err
+    assert "marker is present" in error
+    assert "armed" in error
+    assert "durability was not confirmed" in error
+
+
+def test_disable_reports_unarmed_uncertainty_after_post_remove_sync_failure(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    handler = _handler(tmp_path)
+    _write_config(tmp_path, [os.sys.executable, os.fspath(handler)])
+    assert boundary.manage(["application", "enable"]) == 0
+    monkeypatch.setattr(
+        boundary,
+        "_sync_directory",
+        lambda *_: (_ for _ in ()).throw(OSError(errno.EIO, "device error")),
+    )
+    assert boundary.manage(["application", "disable"]) == 1
+    assert not boundary.marker_path().exists()
+    error = capsys.readouterr().err
+    assert "marker is absent" in error
+    assert "unarmed" in error
+    assert "durability was not confirmed" in error
+
+
+def test_missing_owner_probe_never_treats_inaccessible_marker_as_absent(monkeypatch):
+    import hermes_bootstrap
+
+    monkeypatch.setattr(
+        hermes_bootstrap.os,
+        "stat",
+        lambda *_: (_ for _ in ()).throw(PermissionError(errno.EACCES, "denied")),
+    )
+    with pytest.raises(PermissionError, match="denied"):
+        hermes_bootstrap._boundary_marker_is_provably_absent()

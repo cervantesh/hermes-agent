@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 
 import pytest
@@ -64,7 +65,11 @@ def _armed_home(tmp_path: Path) -> tuple[Path, Path]:
 def _assert_armed_delegation(tmp_path: Path, argv: list[str]) -> None:
     home, out = _armed_home(tmp_path)
     env = os.environ.copy()
-    env.update(HERMES_HOME=os.fspath(home), BOUNDARY_OUT=os.fspath(out))
+    env.update(
+        HERMES_HOME=os.fspath(home),
+        BOUNDARY_OUT=os.fspath(out),
+        PYTHONPATH=os.fspath(ROOT),
+    )
     env.pop("_HERMES_EXTERNAL_APPLICATION_ACTIVE", None)
     proc = subprocess.run(
         argv,
@@ -141,6 +146,199 @@ def test_library_import_from_unrelated_program_does_not_delegate(tmp_path, state
     assert proc.returncode == 0, proc.stderr
     assert "library-ok" in proc.stdout
     assert not out.exists()
+
+
+@pytest.mark.parametrize("collision_name", ["hermes", "hermes-agent", "hermes-acp"])
+@pytest.mark.parametrize("statement", ["import run_agent", "import gateway"])
+def test_colliding_argv_basename_cannot_turn_library_import_into_launcher(
+    tmp_path, statement, collision_name
+):
+    home, out = _armed_home(tmp_path)
+    collision = tmp_path / collision_name
+    collision.write_text(f"{statement}\nprint('library-only')\n", encoding="utf-8")
+    env = os.environ.copy()
+    env.update(
+        HERMES_HOME=os.fspath(home),
+        BOUNDARY_OUT=os.fspath(out),
+        PYTHONPATH=os.fspath(ROOT),
+    )
+    env.pop("_HERMES_EXTERNAL_APPLICATION_ACTIVE", None)
+    proc = subprocess.run(
+        [sys.executable, os.fspath(collision)],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "library-only" in proc.stdout
+    assert "delegated-output" not in proc.stdout
+    assert not out.exists()
+
+
+@pytest.mark.parametrize("armed", [False, True])
+def test_mixed_install_missing_owner_is_marker_aware(tmp_path, armed):
+    mixed = tmp_path / "mixed"
+    mixed.mkdir()
+    (mixed / "hermes_application_boundary.py").write_text(
+        "raise ModuleNotFoundError(\"No module named 'hermes_application_boundary'\", "
+        "name='hermes_application_boundary')\n",
+        encoding="utf-8",
+    )
+    shutil.copy2(ROOT / "hermes_bootstrap.py", mixed / "hermes_bootstrap.py")
+    home = tmp_path / "home"
+    if armed:
+        marker = home / "state" / "application-boundary.json"
+        marker.parent.mkdir(parents=True)
+        marker.write_text("{}", encoding="utf-8")
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "--version"],
+        cwd=mixed,
+        env={
+            **os.environ,
+            "HERMES_HOME": os.fspath(home),
+            "PYTHONPATH": os.pathsep.join([os.fspath(mixed), os.fspath(ROOT)]),
+        },
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    if armed:
+        assert proc.returncode != 0
+        assert "Hermes Agent" not in proc.stdout
+    else:
+        assert proc.returncode == 0, proc.stderr
+        assert "Hermes Agent" in proc.stdout
+
+
+def test_profile_subprocess_observes_installation_root_marker(tmp_path):
+    root, out = _armed_home(tmp_path)
+    profile = root / "profiles" / "coder"
+    profile.mkdir(parents=True)
+    env = os.environ.copy()
+    env.update(HERMES_HOME=os.fspath(profile), BOUNDARY_OUT=os.fspath(out))
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "--profile", "coder", "sentinel-arg"],
+        cwd=ROOT,
+        env=env,
+        input="profile-input",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 23, proc.stderr
+    observed = json.loads(out.read_text(encoding="utf-8"))
+    assert observed["stdin"] == "profile-input"
+    assert ["--profile", "coder", "sentinel-arg"] == observed["argv"]
+
+
+def test_sticky_profile_subprocess_observes_installation_root_marker(tmp_path):
+    root, out = _armed_home(tmp_path)
+    (root / "profiles" / "coder").mkdir(parents=True)
+    (root / "active_profile").write_text("coder\n", encoding="utf-8")
+    env = os.environ.copy()
+    env.update(HERMES_HOME=os.fspath(root), BOUNDARY_OUT=os.fspath(out))
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "sentinel-arg"],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 23, proc.stderr
+    assert json.loads(out.read_text(encoding="utf-8"))["argv"] == ["sentinel-arg"]
+
+
+def test_distinct_custom_root_does_not_observe_armed_installation(tmp_path):
+    _root, out = _armed_home(tmp_path)
+    custom = tmp_path / "custom-installation"
+    custom.mkdir()
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "--version"],
+        cwd=ROOT,
+        env={**os.environ, "HERMES_HOME": os.fspath(custom), "BOUNDARY_OUT": os.fspath(out)},
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "delegated-output" not in proc.stdout
+    assert not out.exists()
+
+
+def test_process_level_concurrent_enables_publish_complete_marker(tmp_path):
+    home = tmp_path / "home"
+    handler = tmp_path / "handler.py"
+    handler.write_text("raise SystemExit(23)\n", encoding="utf-8")
+    home.mkdir()
+    (home / "config.yaml").write_text(
+        "application:\n  external:\n    command:\n"
+        f"      - {json.dumps(sys.executable)}\n"
+        f"      - {json.dumps(os.fspath(handler))}\n",
+        encoding="utf-8",
+    )
+    env = {**os.environ, "HERMES_HOME": os.fspath(home)}
+    processes = [
+        subprocess.Popen(
+            [sys.executable, "-m", "hermes_cli.main", "application", "enable"],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        for _ in range(4)
+    ]
+    results = [process.communicate(timeout=20) + (process.returncode,) for process in processes]
+    assert any(result[2] == 0 for result in results), results
+    assert all(result[2] in {0, 1} for result in results), results
+    probe = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import hermes_application_boundary as b; b._validate_armed_state(b.marker_path())",
+        ],
+        cwd=ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert probe.returncode == 0, probe.stderr
+    assert not list((home / "state").glob("*.tmp"))
+
+
+def test_armed_gate_precedes_lazy_target_activation(tmp_path):
+    home, out = _armed_home(tmp_path)
+    sentinel = tmp_path / "lazy-imported"
+    fake_tools = tmp_path / "tools"
+    fake_tools.mkdir()
+    (fake_tools / "__init__.py").write_text("", encoding="utf-8")
+    (fake_tools / "lazy_deps.py").write_text(
+        "import os\nopen(os.environ['LAZY_SENTINEL'],'w').write('reached')\n"
+        "def activate_durable_lazy_target(): pass\n",
+        encoding="utf-8",
+    )
+    env = os.environ.copy()
+    env.update(
+        HERMES_HOME=os.fspath(home),
+        BOUNDARY_OUT=os.fspath(out),
+        HERMES_LAZY_INSTALL_TARGET=os.fspath(tmp_path / "lazy-target"),
+        LAZY_SENTINEL=os.fspath(sentinel),
+        PYTHONPATH=os.pathsep.join([os.fspath(tmp_path), os.fspath(ROOT)]),
+    )
+    proc = subprocess.run(
+        [sys.executable, "-m", "hermes_cli.main", "sentinel-arg"],
+        cwd=tmp_path,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 23, proc.stderr
+    assert not sentinel.exists()
 
 
 def test_invalid_marker_rejects_before_normal_launcher_imports(tmp_path):

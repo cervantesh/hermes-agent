@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.metadata
+import errno
 import json
 import os
 from pathlib import Path
@@ -23,6 +24,14 @@ _bootstrap_decided = False
 
 class BoundaryRejected(RuntimeError):
     """The boundary is armed but its durable contract cannot be honored."""
+
+
+class BoundaryCommitUncertain(OSError):
+    """The marker changed, but its containing-directory sync failed."""
+
+    def __init__(self, message: str, *, marker_present: bool) -> None:
+        super().__init__(message)
+        self.marker_present = marker_present
 
 
 def installation_root() -> Path:
@@ -46,12 +55,17 @@ def _sync_directory(path: Path) -> None:
     flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
     try:
         fd = os.open(path, flags)
-    except OSError:
-        return
+    except OSError as exc:
+        if exc.errno in {errno.EINVAL, errno.ENOTSUP, errno.EOPNOTSUPP}:
+            return
+        if os.name == "nt" and exc.errno in {errno.EACCES, errno.EPERM}:
+            return
+        raise
     try:
         os.fsync(fd)
-    except OSError:
-        pass
+    except OSError as exc:
+        if exc.errno not in {errno.EINVAL, errno.ENOTSUP, errno.EOPNOTSUPP}:
+            raise
     finally:
         os.close(fd)
 
@@ -67,7 +81,12 @@ def _strict_atomic_json_write(path: Path, payload: dict[str, Any]) -> None:
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temporary_path, path)
-        _sync_directory(path.parent)
+        try:
+            _sync_directory(path.parent)
+        except OSError as exc:
+            raise BoundaryCommitUncertain(
+                f"marker published but directory sync failed: {exc}", marker_present=True
+            ) from exc
     finally:
         try:
             temporary_path.unlink()
@@ -95,8 +114,14 @@ def _resolve_executable(value: str) -> Path:
     info = resolved.stat()
     if not stat.S_ISREG(info.st_mode):
         raise BoundaryRejected("external application executable is not a regular file")
-    if os.name == "nt" and resolved.suffix.lower() in {".cmd", ".bat"}:
-        raise BoundaryRejected("Windows batch files are not valid external application executables")
+    if os.name == "nt":
+        import ctypes
+
+        binary_type = ctypes.c_ulong()
+        if not ctypes.windll.kernel32.GetBinaryTypeW(os.fspath(resolved), ctypes.byref(binary_type)):
+            raise BoundaryRejected(
+                "external application executable is not a directly executable Windows image"
+            )
     if os.name != "nt" and not os.access(resolved, os.X_OK):
         raise BoundaryRejected("external application executable is not executable")
     return resolved
@@ -162,15 +187,19 @@ def _validate_armed_state(path: Path) -> tuple[list[str], dict[str, Any]]:
     return command, payload
 
 
-def detect_launcher(argv: Sequence[str] | None = None) -> str | None:
+def detect_launcher(
+    argv: Sequence[str] | None = None,
+    *,
+    importer_path: str | os.PathLike[str] | None = None,
+    importer_is_main: bool = False,
+) -> str | None:
     values = list(sys.argv if argv is None else argv)
     if not values:
         return None
     raw = values[0].replace("\\", "/")
     name = Path(raw).name.lower()
     stem = Path(name).stem
-    if stem in {"hermes", "hermes-agent", "hermes-acp"}:
-        return stem
+    selected = stem if stem in {"hermes", "hermes-agent", "hermes-acp"} else None
     normalized = raw.lower()
     matches = {
         "run_agent.py": "hermes-agent",
@@ -182,10 +211,28 @@ def detect_launcher(argv: Sequence[str] | None = None) -> str | None:
         "cron/scheduler.py": "cron-scheduler",
         "hermes_cli/main.py": "hermes",
     }
-    for suffix, launcher in matches.items():
-        if normalized.endswith(suffix):
-            return launcher
-    return None
+    if selected is None:
+        for suffix, launcher in matches.items():
+            if normalized.endswith(suffix):
+                selected = launcher
+                break
+    if selected is None or importer_path is None:
+        return selected
+    if not importer_is_main:
+        return None
+    importer = os.fspath(importer_path).replace("\\", "/").lower()
+    provenance = {
+        "hermes": ("hermes_cli/main.py", "cli.py"),
+        "hermes-agent": ("run_agent.py",),
+        "hermes-acp": ("acp_adapter/entry.py",),
+        "batch-runner": ("batch_runner.py",),
+        "gateway": ("gateway/run.py", "gateway/__init__.py"),
+        "tui-gateway": ("tui_gateway/entry.py",),
+        "cron-scheduler": ("cron/scheduler.py",),
+    }
+    if not any(importer.endswith(suffix) for suffix in provenance[selected]):
+        return None
+    return selected
 
 
 def admit(argv: Sequence[str] | None = None, *, launcher: str | None = None) -> list[str] | None:
@@ -213,6 +260,13 @@ def manage(argv: Sequence[str]) -> int:
         try:
             command = _load_command()
             _strict_atomic_json_write(path, _build_marker(command))
+        except BoundaryCommitUncertain as exc:
+            print(
+                "application boundary enable uncertain: marker is present and authoritative "
+                f"(armed), but directory durability was not confirmed: {exc}",
+                file=sys.stderr,
+            )
+            return 1
         except (BoundaryRejected, OSError) as exc:
             print(f"application boundary not enabled: {exc}", file=sys.stderr)
             return 1
@@ -221,9 +275,21 @@ def manage(argv: Sequence[str]) -> int:
     if action == "disable":
         try:
             path.unlink()
-            _sync_directory(path.parent)
+            try:
+                _sync_directory(path.parent)
+            except OSError as exc:
+                raise BoundaryCommitUncertain(
+                    f"marker removed but directory sync failed: {exc}", marker_present=False
+                ) from exc
         except FileNotFoundError:
             pass
+        except BoundaryCommitUncertain as exc:
+            print(
+                "application boundary disable uncertain: marker is absent and authoritative "
+                f"(unarmed), but directory durability was not confirmed: {exc}",
+                file=sys.stderr,
+            )
+            return 1
         except OSError as exc:
             print(f"application boundary not disabled: {exc}", file=sys.stderr)
             return 1
@@ -260,10 +326,18 @@ def _delegate(command: Sequence[str]) -> int:
     raise AssertionError("execvpe returned unexpectedly")
 
 
-def bootstrap_admit(argv: Sequence[str] | None = None) -> None:
+def bootstrap_admit(
+    argv: Sequence[str] | None = None,
+    *,
+    importer_path: str | os.PathLike[str] | None = None,
+    importer_is_main: bool = False,
+    declared_launcher: str | None = None,
+) -> None:
     global _bootstrap_decided
     values = list(sys.argv if argv is None else argv)
-    launcher = detect_launcher(values)
+    launcher = declared_launcher or detect_launcher(
+        values, importer_path=importer_path, importer_is_main=importer_is_main
+    )
     if launcher is None:
         return
     if _bootstrap_decided:
