@@ -1,0 +1,140 @@
+{
+  "dependent_observation_count": 12,
+  "raw_sha256": "c0f27d0ad7ca0e5da97bdc2ed6bedc5c4d493715fb57705d37764ec12f14b447",
+  "rows": [
+    {
+      "b_outcome_ok": true,
+      "cohort": "haiku-s377",
+      "expected_source_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "normalized_payload_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "parseable_json": true,
+      "producer_summary_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "semantic_equal": true,
+      "task": "artifact_policy_join",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": false,
+      "cohort": "haiku-s377",
+      "expected_source_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "normalized_payload_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "parseable_json": true,
+      "producer_summary_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "semantic_equal": true,
+      "task": "ordered_dependency_plan",
+      "wrapper_exact_recorded": false
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "haiku-s377",
+      "expected_source_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "normalized_payload_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "parseable_json": true,
+      "producer_summary_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "semantic_equal": true,
+      "task": "distractor_filtered_catalog",
+      "wrapper_exact_recorded": false
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "haiku-s377",
+      "expected_source_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "normalized_payload_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "parseable_json": true,
+      "producer_summary_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "semantic_equal": true,
+      "task": "compact_release_map",
+      "wrapper_exact_recorded": false
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "haiku-s378",
+      "expected_source_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "normalized_payload_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "parseable_json": true,
+      "producer_summary_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "semantic_equal": true,
+      "task": "artifact_policy_join",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": false,
+      "cohort": "haiku-s378",
+      "expected_source_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "normalized_payload_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "parseable_json": true,
+      "producer_summary_sha256": "b8eed926a13214c74889e9c1b259a0ea42c947ad86372e92f290e1c00b03c715",
+      "semantic_equal": true,
+      "task": "ordered_dependency_plan",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "haiku-s378",
+      "expected_source_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "normalized_payload_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "parseable_json": true,
+      "producer_summary_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "semantic_equal": true,
+      "task": "distractor_filtered_catalog",
+      "wrapper_exact_recorded": false
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "haiku-s378",
+      "expected_source_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "normalized_payload_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "parseable_json": true,
+      "producer_summary_sha256": "9999ccd4fe5c176aeb6cbb75da57b04efdcc9c1183f8dddcd32349f0e26c7b32",
+      "semantic_equal": true,
+      "task": "compact_release_map",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "sonnet-s377",
+      "expected_source_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "normalized_payload_sha256": "06f6e60ab74a77f9dae10d9c551b74ad2287ac02afeeda87cbeb8abcb455dd67",
+      "parseable_json": true,
+      "producer_summary_sha256": "23c04bafffbb945389f5259d2b7f99baaddf41bdfb02926613d58e8efb971d01",
+      "semantic_equal": true,
+      "task": "artifact_policy_join",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": false,
+      "cohort": "sonnet-s377",
+      "expected_source_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "normalized_payload_sha256": "efaf794efbe0d019998bd9acd0600f415157f0303595a4279b3399f5c5873f18",
+      "parseable_json": true,
+      "producer_summary_sha256": "b8eed926a13214c74889e9c1b259a0ea42c947ad86372e92f290e1c00b03c715",
+      "semantic_equal": true,
+      "task": "ordered_dependency_plan",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "sonnet-s377",
+      "expected_source_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "normalized_payload_sha256": "948c682d7e20617b19c37eb84607a451917c0559688228296fba377c01c2514c",
+      "parseable_json": true,
+      "producer_summary_sha256": "de5a141ce444ab563a73bbbfa2655569b9d27e7f083938fae7c6c0683d14edf3",
+      "semantic_equal": true,
+      "task": "distractor_filtered_catalog",
+      "wrapper_exact_recorded": true
+    },
+    {
+      "b_outcome_ok": true,
+      "cohort": "sonnet-s377",
+      "expected_source_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "normalized_payload_sha256": "1d6c6edc613c12d86980c110d6e5ed30b932c2fd5d459058c5b948caa480d085",
+      "parseable_json": true,
+      "producer_summary_sha256": "9999ccd4fe5c176aeb6cbb75da57b04efdcc9c1183f8dddcd32349f0e26c7b32",
+      "semantic_equal": true,
+      "task": "compact_release_map",
+      "wrapper_exact_recorded": true
+    }
+  ],
+  "semantic_exact_count": 12,
+  "wrapper_exact_count": 8
+}
