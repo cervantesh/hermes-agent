@@ -1,0 +1,18 @@
+{
+  "rows": [
+    {
+      "selected_tail_visible": true,
+      "source_payload_chars": 3613,
+      "task": "cap_below_control",
+      "truncation_marker_visible": false
+    },
+    {
+      "selected_tail_visible": false,
+      "source_payload_chars": 5917,
+      "task": "cap_above_tail_dependency",
+      "truncation_marker_visible": true
+    }
+  ],
+  "target_dirty": false,
+  "target_revision": "c7429f60cadb21482c1e3e34ccf4f1014d887de8"
+}
