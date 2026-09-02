@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import threading
+from types import SimpleNamespace
 
 import pytest
 
@@ -258,3 +259,27 @@ def test_missing_owner_probe_never_treats_inaccessible_marker_as_absent(monkeypa
     )
     with pytest.raises(PermissionError, match="denied"):
         hermes_bootstrap._boundary_marker_is_provably_absent()
+
+
+def test_inspect_termination_converts_only_windows_dword_high_bit(monkeypatch):
+    observed = []
+    monkeypatch.setattr(boundary.sys, "flags", SimpleNamespace(inspect=1))
+    monkeypatch.setattr(boundary.os, "_exit", observed.append)
+    monkeypatch.setattr(boundary.os, "name", "nt")
+
+    boundary._terminate(23)
+    boundary._terminate(0x7FFFFFFF)
+    boundary._terminate(0xFFFFFFFF)
+
+    assert observed == [23, 0x7FFFFFFF, -1]
+
+
+def test_inspect_termination_leaves_non_windows_code_unchanged(monkeypatch):
+    observed = []
+    monkeypatch.setattr(boundary.sys, "flags", SimpleNamespace(inspect=1))
+    monkeypatch.setattr(boundary.os, "_exit", observed.append)
+    monkeypatch.setattr(boundary.os, "name", "posix")
+
+    boundary._terminate(0xFFFFFFFF)
+
+    assert observed == [0xFFFFFFFF]

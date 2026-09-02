@@ -650,6 +650,31 @@ def test_inspect_mode_cannot_resume_after_delegated_handler(tmp_path, version, s
 
 
 @pytest.mark.windows_only
+def test_inspect_mode_preserves_negative_windows_handler_exit_bits(tmp_path):
+    home = tmp_path / "home"
+    home.mkdir()
+    command = [os.environ.get("COMSPEC", "cmd.exe"), "/c", "exit", "/b", "-1"]
+    (home / "config.yaml").write_text(
+        "application:\n  external:\n    command:\n"
+        + "".join(f"      - {json.dumps(part)}\n" for part in command),
+        encoding="utf-8",
+    )
+    _strict_atomic_json_write(home / "state" / "application-boundary.json", _build_marker(command))
+    sentinel = tmp_path / "stdin-executed"
+    proc = subprocess.run(
+        [sys.executable, "-i", "-m", "gateway.run"],
+        cwd=ROOT,
+        env={**os.environ, "HERMES_HOME": os.fspath(home), "PYTHONPATH": os.fspath(ROOT)},
+        input=f"open({os.fspath(sentinel)!r}, 'w').write('executed')\n",
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0xFFFFFFFF, proc.stderr
+    assert not sentinel.exists()
+
+
+@pytest.mark.windows_only
 @pytest.mark.parametrize("version", ["3.11", "3.13"])
 @pytest.mark.parametrize("selector", [["-i", "-m", "gateway.run"], ["-im", "gateway.run"]])
 def test_inspect_mode_cannot_resume_after_armed_rejection(tmp_path, version, selector):

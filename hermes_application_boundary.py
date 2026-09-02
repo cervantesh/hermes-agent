@@ -345,6 +345,8 @@ def _terminate(code: int, *, cause: BaseException | None = None) -> None:
             stream.flush()
         except (AttributeError, OSError, ValueError):
             pass
+    if os.name == "nt" and 0x80000000 <= code <= 0xFFFFFFFF:
+        code -= 0x100000000
     os._exit(code)
 
 
