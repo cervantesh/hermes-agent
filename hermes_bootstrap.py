@@ -233,6 +233,56 @@ def activate_durable_lazy_target() -> None:
 apply_windows_utf8_bootstrap()
 suppress_platform_ver_console()
 
+# Enforce the durable installation boundary before importing the lazy target
+# or any normal Hermes subsystem. Unrelated library imports are a no-op.
+def _boundary_marker_is_provably_absent() -> bool:
+    configured = os.environ.get("HERMES_HOME", "").strip()
+    if configured:
+        root = os.path.realpath(os.path.expanduser(configured))
+        if os.path.basename(os.path.dirname(root)) == "profiles":
+            root = os.path.dirname(os.path.dirname(root))
+    elif _IS_WINDOWS:
+        local = os.environ.get("LOCALAPPDATA", "").strip()
+        if local:
+            root = os.path.join(local, "hermes")
+        else:
+            profile = os.environ.get("USERPROFILE", "").strip() or os.path.expanduser("~")
+            root = os.path.join(profile, "AppData", "Local", "hermes")
+    else:
+        root = os.path.join(os.path.expanduser("~"), ".hermes")
+    marker = os.path.join(root, "state", "application-boundary.json")
+    try:
+        os.stat(marker)
+    except FileNotFoundError:
+        return True
+    return False
+
+
+def _importing_entrypoint() -> tuple[str | None, bool]:
+    frame = sys._getframe(1)
+    this_file = os.path.normcase(os.path.abspath(__file__))
+    while frame is not None:
+        filename = frame.f_code.co_filename
+        if not filename.startswith("<frozen ") and filename not in {"<string>", "-c"}:
+            candidate = os.path.normcase(os.path.abspath(filename))
+            if candidate != this_file:
+                return filename, frame.f_globals.get("__name__") == "__main__"
+        frame = frame.f_back
+    return None, False
+
+
+try:
+    from hermes_application_boundary import bootstrap_admit
+except ModuleNotFoundError as exc:
+    if exc.name != "hermes_application_boundary" or not _boundary_marker_is_provably_absent():
+        raise
+else:
+    _entrypoint_path, _entrypoint_is_main = _importing_entrypoint()
+    bootstrap_admit(
+        importer_path=_entrypoint_path,
+        importer_is_main=_entrypoint_is_main,
+    )
+
 # Activate the durable lazy-install target (immutable Docker images) so
 # packages installed into the data volume on a previous run are importable
 # this run, before any backend module imports its SDK. No-op when unset.

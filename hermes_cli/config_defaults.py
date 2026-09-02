@@ -25,6 +25,13 @@ DEFAULT_CONFIG = {
     "runtime": {
         "nofile_soft_limit": 4096,
     },
+    # Optional installation-wide admission boundary. An empty command leaves
+    # the feature unconfigured; durable activation is owned by its marker.
+    "application": {
+        "external": {
+            "command": [],
+        },
+    },
     # Global active chat session cap across CLI, TUI/dashboard, and messaging.
     # None/0 = unbounded.
     "max_concurrent_sessions": None,
