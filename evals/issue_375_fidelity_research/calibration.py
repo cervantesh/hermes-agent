@@ -35,6 +35,16 @@ def _safe_component(value: str) -> str:
     return value
 
 
+def _contains_unknown_usage(value: Any) -> bool:
+    if isinstance(value, dict):
+        return value.get("usage_unknown") is True or any(
+            _contains_unknown_usage(item) for item in value.values()
+        )
+    if isinstance(value, list):
+        return any(_contains_unknown_usage(item) for item in value)
+    return False
+
+
 def _unmapped_numeric_pair(text: str) -> list[float] | None:
     first_line = text.splitlines()[0].strip() if text.splitlines() else ""
     match = re.fullmatch(r"(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)", first_line)
@@ -232,6 +242,23 @@ class CalibrationStore:
     def has_fixture(self, task_id: str) -> bool:
         return self._fixture_path(self.fixture_public, task_id).is_file()
 
+    def has_durable_unknown_usage(self, task_ids: list[str]) -> bool:
+        """Inspect only public checkpoints for a sticky unknown-usage marker."""
+        for task_id in task_ids:
+            if self.has_fixture(task_id) and _contains_unknown_usage(
+                self.load_fixture_public(task_id)
+            ):
+                return True
+            for track in ("fidelity", "control"):
+                for order in ("forward", "reverse"):
+                    if self.has_public(
+                        task_id, track, order
+                    ) and _contains_unknown_usage(
+                        self.load_judgment_public(task_id, track, order)
+                    ):
+                        return True
+        return False
+
     def finish_fixture(
         self,
         *,
@@ -379,6 +406,8 @@ def _sanitize_transport(receipts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "attempts",
         "latency_ms",
         "content_types",
+        "failure_type",
+        "usage_unknown",
     }
     return [
         {key: value for key, value in receipt.items() if key in allowed}

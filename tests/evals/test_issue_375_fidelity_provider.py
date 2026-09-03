@@ -109,6 +109,52 @@ def test_retryable_5xx_is_retried_with_frozen_wait():
     assert backend.receipts[0]["attempts"] == 2
 
 
+def test_provider_api_connection_error_is_retried_and_usage_stays_conservative():
+    APIConnectionError = type("APIConnectionError", (RuntimeError,), {})
+    waits = []
+    backend, messages = _backend(
+        [APIConnectionError("private transport detail"), _response()],
+        sleep=waits.append,
+    )
+
+    backend.complete(
+        agent="user",
+        system_prompt="private system",
+        messages=[{"role": "user", "content": "private input"}],
+        parameters={"temperature": 0.2, "top_p": 1.0, "max_tokens": 32},
+    )
+
+    assert len(messages.calls) == 2
+    assert waits == [2]
+    assert backend.receipts[0]["failure_type"] == "APIConnectionError"
+    assert backend.receipts[0]["usage_unknown"] is True
+    assert backend.receipts[1]["usage_unknown"] is True
+    assert "private" not in str(backend.receipts)
+
+
+def test_terminal_provider_connection_failure_has_sanitized_unknown_receipt():
+    APIConnectionError = type("APIConnectionError", (RuntimeError,), {})
+    backend, messages = _backend([
+        APIConnectionError("private one"),
+        APIConnectionError("private two"),
+        APIConnectionError("private three"),
+    ])
+
+    with pytest.raises(APIConnectionError):
+        backend.complete(
+            agent="user",
+            system_prompt="private system",
+            messages=[{"role": "user", "content": "private input"}],
+            parameters={"temperature": 0.2, "top_p": 1.0, "max_tokens": 32},
+        )
+
+    assert len(messages.calls) == 3
+    assert len(backend.receipts) == 3
+    assert all(receipt["usage_unknown"] is True for receipt in backend.receipts)
+    assert all(receipt["returned_model"] is None for receipt in backend.receipts)
+    assert "private" not in str(backend.receipts)
+
+
 def test_before_attempt_guard_is_rechecked_for_transport_retry():
     error = RuntimeError("temporary")
     error.status_code = 503
@@ -290,6 +336,48 @@ def test_openai_backend_uses_exact_chat_snapshot_and_sanitizes_receipt():
     assert receipt["returned_model"] == "gpt-4-0613"
     assert receipt["usage"] == {"input_tokens": 13, "output_tokens": 5}
     assert "private" not in str(receipt)
+
+
+def test_openai_connection_error_is_retried_and_usage_stays_conservative():
+    APIConnectionError = type("APIConnectionError", (RuntimeError,), {})
+    waits = []
+    completions = FakeMessages([
+        APIConnectionError("private transport detail"),
+        SimpleNamespace(
+            model="gpt-4-0613",
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content="8 6\nresult"),
+                    finish_reason="stop",
+                )
+            ],
+            usage=SimpleNamespace(prompt_tokens=13, completion_tokens=5),
+        ),
+    ])
+    backend = OpenAIChatBackend(
+        client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+        model="gpt-4-0613",
+        input_usd_per_million=30,
+        output_usd_per_million=60,
+        budget=UsageBudget(10, 30, 1000, 1000, 2.0),
+        max_attempts=3,
+        retry_waits=(2, 4),
+        sleep=waits.append,
+        reserve_usd=0.5,
+    )
+
+    backend.complete(
+        agent="judge_fidelity_forward",
+        system_prompt="private system",
+        messages=[{"role": "user", "content": "private answers"}],
+        parameters={"temperature": 0.0, "top_p": 1.0, "max_tokens": 100},
+    )
+
+    assert len(completions.calls) == 2
+    assert waits == [2]
+    assert backend.receipts[0]["failure_type"] == "APIConnectionError"
+    assert backend.receipts[1]["usage_unknown"] is True
+    assert "private" not in str(backend.receipts)
 
 
 def test_non_text_openai_response_accounts_usage_and_refusal_metadata():

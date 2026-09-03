@@ -473,6 +473,19 @@ def _usage_is_lower_bound(terminal: dict[str, Any] | None) -> bool:
         return False
     if terminal.get("status") == "QUARANTINED_UNKNOWN_PROVIDER_OUTCOME":
         return True
+    if any(
+        receipt.get("usage_unknown") is True
+        for receipt in terminal.get("transport_receipts", [])
+    ):
+        return True
+    transport_failure_types = {
+        "APIConnectionError",
+        "APITimeoutError",
+        "ConnectionError",
+        "TimeoutError",
+    }
+    if terminal.get("cause_type") in transport_failure_types:
+        return True
     known = {
         "BudgetExceeded",
         "DeadlineExceeded",
@@ -501,6 +514,7 @@ def _write_summary(
     primary_terminal: dict[str, Any] | None,
     control_ran: bool,
     lower_bound: bool = False,
+    transport_backends: tuple[Any, ...] = (),
 ) -> dict[str, Any]:
     summary = summarize_calibration(
         store=store, task_ids=task_ids, tracks=["fidelity", "control"]
@@ -508,7 +522,15 @@ def _write_summary(
     summary["protocol_id"] = PROTOCOL_ID
     summary["judge_ready_fixtures"] = ready
     summary["usage"] = budget.snapshot()
-    summary["usage_is_lower_bound"] = lower_bound
+    summary["usage_is_lower_bound"] = (
+        lower_bound
+        or store.has_durable_unknown_usage(task_ids)
+        or any(
+            receipt.get("usage_unknown") is True
+            for backend in transport_backends
+            for receipt in getattr(backend, "receipts", [])
+        )
+    )
     summary["disposition"] = _primary_disposition(
         summary["tracks"]["fidelity"], primary_terminal
     )
@@ -712,6 +734,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             ),
             control_ran=interrupted_control,
             lower_bound=True,
+            transport_backends=(generator, extractor, fidelity_judge, control_judge),
         )
 
     _attempted, fixture_terminal = _prepare_fixtures_until_failure(
@@ -737,6 +760,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             primary_terminal=fixture_terminal or {"status": "FIXTURE_GATE_FAILED"},
             control_ran=False,
             lower_bound=_usage_is_lower_bound(fixture_terminal),
+            transport_backends=(generator, extractor, fidelity_judge, control_judge),
         )
 
     fidelity_terminal, fidelity_pass, control_terminal = _run_sequential_tracks(
@@ -767,6 +791,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             )
             or _usage_is_lower_bound(control_terminal)
         ),
+        transport_backends=(generator, extractor, fidelity_judge, control_judge),
     )
 
 

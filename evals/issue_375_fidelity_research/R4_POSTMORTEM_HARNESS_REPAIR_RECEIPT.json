@@ -1,0 +1,41 @@
+{
+  "adversarial_review": {
+    "final_disposition": "READY",
+    "resolved_findings": [
+      "successful retry uncertainty must reach the final summary",
+      "successful retry uncertainty must survive a legal process restart"
+    ]
+  },
+  "artifact_sha256": {
+    "calibration.py": "ce07804a5b28bfb87bf95a518248a9575c022f59e0aa33b90ea03217b9cfd825",
+    "execute_calibration_r4.py": "ee12cfb91182ebf934a372c1d29ca93cab41dea52f560f7cfbf9db3f77d6e117",
+    "provider.py": "df6dc5c59b65fd6acb79089511442a66dfc038061fab25115dd3c0be55316d05",
+    "test_issue_375_fidelity_provider.py": "c98778a9516574a243bf64cfd8873d4ae91d7fe480da9f5af45c0d9b836cbc24",
+    "test_issue_375_fidelity_r4.py": "19e7104cd4a1a44c55f5c673b8984f719f66a0c792aa2ebd2d112861b186f4e6"
+  },
+  "execution_commit": "533992beb0874e11a9fd539650e8f3bbc0ea70b5",
+  "observed_r4_disposition": "INCONCLUSIVE_HARNESS_OR_INFRASTRUCTURE",
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R4-2026-09-03",
+  "provider_calls_made": 0,
+  "provider_rerun_authorized": false,
+  "repair_scope": [
+    "retry provider SDK connection and timeout failures",
+    "record privacy-safe unknown transport outcomes",
+    "preserve lower-bound accounting after successful retry",
+    "recover lower-bound accounting from durable public checkpoints"
+  ],
+  "schema_version": 1,
+  "status": "PROVIDER_FREE_POSTMORTEM_REPAIR_VERIFIED",
+  "verification": {
+    "compileall": "PASS",
+    "git_diff_check": "PASS",
+    "issue_375_eval_tests": {
+      "command": "python -m pytest --confcutdir=tests/evals tests/evals -q -k issue_375_fidelity",
+      "passed": 89,
+      "result": "PASS"
+    },
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS",
+    "secret_signature_scan_changed_artifacts": "PASS"
+  }
+}

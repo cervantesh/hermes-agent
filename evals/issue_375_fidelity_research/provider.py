@@ -106,13 +106,57 @@ def _status_code(error: Exception) -> int | None:
     return status if isinstance(status, int) else None
 
 
+def _provider_transport_error(error: Exception) -> bool:
+    """Recognize SDK transport failures without importing either provider SDK."""
+    transport_names = {
+        "APIConnectionError",
+        "APITimeoutError",
+        "ConnectError",
+        "ConnectTimeout",
+        "ReadError",
+        "ReadTimeout",
+        "WriteError",
+        "WriteTimeout",
+    }
+    return any(cls.__name__ in transport_names for cls in type(error).__mro__)
+
+
 def _retryable(error: Exception) -> bool:
     status = _status_code(error)
     return (
         status == 429
         or (status is not None and 500 <= status <= 599)
         or isinstance(error, (TimeoutError, ConnectionError))
+        or _provider_transport_error(error)
     )
+
+
+def _unknown_transport_receipt(
+    *,
+    agent: str,
+    model: str,
+    request: dict[str, Any],
+    system_prompt: str,
+    messages: list[dict[str, str]],
+    attempts: int,
+    started: float,
+    error: Exception,
+) -> dict[str, Any]:
+    """Describe an indeterminate transport attempt without retaining private data."""
+    return {
+        "agent": agent,
+        "requested_model": model,
+        "returned_model": None,
+        "request_sha256": _canonical_hash(request),
+        "system_prompt_sha256": _text_hash(system_prompt),
+        "messages_sha256": _canonical_hash(messages),
+        "content_types": [],
+        "finish_reason": None,
+        "attempts": attempts,
+        "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        "failure_type": type(error).__name__,
+        "usage_unknown": True,
+    }
 
 
 def _response_text(response: Any) -> str:
@@ -175,6 +219,7 @@ class AnthropicBackend:
         started = time.perf_counter()
         response = None
         attempts = 0
+        usage_unknown = False
         for attempt in range(self.max_attempts):
             attempts = attempt + 1
             if self.before_attempt is not None:
@@ -184,6 +229,20 @@ class AnthropicBackend:
                 response = self.client.messages.create(**request)
                 break
             except Exception as error:
+                if _provider_transport_error(error):
+                    usage_unknown = True
+                    self.receipts.append(
+                        _unknown_transport_receipt(
+                            agent=agent,
+                            model=self.model,
+                            request=request,
+                            system_prompt=system_prompt,
+                            messages=messages,
+                            attempts=attempts,
+                            started=started,
+                            error=error,
+                        )
+                    )
                 if not _retryable(error) or attempts == self.max_attempts:
                     raise
                 self.sleep(self.retry_waits[attempt])
@@ -239,6 +298,7 @@ class AnthropicBackend:
             },
             "attempts": attempts,
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            "usage_unknown": usage_unknown,
         }
         self.receipts.append(receipt)
         if budget_error is not None:
@@ -310,6 +370,7 @@ class OpenAIChatBackend:
         started = time.perf_counter()
         response = None
         attempts = 0
+        usage_unknown = False
         for attempt in range(self.max_attempts):
             attempts = attempt + 1
             if self.before_attempt is not None:
@@ -319,6 +380,20 @@ class OpenAIChatBackend:
                 response = self.client.chat.completions.create(**request)
                 break
             except Exception as error:
+                if _provider_transport_error(error):
+                    usage_unknown = True
+                    self.receipts.append(
+                        _unknown_transport_receipt(
+                            agent=agent,
+                            model=self.model,
+                            request=request,
+                            system_prompt=system_prompt,
+                            messages=messages,
+                            attempts=attempts,
+                            started=started,
+                            error=error,
+                        )
+                    )
                 if not _retryable(error) or attempts == self.max_attempts:
                     raise
                 self.sleep(self.retry_waits[attempt])
@@ -366,6 +441,7 @@ class OpenAIChatBackend:
             },
             "attempts": attempts,
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+            "usage_unknown": usage_unknown,
         }
         self.receipts.append(receipt)
         if budget_error is not None:

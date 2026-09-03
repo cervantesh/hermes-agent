@@ -254,6 +254,64 @@ def test_fidelity_metadata_unavailability_has_a_typed_terminal_cause(tmp_path):
     assert json.loads(path.read_text(encoding="utf-8")) == summary
 
 
+def test_completed_summary_propagates_unknown_usage_from_successful_retry(tmp_path):
+    path = tmp_path / "R4_PUBLIC_SUMMARY.json"
+    backend = SimpleNamespace(
+        receipts=[
+            {
+                "returned_model": GENERATOR_MODEL,
+                "usage_unknown": True,
+            }
+        ]
+    )
+
+    summary = _write_summary(
+        path=path,
+        store=CalibrationStore(tmp_path / "store"),
+        task_ids=[str(index) for index in range(30)],
+        ready=30,
+        budget=UsageBudget(10, 30, 1000, 1000, 1.0),
+        primary_terminal=None,
+        control_ran=True,
+        transport_backends=(backend,),
+    )
+
+    assert summary["usage_is_lower_bound"] is True
+    assert json.loads(path.read_text(encoding="utf-8")) == summary
+
+
+def test_completed_summary_recovers_unknown_usage_from_durable_fixture(tmp_path):
+    path = tmp_path / "R4_PUBLIC_SUMMARY.json"
+    store = CalibrationStore(tmp_path / "store")
+    task_ids = [str(index) for index in range(30)]
+    store.finish_fixture(
+        task_id=task_ids[0],
+        private={"status": "JUDGE_READY"},
+        public={
+            "status": "JUDGE_READY",
+            "arms": {
+                "original": {
+                    "generation_receipts": [{"usage_unknown": True}],
+                    "extraction_receipts": [],
+                }
+            },
+        },
+    )
+
+    summary = _write_summary(
+        path=path,
+        store=store,
+        task_ids=task_ids,
+        ready=30,
+        budget=UsageBudget(10, 30, 1000, 1000, 1.0),
+        primary_terminal=None,
+        control_ran=True,
+    )
+
+    assert summary["usage_is_lower_bound"] is True
+    assert json.loads(path.read_text(encoding="utf-8")) == summary
+
+
 class _Store:
     def __init__(self):
         self.outcomes = {}
@@ -355,6 +413,25 @@ def test_unknown_transport_outcome_marks_usage_as_a_lower_bound():
         "status": "QUARANTINED_JUDGE_TRANSPORT_OR_IDENTITY",
         "cause_type": "DeadlineExceeded",
         "transport_receipts": [],
+    })
+
+
+def test_r4_connection_failure_is_lower_bound_even_with_earlier_success_receipts():
+    assert _usage_is_lower_bound({
+        "status": "QUARANTINED_FIXTURE_FAILURE",
+        "cause_type": "APIConnectionError",
+        "transport_receipts": [
+            {"returned_model": GENERATOR_MODEL, "usage_unknown": False}
+            for _ in range(6)
+        ],
+    })
+
+
+def test_receipt_flag_marks_usage_as_lower_bound():
+    assert _usage_is_lower_bound({
+        "status": "QUARANTINED_FIXTURE_FAILURE",
+        "cause_type": "RuntimeError",
+        "transport_receipts": [{"usage_unknown": True}],
     })
 
 
