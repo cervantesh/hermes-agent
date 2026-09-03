@@ -1,0 +1,21 @@
+{
+  "parent_freeze_id": "IP375-FIDELITY-INITIAL-2026-09-03",
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "from": "4dac5f28af54001b899c9b6fc8ba81cb58da2f0e",
+  "to": "25caae02c020f6dd7ecdc3eaf353ece85aeef09b",
+  "commit_count": 9,
+  "classification": "NO_IMPACT",
+  "changed_paths": [
+    "agent/context_compressor.py",
+    "agent/conversation_compression.py",
+    "contributors/emails/JLHunzicker@gmail.com",
+    "gateway/run.py",
+    "tests/agent/test_compression_concurrent_fork.py",
+    "tests/agent/test_cron_inflight_prompt_reappend_100818.py",
+    "tests/gateway/test_compaction_heartbeat_gateway_filter.py"
+  ],
+  "frozen_lane_r_paths_changed": [],
+  "lane_r_action": "retain_frozen_source_revision",
+  "lane_p_action": "audit_current_main",
+  "provider_calls_made": 0
+}

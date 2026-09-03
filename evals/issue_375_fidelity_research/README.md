@@ -52,6 +52,13 @@ Hermes test dependencies. Full Hermes CI remains a separate repository gate.
 4. Run `preflight.py`. Before authorization it must report only the credential
    and authorization gates as absent.
 
+The independent current-main Lane P opportunity gate is recorded in
+`LANE_P_CURRENT_MAIN_OPPORTUNITY_AUDIT.md` and bound by
+`LANE_P_OPPORTUNITY_RECEIPT.json`. Its `NO_CURRENT_PRODUCT_OPPORTUNITY`
+disposition makes no provider call and does not alter Lane R. The separate
+`LANE_R_MAIN_DRIFT_RECEIPT.json` records why later integration-branch changes
+do not change Lane R's pinned source frame.
+
 Each module exposes `--help` with its required paths. Local source archives and
 the dataset are intentionally not vendored.
 

@@ -38,7 +38,7 @@
   "schema_version": 1,
   "source_revisions": {
     "frozen_hermes": "4dac5f28af54001b899c9b6fc8ba81cb58da2f0e",
-    "origin_main_at_preflight": "4dac5f28af54001b899c9b6fc8ba81cb58da2f0e",
+    "origin_main_at_preflight": "25caae02c020f6dd7ecdc3eaf353ece85aeef09b",
     "paper_era_camel": "c402032a7f7cd27e196356fbcf413c521a8cb4ca"
   },
   "status": "BLOCKED_BEFORE_PROVIDER_CALLS",

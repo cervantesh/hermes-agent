@@ -1,0 +1,68 @@
+{
+  "parent_freeze_id": "IP375-FIDELITY-INITIAL-2026-09-03",
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "canonical_artifact": "LANE_P_CURRENT_MAIN_OPPORTUNITY_AUDIT.md",
+  "sha256": "bf41e610bc2905a6077fbc89029fe0f56c710b9bf326d052171b2917acd29749",
+  "audited_at": "2026-09-03",
+  "current_main": "25caae02c020f6dd7ecdc3eaf353ece85aeef09b",
+  "issue_375_updated_at": "2026-08-31T21:31:27Z",
+  "disposition": "NO_CURRENT_PRODUCT_OPPORTUNITY",
+  "claimed_failure_modes": {
+    "role_flipping": {
+      "eligible_red": false,
+      "reason": "issue_375_anecdote_without_current_repeated_external_oracle"
+    },
+    "instruction_echoing": {
+      "eligible_red": false,
+      "reason": "issue_375_anecdote_without_current_repeated_external_oracle"
+    },
+    "flake_replies": {
+      "eligible_red": false,
+      "reason": "generic_claim_not_executable_and_concrete_side_effect_gap_owned_by_16357"
+    },
+    "infinite_loops": {
+      "eligible_red": false,
+      "reason": "concrete_reports_have_distinct_causes_and_existing_owners"
+    }
+  },
+  "candidate_cases": [
+    {
+      "reference": "#17561",
+      "classification": "competing_treatment_no_red"
+    },
+    {
+      "reference": "#79508",
+      "classification": "owned_active_pr"
+    },
+    {
+      "reference": "#16357",
+      "classification": "owned_structural_gap"
+    },
+    {
+      "reference": "#74604",
+      "classification": "owned_no_minimal_reproducer"
+    },
+    {
+      "reference": "#11171",
+      "classification": "owned_different_cause"
+    },
+    {
+      "reference": "#72901",
+      "classification": "fixed_different_cause"
+    },
+    {
+      "reference": "#94858/#94956",
+      "classification": "owned_parent_loop"
+    },
+    {
+      "reference": "#100223",
+      "classification": "closed_duplicate_treatment"
+    }
+  ],
+  "provider_calls_made": 0,
+  "efficacy_observations": 0,
+  "task_oracle_manifest_created": false,
+  "treatment_freeze_created": false,
+  "production_changes_made": false,
+  "publications_made": false
+}
