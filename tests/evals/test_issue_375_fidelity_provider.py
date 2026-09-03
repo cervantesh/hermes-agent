@@ -7,6 +7,7 @@ from evals.issue_375_fidelity_research.provider import (
     BudgetExceeded,
     ModelIdentityError,
     OpenAIChatBackend,
+    ProviderContentError,
     UsageBudget,
 )
 
@@ -170,6 +171,31 @@ def test_budget_emits_state_before_attempt_and_after_usage():
     assert snapshots[-1]["output_tokens"] == 7
 
 
+def test_non_text_anthropic_response_accounts_usage_and_receipt_before_failure():
+    response = SimpleNamespace(
+        id="msg_private",
+        model="claude-haiku-4-5-20251001",
+        content=[SimpleNamespace(type="thinking", thinking="private chain")],
+        stop_reason="end_turn",
+        usage=SimpleNamespace(input_tokens=17, output_tokens=9),
+    )
+    budget = UsageBudget(10, 30, 1000, 1000, 1.0)
+    backend, _ = _backend([response], budget=budget)
+
+    with pytest.raises(ProviderContentError, match="no text block"):
+        backend.complete(
+            agent="assistant",
+            system_prompt="system",
+            messages=[{"role": "user", "content": "input"}],
+            parameters={"temperature": 0.2, "top_p": 1.0, "max_tokens": 32},
+        )
+
+    assert budget.input_tokens == 17
+    assert budget.output_tokens == 9
+    assert backend.receipts[0]["content_types"] == ["thinking"]
+    assert "private chain" not in str(backend.receipts[0])
+
+
 def test_openai_backend_uses_exact_chat_snapshot_and_sanitizes_receipt():
     completions = FakeMessages([
         SimpleNamespace(
@@ -220,3 +246,43 @@ def test_openai_backend_uses_exact_chat_snapshot_and_sanitizes_receipt():
     assert receipt["returned_model"] == "gpt-4-0613"
     assert receipt["usage"] == {"input_tokens": 13, "output_tokens": 5}
     assert "private" not in str(receipt)
+
+
+def test_non_text_openai_response_accounts_usage_and_refusal_metadata():
+    completions = FakeMessages([
+        SimpleNamespace(
+            model="gpt-4-0613",
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content=None, refusal="private refusal"),
+                    finish_reason="stop",
+                )
+            ],
+            usage=SimpleNamespace(prompt_tokens=19, completion_tokens=4),
+        )
+    ])
+    budget = UsageBudget(10, 30, 1000, 1000, 2.0)
+    backend = OpenAIChatBackend(
+        client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+        model="gpt-4-0613",
+        input_usd_per_million=30,
+        output_usd_per_million=60,
+        budget=budget,
+        max_attempts=3,
+        retry_waits=(2, 4),
+        sleep=lambda _: None,
+        reserve_usd=0.5,
+    )
+
+    with pytest.raises(ProviderContentError, match="no text"):
+        backend.complete(
+            agent="judge_fidelity_forward",
+            system_prompt="system",
+            messages=[{"role": "user", "content": "answers"}],
+            parameters={"temperature": 0.0, "top_p": 1.0, "max_tokens": 100},
+        )
+
+    assert budget.input_tokens == 19
+    assert budget.output_tokens == 4
+    assert backend.receipts[0]["content_types"] == ["refusal"]
+    assert "private refusal" not in str(backend.receipts[0])

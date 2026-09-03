@@ -19,6 +19,10 @@ class ModelIdentityError(RuntimeError):
     pass
 
 
+class ProviderContentError(ValueError):
+    """The provider completed and billed a response without usable text."""
+
+
 @dataclass
 class UsageBudget:
     max_logical_calls: int
@@ -118,7 +122,7 @@ def _response_text(response: Any) -> str:
         if block_type == "text":
             parts.append(str(block.text))
     if not parts:
-        raise ValueError("provider response contained no text block")
+        raise ProviderContentError("provider response contained no text block")
     return "".join(parts)
 
 
@@ -182,7 +186,6 @@ class AnthropicBackend:
         if response is None:
             raise RuntimeError("provider did not return a response")
 
-        text = _response_text(response)
         input_tokens = int(response.usage.input_tokens)
         output_tokens = int(response.usage.output_tokens)
         self.budget.commit_usage(
@@ -191,6 +194,20 @@ class AnthropicBackend:
             input_usd_per_million=self.input_usd_per_million,
             output_usd_per_million=self.output_usd_per_million,
         )
+        content_types = [
+            str(getattr(block, "type", "unknown")) for block in response.content
+        ]
+        try:
+            text = _response_text(response)
+        except ProviderContentError:
+            response_sha256 = _canonical_hash({
+                "content_types": content_types,
+                "stop_reason": str(response.stop_reason),
+            })
+            content_error = True
+        else:
+            response_sha256 = _text_hash(text)
+            content_error = False
         receipt = {
             "agent": agent,
             "requested_model": self.model,
@@ -198,7 +215,8 @@ class AnthropicBackend:
             "request_sha256": _canonical_hash(request),
             "system_prompt_sha256": _text_hash(system_prompt),
             "messages_sha256": _canonical_hash(messages),
-            "response_sha256": _text_hash(text),
+            "response_sha256": response_sha256,
+            "content_types": content_types,
             "finish_reason": str(response.stop_reason),
             "usage": {
                 "input_tokens": input_tokens,
@@ -212,6 +230,8 @@ class AnthropicBackend:
             raise ModelIdentityError(
                 f"provider returned {response.model!r}, expected {self.model!r}"
             )
+        if content_error:
+            raise ProviderContentError("provider response contained no text block")
         return Generation(
             text=text,
             finish_reason=str(response.stop_reason),
@@ -286,8 +306,6 @@ class OpenAIChatBackend:
 
         choice = response.choices[0]
         text = choice.message.content
-        if not isinstance(text, str) or not text:
-            raise ValueError("provider response contained no text")
         input_tokens = int(response.usage.prompt_tokens)
         output_tokens = int(response.usage.completion_tokens)
         self.budget.commit_usage(
@@ -296,6 +314,17 @@ class OpenAIChatBackend:
             input_usd_per_million=self.input_usd_per_million,
             output_usd_per_million=self.output_usd_per_million,
         )
+        content_types = []
+        if isinstance(text, str) and text:
+            content_types.append("text")
+            response_sha256 = _text_hash(text)
+        else:
+            if getattr(choice.message, "refusal", None):
+                content_types.append("refusal")
+            response_sha256 = _canonical_hash({
+                "content_types": content_types,
+                "finish_reason": str(choice.finish_reason),
+            })
         receipt = {
             "agent": agent,
             "requested_model": self.model,
@@ -303,7 +332,8 @@ class OpenAIChatBackend:
             "request_sha256": _canonical_hash(request),
             "system_prompt_sha256": _text_hash(system_prompt),
             "messages_sha256": _canonical_hash(messages),
-            "response_sha256": _text_hash(text),
+            "response_sha256": response_sha256,
+            "content_types": content_types,
             "finish_reason": str(choice.finish_reason),
             "usage": {
                 "input_tokens": input_tokens,
@@ -317,6 +347,8 @@ class OpenAIChatBackend:
             raise ModelIdentityError(
                 f"provider returned {response.model!r}, expected {self.model!r}"
             )
+        if not isinstance(text, str) or not text:
+            raise ProviderContentError("provider response contained no text")
         return Generation(
             text=text,
             finish_reason=str(choice.finish_reason),

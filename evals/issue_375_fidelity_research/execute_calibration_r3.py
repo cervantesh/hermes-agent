@@ -188,6 +188,31 @@ def _r3_base_preflight_ready(preflight: dict[str, Any]) -> bool:
     )
 
 
+def _prepare_fixtures_until_failure(
+    *,
+    tasks: list[dict[str, str]],
+    schedules: dict[str, dict[str, Any]],
+    store: CalibrationStore,
+    sources: Any,
+    generator: Any,
+    extractor: Any,
+) -> int:
+    attempted = 0
+    for task in tasks:
+        receipt = prepare_and_checkpoint_fixture(
+            store=store,
+            task=task,
+            schedule=schedules[task["id"]],
+            sources=sources,
+            generator=generator,
+            extractor=extractor,
+        )
+        attempted += 1
+        if receipt.get("status") != "JUDGE_READY":
+            break
+    return attempted
+
+
 def execute(args: argparse.Namespace) -> dict[str, Any]:
     root = args.repo / "evals" / "issue_375_fidelity_research"
     _ensure_output_outside_repo(args.repo, args.output_root)
@@ -286,17 +311,17 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
     if interrupted_fixtures:
         raise RuntimeError("interrupted fixture has unknown provider outcome")
 
-    for task in tasks:
-        prepare_and_checkpoint_fixture(
-            store=store,
-            task=task,
-            schedule=schedules[task["id"]],
-            sources=sources,
-            generator=generator,
-            extractor=extractor,
-        )
+    attempted_fixtures = _prepare_fixtures_until_failure(
+        tasks=tasks,
+        schedules=schedules,
+        store=store,
+        sources=sources,
+        generator=generator,
+        extractor=extractor,
+    )
     ready = sum(
-        store.load_fixture_public(task["id"]).get("status") == "JUDGE_READY"
+        store.has_fixture(task["id"])
+        and store.load_fixture_public(task["id"]).get("status") == "JUDGE_READY"
         for task in tasks
     )
     if ready != 30:
@@ -304,6 +329,7 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
             "schema_version": 1,
             "protocol_id": PROTOCOL_ID,
             "judge_ready_fixtures": ready,
+            "attempted_fixtures": attempted_fixtures,
             "efficacy_observations": 0,
             "eligible_for_pooling": False,
             "disposition": "INCONCLUSIVE_HARNESS_OR_INFRASTRUCTURE",

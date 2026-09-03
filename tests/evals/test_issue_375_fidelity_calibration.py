@@ -42,6 +42,22 @@ class FailIfCalled:
         raise AssertionError("provider must not be called while resuming raw output")
 
 
+class ReceiptedFailure:
+    def __init__(self):
+        self.receipts = []
+
+    def complete(self, **kwargs):
+        self.receipts.append({
+            "requested_model": "claude-haiku-4-5-20251001",
+            "returned_model": "claude-haiku-4-5-20251001",
+            "response_sha256": "non-text-hash",
+            "content_types": ["thinking"],
+            "usage": {"input_tokens": 17, "output_tokens": 9},
+            "attempts": 1,
+        })
+        raise ValueError("provider response contained no text block")
+
+
 def _sources():
     return PromptSources(
         original_assistant="OA <ASSISTANT_ROLE> <USER_ROLE> <TASK>",
@@ -125,6 +141,38 @@ def test_started_fixture_without_checkpoint_becomes_unknown_not_retriable(tmp_pa
         }
     ]
     assert store.begin_fixture("task-1") is False
+
+
+def test_fixture_failure_records_phase_arm_and_sanitized_transport(tmp_path):
+    store = CalibrationStore(tmp_path)
+    task = {
+        "id": "task-1",
+        "original_task": "original task",
+        "specified_task": "specified task",
+        "assistant_role": "Programmer",
+        "user_role": "Filmmaker",
+    }
+    schedule = {
+        "task_id": "task-1",
+        "generation_order": ["original", "ablated"],
+        "judge_order": ["original", "ablated"],
+        "order_reversal": True,
+    }
+
+    result = prepare_and_checkpoint_fixture(
+        store=store,
+        task=task,
+        schedule=schedule,
+        sources=_sources(),
+        generator=ReceiptedFailure(),
+        extractor=FailIfCalled(),
+    )
+
+    assert result["status"] == "QUARANTINED_FIXTURE_FAILURE"
+    assert result["phase"] == "generation"
+    assert result["arm"] == "original"
+    assert result["transport_receipts"][0]["content_types"] == ["thinking"]
+    assert "specified task" not in json.dumps(result)
 
 
 def test_range_failure_preserves_raw_and_numeric_pair_privately_only(tmp_path):

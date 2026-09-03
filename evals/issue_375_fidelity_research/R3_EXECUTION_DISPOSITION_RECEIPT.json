@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R3-2026-09-03",
+  "protocol_sha256": "ab70597ea1515dfb8460fd157578d329c384cb92c99bf1fc5b818cbafb2e18de",
+  "inputs_seal_sha256": "4f1291263c92eb0e46a5c99a3592d3a95ab44a350a007194c02aa88e9e7ced8a",
+  "harness_commit": "d9a7d33a097ca0d89a7a856f3d3fd4e1348a1ca9",
+  "recorded_at": "2026-09-03T12:19:16.7816597-04:00",
+  "status": "TERMINAL",
+  "disposition": "INCONCLUSIVE_HARNESS_OR_INFRASTRUCTURE",
+  "stop_reason": "The first fixture failure made the frozen 30/30 JUDGE_READY gate unreachable; execution was stopped before judging to avoid spend that could not change the disposition.",
+  "fixture_counts": {
+    "judge_ready": 9,
+    "quarantined_fixture_failure": 1,
+    "quarantined_unknown_provider_outcome": 1,
+    "not_attempted": 19,
+    "sealed_total": 30
+  },
+  "observed_failures": [
+    {
+      "task_id": "014_005_009",
+      "status": "QUARANTINED_FIXTURE_FAILURE",
+      "cause_type": "ValueError",
+      "sanitized_cause": "provider response contained no text block"
+    },
+    {
+      "task_id": "050_012_004",
+      "status": "QUARANTINED_UNKNOWN_PROVIDER_OUTCOME",
+      "cause_type": "InvestigatorInterruptAfterTerminalGateFailure"
+    }
+  ],
+  "judge_requests": {
+    "fidelity": 0,
+    "control": 0,
+    "total": 0
+  },
+  "efficacy_observations": 0,
+  "eligible_for_pooling": false,
+  "provider_metadata_preflight": "PASS",
+  "usage_committed_before_stop": {
+    "logical_calls": 245,
+    "transport_attempts": 245,
+    "input_tokens": 510767,
+    "output_tokens": 123812,
+    "cost_usd": 1.129827,
+    "budget_state_sha256": "4e4d38ec2166a4bd239dc8f593e4ee6ab5852577cb815999d86e60f2e055f13f",
+    "is_lower_bound": true,
+    "limitation": "Usage for the non-text response and the interrupted in-flight request was not committed by the R3 backend, so exact total spend is not available from the local ledger."
+  },
+  "transport": {
+    "recorded_retries": 0,
+    "credentials_persisted": false
+  },
+  "required_next_step": "Do not resume this evidence frame. A clean repetition requires a prospective protocol, fresh cohort, sealed repaired harness, and new authorization."
+}

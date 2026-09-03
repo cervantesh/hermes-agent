@@ -158,3 +158,9 @@ Provider-free implementation evidence is recorded in
 `R3_HARNESS_CONFORMANCE_RECEIPT.json`. That receipt proves only harness
 conformance at its listed artifact hashes. It does not authorize R3, claim
 access to the historical judge, or report an experimental result.
+
+R3 subsequently terminated before judging as
+`INCONCLUSIVE_HARNESS_OR_INFRASTRUCTURE`. The sanitized counts and lower-bound
+usage ledger are in `R3_EXECUTION_DISPOSITION_RECEIPT.json`; the instrument
+defects it exposed and the conditions for any clean repetition are separated
+in `R3_POSTMORTEM_AND_R4_PROPOSAL.md`. R3 must not be resumed or pooled.

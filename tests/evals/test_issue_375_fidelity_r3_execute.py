@@ -11,6 +11,7 @@ from evals.issue_375_fidelity_research.execute_calibration_r3 import (
     _disposition,
     _ensure_output_outside_repo,
     _r3_base_preflight_ready,
+    _prepare_fixtures_until_failure,
     _validate_effective_prompts,
     _validate_inputs,
 )
@@ -180,3 +181,52 @@ def test_disposition_requires_every_fidelity_gate():
     unavailable = json.loads(json.dumps(passing))
     unavailable["tracks"]["fidelity"]["model_identity_failures"] = 1
     assert _disposition(unavailable) == "INCONCLUSIVE_FIDELITY_JUDGE_UNAVAILABLE"
+
+
+def test_fixture_phase_stops_on_first_terminal_failure(monkeypatch):
+    attempted = []
+
+    def prepare(**kwargs):
+        task_id = kwargs["task"]["id"]
+        attempted.append(task_id)
+        return {
+            "status": "JUDGE_READY"
+            if task_id == "one"
+            else "QUARANTINED_FIXTURE_FAILURE"
+        }
+
+    monkeypatch.setattr(
+        "evals.issue_375_fidelity_research.execute_calibration_r3.prepare_and_checkpoint_fixture",
+        prepare,
+    )
+    tasks = [{"id": value} for value in ("one", "two", "three")]
+    schedules = {value: {"task_id": value} for value in ("one", "two", "three")}
+
+    completed = _prepare_fixtures_until_failure(
+        tasks=tasks,
+        schedules=schedules,
+        store=object(),
+        sources=object(),
+        generator=object(),
+        extractor=object(),
+    )
+
+    assert attempted == ["one", "two"]
+    assert completed == 2
+
+
+def test_r3_execution_disposition_is_terminal_and_efficacy_blind():
+    root = Path(__file__).parents[2] / "evals" / "issue_375_fidelity_research"
+    receipt = json.loads(
+        (root / "R3_EXECUTION_DISPOSITION_RECEIPT.json").read_text(encoding="utf-8")
+    )
+
+    assert receipt["status"] == "TERMINAL"
+    assert receipt["disposition"] == "INCONCLUSIVE_HARNESS_OR_INFRASTRUCTURE"
+    assert receipt["judge_requests"]["total"] == 0
+    assert receipt["efficacy_observations"] == 0
+    assert receipt["eligible_for_pooling"] is False
+    assert receipt["usage_committed_before_stop"]["is_lower_bound"] is True
+    serialized = json.dumps(receipt).lower()
+    for forbidden in ("winner", "original_wins", "ablated_wins", "score_total"):
+        assert forbidden not in serialized

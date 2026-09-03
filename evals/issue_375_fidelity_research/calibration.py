@@ -280,6 +280,10 @@ def prepare_and_checkpoint_fixture(
 
     arms: dict[str, dict[str, Any]] = {}
     solutions: dict[str, str] = {}
+    phase = "generation"
+    arm: str | None = None
+    active_backend = generator
+    receipt_start = len(getattr(active_backend, "receipts", []))
     try:
         for arm in schedule["generation_order"]:
             prompts = render_role_prompts(
@@ -289,7 +293,9 @@ def prepare_and_checkpoint_fixture(
                 task["user_role"],
                 task["specified_task"],
             )
-            receipt_start = len(getattr(generator, "receipts", []))
+            phase = "generation"
+            active_backend = generator
+            receipt_start = len(getattr(active_backend, "receipts", []))
             role_play = run_role_play(prompts, generator, max_role_messages=40)
             transcript = _transcript_text(role_play.transcript)
             arms[arm] = {
@@ -300,7 +306,9 @@ def prepare_and_checkpoint_fixture(
             }
 
         for arm in schedule["generation_order"]:
-            receipt_start = len(getattr(extractor, "receipts", []))
+            phase = "extraction"
+            active_backend = extractor
+            receipt_start = len(getattr(active_backend, "receipts", []))
             solutions[arm] = _completion(
                 extractor,
                 agent="extractor",
@@ -310,11 +318,17 @@ def prepare_and_checkpoint_fixture(
             )
             arms[arm]["extraction_receipts"] = _receipts_since(extractor, receipt_start)
     except Exception as error:
+        transport_receipts = _sanitize_transport(
+            _receipts_since(active_backend, receipt_start)
+        )
         receipt = {
             "schema_version": 1,
             "task_id": task_id,
             "status": "QUARANTINED_FIXTURE_FAILURE",
             "cause_type": type(error).__name__,
+            "phase": phase,
+            "arm": arm,
+            "transport_receipts": transport_receipts,
         }
         store.finish_fixture(
             task_id=task_id,
@@ -364,6 +378,7 @@ def _sanitize_transport(receipts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         "usage",
         "attempts",
         "latency_ms",
+        "content_types",
     }
     return [
         {key: value for key, value in receipt.items() if key in allowed}
