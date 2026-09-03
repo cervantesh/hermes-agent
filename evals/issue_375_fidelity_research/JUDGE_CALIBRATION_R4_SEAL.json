@@ -1,0 +1,8 @@
+{
+  "canonical_artifact": "evals/issue_375_fidelity_research/JUDGE_CALIBRATION_R4_FREEZE.md",
+  "observations_started": false,
+  "predecessor_protocol_id": "IP375-JUDGE-CALIBRATION-R3-2026-09-03",
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R4-2026-09-03",
+  "sha256": "82e3168595ebf6b57acf0256e8e6d14627275a647b4e05b749ec0c68ef778266",
+  "status": "FROZEN_PROSPECTIVE_NO_PROVIDER_OBSERVATIONS"
+}

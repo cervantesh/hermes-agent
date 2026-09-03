@@ -35,7 +35,7 @@ def _response(model="claude-haiku-4-5-20251001"):
     )
 
 
-def _backend(outcomes, *, budget=None, sleep=lambda _: None):
+def _backend(outcomes, *, budget=None, sleep=lambda _: None, before_attempt=None):
     messages = FakeMessages(outcomes)
     client = SimpleNamespace(messages=messages)
     backend = AnthropicBackend(
@@ -48,6 +48,7 @@ def _backend(outcomes, *, budget=None, sleep=lambda _: None):
         retry_waits=(2, 4),
         sleep=sleep,
         reserve_usd=0.25,
+        before_attempt=before_attempt,
     )
     return backend, messages
 
@@ -106,6 +107,32 @@ def test_retryable_5xx_is_retried_with_frozen_wait():
     assert len(messages.calls) == 2
     assert waits == [2]
     assert backend.receipts[0]["attempts"] == 2
+
+
+def test_before_attempt_guard_is_rechecked_for_transport_retry():
+    error = RuntimeError("temporary")
+    error.status_code = 503
+    expired = [False]
+
+    def guard():
+        if expired[0]:
+            raise RuntimeError("deadline")
+
+    backend, messages = _backend(
+        [error, _response()],
+        sleep=lambda _: expired.__setitem__(0, True),
+        before_attempt=guard,
+    )
+
+    with pytest.raises(RuntimeError, match="deadline"):
+        backend.complete(
+            agent="user",
+            system_prompt="system",
+            messages=[{"role": "user", "content": "input"}],
+            parameters={"temperature": 0.2, "top_p": 1.0, "max_tokens": 32},
+        )
+
+    assert len(messages.calls) == 1
 
 
 def test_invalid_request_is_not_retried():
@@ -194,6 +221,23 @@ def test_non_text_anthropic_response_accounts_usage_and_receipt_before_failure()
     assert budget.output_tokens == 9
     assert backend.receipts[0]["content_types"] == ["thinking"]
     assert "private chain" not in str(backend.receipts[0])
+
+
+def test_anthropic_threshold_crossing_still_records_sanitized_receipt():
+    budget = UsageBudget(10, 30, 5, 1000, 1.0)
+    backend, _ = _backend([_response()], budget=budget)
+
+    with pytest.raises(BudgetExceeded, match="input token"):
+        backend.complete(
+            agent="assistant",
+            system_prompt="private system",
+            messages=[{"role": "user", "content": "private input"}],
+            parameters={"temperature": 0.2, "top_p": 1.0, "max_tokens": 32},
+        )
+
+    assert budget.input_tokens == 11
+    assert backend.receipts[0]["usage"] == {"input_tokens": 11, "output_tokens": 7}
+    assert "private" not in str(backend.receipts[0])
 
 
 def test_openai_backend_uses_exact_chat_snapshot_and_sanitizes_receipt():
@@ -286,3 +330,42 @@ def test_non_text_openai_response_accounts_usage_and_refusal_metadata():
     assert budget.output_tokens == 4
     assert backend.receipts[0]["content_types"] == ["refusal"]
     assert "private refusal" not in str(backend.receipts[0])
+
+
+def test_openai_threshold_crossing_still_records_sanitized_receipt():
+    completions = FakeMessages([
+        SimpleNamespace(
+            model="gpt-4-0613",
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content="8 6\nprivate rationale"),
+                    finish_reason="stop",
+                )
+            ],
+            usage=SimpleNamespace(prompt_tokens=13, completion_tokens=5),
+        )
+    ])
+    budget = UsageBudget(10, 30, 5, 1000, 2.0)
+    backend = OpenAIChatBackend(
+        client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+        model="gpt-4-0613",
+        input_usd_per_million=30,
+        output_usd_per_million=60,
+        budget=budget,
+        max_attempts=3,
+        retry_waits=(2, 4),
+        sleep=lambda _: None,
+        reserve_usd=0.5,
+    )
+
+    with pytest.raises(BudgetExceeded, match="input token"):
+        backend.complete(
+            agent="judge_fidelity_forward",
+            system_prompt="private system",
+            messages=[{"role": "user", "content": "private answers"}],
+            parameters={"temperature": 0.0, "top_p": 1.0, "max_tokens": 100},
+        )
+
+    assert budget.input_tokens == 13
+    assert backend.receipts[0]["usage"] == {"input_tokens": 13, "output_tokens": 5}
+    assert "private" not in str(backend.receipts[0])

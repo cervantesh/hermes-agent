@@ -249,6 +249,26 @@ def test_started_request_without_raw_response_becomes_unknown_not_retriable(tmp_
     assert store.begin_judgment("task-1", "fidelity", "forward") is False
 
 
+def test_judge_failure_preserves_sanitized_transport_receipt(tmp_path):
+    store = CalibrationStore(tmp_path)
+    backend = ReceiptedFailure()
+
+    result = evaluate_judgment(
+        store=store,
+        task_id="task-1",
+        track="fidelity",
+        order="forward",
+        answer_order=["original", "ablated"],
+        system_prompt="paper system",
+        user_prompt="paper evaluation",
+        backend=backend,
+    )
+
+    assert result["status"] == "QUARANTINED_JUDGE_TRANSPORT_OR_IDENTITY"
+    assert result["transport_receipts"][0]["content_types"] == ["thinking"]
+    assert "private" not in json.dumps(result)
+
+
 def test_summary_exposes_only_conformance_and_reversal_agreement(tmp_path):
     store = CalibrationStore(tmp_path)
     for order, answer_order, response in (

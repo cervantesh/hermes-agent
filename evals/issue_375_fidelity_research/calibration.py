@@ -1,4 +1,4 @@
-"""Crash-safe, efficacy-blind judge calibration for protocol R3."""
+"""Crash-safe, efficacy-blind judge calibration primitives."""
 
 from __future__ import annotations
 
@@ -475,6 +475,9 @@ def evaluate_judgment(
             max_tokens=2048,
         )
     except Exception as error:
+        transport_receipts = _sanitize_transport(
+            _receipts_since(backend, receipt_start)
+        )
         receipt = {
             "schema_version": 1,
             "task_id": task_id,
@@ -482,6 +485,7 @@ def evaluate_judgment(
             "order": order,
             "status": "QUARANTINED_JUDGE_TRANSPORT_OR_IDENTITY",
             "cause_type": type(error).__name__,
+            "transport_receipts": transport_receipts,
         }
         store.finish_judgment(
             task_id=task_id,

@@ -1,0 +1,21 @@
+{
+  "approved": false,
+  "control_judge_model": "claude-sonnet-4-5-20250929",
+  "control_judge_provider": "anthropic",
+  "fidelity_judge_model": "gpt-4-0613",
+  "fidelity_judge_provider": "openai",
+  "generation_and_extraction_model": "claude-haiku-4-5-20251001",
+  "generation_and_extraction_provider": "anthropic",
+  "harness_commit": "<clean-40-character-commit-after-review>",
+  "inputs_seal_sha256": "b765d3bd229245ed1ee8cfe9ba06c422a955f4e008c7c07ebd13c8ed8dd14cdb",
+  "limits": {
+    "max_cost_usd": 20.0,
+    "max_input_tokens": 6000000,
+    "max_logical_calls": 2700,
+    "max_output_tokens": 3000000,
+    "max_transport_attempts": 8100,
+    "max_wall_clock_seconds": 14400
+  },
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R4-2026-09-03",
+  "protocol_sha256": "82e3168595ebf6b57acf0256e8e6d14627275a647b4e05b749ec0c68ef778266"
+}

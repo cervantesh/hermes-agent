@@ -164,3 +164,40 @@ R3 subsequently terminated before judging as
 usage ledger are in `R3_EXECUTION_DISPOSITION_RECEIPT.json`; the instrument
 defects it exposed and the conditions for any clean repetition are separated
 in `R3_POSTMORTEM_AND_R4_PROPOSAL.md`. R3 must not be resumed or pooled.
+
+## R4 clean calibration repetition
+
+`JUDGE_CALIBRATION_R4_FREEZE.md` prospectively defines a clean repetition on
+30 new task IDs. Its input seal excludes the scored frame and every R1, R2,
+and R3 task. R4 preserves the exact R3 models and paper prompt while binding
+the dataset bytes, source receipt, per-task effective prompts, authorization,
+and external checkpoint root to one evidence frame.
+
+The executor prepares all fixtures, runs the full fidelity track, and starts
+the control track only after the fidelity gate passes. It stops on the first
+terminal response and when 27/30 reversal agreement becomes unreachable. A
+persistent run identity rejects stale checkpoints from another protocol,
+input seal, harness commit, source set, provider/model set, or limit set.
+
+Copy `R4_RUN_AUTHORIZATION.example.json` to the ignored
+`R4_RUN_AUTHORIZATION.json` only after a new authorization names R4, its exact
+input seal, the clean reviewed harness commit, all three model/provider pairs,
+and every limit. Earlier authorizations do not apply.
+
+```powershell
+python -m evals.issue_375_fidelity_research.execute_calibration_r4 `
+  --repo <repo> `
+  --dataset <dataset> `
+  --manifest evals/issue_375_fidelity_research/frozen_inputs/R4_MANIFEST.json `
+  --schedule evals/issue_375_fidelity_research/frozen_inputs/R4_SCHEDULE.json `
+  --camel-repo <camel-repo> `
+  --supplement-tex <supplement-tex> `
+  --paper-pdf <paper-pdf> `
+  --paper-source <paper-source> `
+  --output-root <new-empty-path-outside-the-repository>
+```
+
+The protocol and provider-free package authorize no provider calls. Token and
+actual-cost limits are response-accounted stop thresholds, so the response
+that crosses one is recorded before execution stops; an interrupted in-flight
+request makes the persisted totals a lower bound.

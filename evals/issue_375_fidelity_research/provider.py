@@ -139,6 +139,7 @@ class AnthropicBackend:
         retry_waits: tuple[float, ...],
         sleep: Callable[[float], None] = time.sleep,
         reserve_usd: float,
+        before_attempt: Callable[[], None] | None = None,
     ) -> None:
         if max_attempts != len(retry_waits) + 1:
             raise ValueError("retry_waits must provide one wait per retry")
@@ -151,6 +152,7 @@ class AnthropicBackend:
         self.retry_waits = retry_waits
         self.sleep = sleep
         self.reserve_usd = reserve_usd
+        self.before_attempt = before_attempt
         self.receipts: list[dict[str, Any]] = []
 
     def complete(
@@ -175,6 +177,8 @@ class AnthropicBackend:
         attempts = 0
         for attempt in range(self.max_attempts):
             attempts = attempt + 1
+            if self.before_attempt is not None:
+                self.before_attempt()
             self.budget.begin_attempt()
             try:
                 response = self.client.messages.create(**request)
@@ -188,26 +192,37 @@ class AnthropicBackend:
 
         input_tokens = int(response.usage.input_tokens)
         output_tokens = int(response.usage.output_tokens)
-        self.budget.commit_usage(
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            input_usd_per_million=self.input_usd_per_million,
-            output_usd_per_million=self.output_usd_per_million,
-        )
+        budget_error = None
+        try:
+            self.budget.commit_usage(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                input_usd_per_million=self.input_usd_per_million,
+                output_usd_per_million=self.output_usd_per_million,
+            )
+        except BudgetExceeded as error:
+            budget_error = error
         content_types = [
             str(getattr(block, "type", "unknown")) for block in response.content
         ]
-        try:
-            text = _response_text(response)
-        except ProviderContentError:
+        if budget_error is not None:
             response_sha256 = _canonical_hash({
                 "content_types": content_types,
                 "stop_reason": str(response.stop_reason),
             })
             content_error = True
         else:
-            response_sha256 = _text_hash(text)
-            content_error = False
+            try:
+                text = _response_text(response)
+            except ProviderContentError:
+                response_sha256 = _canonical_hash({
+                    "content_types": content_types,
+                    "stop_reason": str(response.stop_reason),
+                })
+                content_error = True
+            else:
+                response_sha256 = _text_hash(text)
+                content_error = False
         receipt = {
             "agent": agent,
             "requested_model": self.model,
@@ -226,6 +241,8 @@ class AnthropicBackend:
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
         }
         self.receipts.append(receipt)
+        if budget_error is not None:
+            raise budget_error
         if response.model != self.model:
             raise ModelIdentityError(
                 f"provider returned {response.model!r}, expected {self.model!r}"
@@ -254,6 +271,7 @@ class OpenAIChatBackend:
         retry_waits: tuple[float, ...],
         sleep: Callable[[float], None] = time.sleep,
         reserve_usd: float,
+        before_attempt: Callable[[], None] | None = None,
     ) -> None:
         if max_attempts != len(retry_waits) + 1:
             raise ValueError("retry_waits must provide one wait per retry")
@@ -266,6 +284,7 @@ class OpenAIChatBackend:
         self.retry_waits = retry_waits
         self.sleep = sleep
         self.reserve_usd = reserve_usd
+        self.before_attempt = before_attempt
         self.receipts: list[dict[str, Any]] = []
 
     def complete(
@@ -293,6 +312,8 @@ class OpenAIChatBackend:
         attempts = 0
         for attempt in range(self.max_attempts):
             attempts = attempt + 1
+            if self.before_attempt is not None:
+                self.before_attempt()
             self.budget.begin_attempt()
             try:
                 response = self.client.chat.completions.create(**request)
@@ -308,12 +329,16 @@ class OpenAIChatBackend:
         text = choice.message.content
         input_tokens = int(response.usage.prompt_tokens)
         output_tokens = int(response.usage.completion_tokens)
-        self.budget.commit_usage(
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            input_usd_per_million=self.input_usd_per_million,
-            output_usd_per_million=self.output_usd_per_million,
-        )
+        budget_error = None
+        try:
+            self.budget.commit_usage(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                input_usd_per_million=self.input_usd_per_million,
+                output_usd_per_million=self.output_usd_per_million,
+            )
+        except BudgetExceeded as error:
+            budget_error = error
         content_types = []
         if isinstance(text, str) and text:
             content_types.append("text")
@@ -343,6 +368,8 @@ class OpenAIChatBackend:
             "latency_ms": round((time.perf_counter() - started) * 1000, 3),
         }
         self.receipts.append(receipt)
+        if budget_error is not None:
+            raise budget_error
         if response.model != self.model:
             raise ModelIdentityError(
                 f"provider returned {response.model!r}, expected {self.model!r}"
