@@ -4,10 +4,10 @@
   "seal": "DESIGN_SEAL.json",
   "sha256": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
   "execution_protocol": {
-    "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
-    "artifact": "EXECUTION_PROTOCOL_FREEZE.md",
-    "seal": "EXECUTION_PROTOCOL_SEAL.json",
-    "sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305"
+    "protocol_id": "IP375-FIDELITY-EXECUTION-R2-2026-09-03",
+    "artifact": "EXECUTION_PROTOCOL_R2_FREEZE.md",
+    "seal": "EXECUTION_PROTOCOL_R2_SEAL.json",
+    "sha256": "bc5dadff484c9f6529fabe1e613624eb7acbb6847d77133dd1da4e12dfbe5373"
   },
   "amendments": [
     {

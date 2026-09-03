@@ -72,6 +72,25 @@ def test_manifest_resolves_pinned_fields_without_historical_messages(tmp_path):
     ]
 
 
+def test_manifest_excludes_declared_ids_before_deterministic_ranking(tmp_path):
+    source = tmp_path / "ai_society.json"
+    source.write_text(
+        json.dumps([_row("a", 1), _row("b", 1), _row("c", 1), _row("d", 1)]),
+        encoding="utf-8",
+    )
+
+    manifest = build_sample_manifest(
+        source,
+        sample_size=2,
+        seed="fresh-pilot",
+        exclude_ids={"a", "c"},
+    )
+
+    assert {record["id"] for record in manifest["records"]} == {"b", "d"}
+    assert manifest["excluded_ids_sha256"]
+    assert manifest["excluded_id_count"] == 2
+
+
 def test_manifest_rejects_inconsistent_fields_within_conversation(tmp_path):
     source = tmp_path / "ai_society.json"
     source.write_text(

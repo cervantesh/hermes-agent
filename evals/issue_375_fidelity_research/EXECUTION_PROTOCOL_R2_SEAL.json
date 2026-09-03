@@ -1,0 +1,11 @@
+{
+  "canonical_artifact": "evals/issue_375_fidelity_research/EXECUTION_PROTOCOL_R2_FREEZE.md",
+  "observations_started": false,
+  "parent_protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "parent_protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "pilot_input_seal": "evals/issue_375_fidelity_research/frozen_inputs/PILOT_R2_SEAL.json",
+  "pilot_input_seal_sha256": "904a5e926137bdcaed71f5b1fb839276c844b5dbfe2e595b598ed5e9c0a2298a",
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R2-2026-09-03",
+  "sha256": "bc5dadff484c9f6529fabe1e613624eb7acbb6847d77133dd1da4e12dfbe5373",
+  "status": "FROZEN_PROSPECTIVE_NO_R2_OBSERVATIONS"
+}

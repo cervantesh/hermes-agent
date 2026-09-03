@@ -25,7 +25,6 @@ EXPECTED = {
     "paper_pdf": "926c73c2ae9f9abc7612ab58373e428476f4de55db78646ed59de09810db7777",
     "paper_source": "232dc85336d51948808effa9590087b47ccdb7e4baa364b39120743da050faf2",
     "design": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
-    "protocol": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
 }
 
 
@@ -71,15 +70,30 @@ def run_preflight(
     root = repo / "evals" / "issue_375_fidelity_research"
     frozen = root / "frozen_inputs"
     checks: dict[str, bool] = {}
+    active = json.loads((root / "ACTIVE_FREEZE.json").read_text(encoding="utf-8"))
+    active_protocol = active["execution_protocol"]
 
     _verify(
         root / "INITIAL_DESIGN_FREEZE.md", EXPECTED["design"], checks, "design_seal"
     )
     _verify(
-        root / "EXECUTION_PROTOCOL_FREEZE.md",
-        EXPECTED["protocol"],
+        root / active_protocol["artifact"],
+        active_protocol["sha256"],
         checks,
         "execution_protocol_seal",
+    )
+    protocol_seal = json.loads(
+        (root / active_protocol["seal"]).read_text(encoding="utf-8")
+    )
+    checks["execution_protocol_pointer"] = (
+        protocol_seal["protocol_id"] == active_protocol["protocol_id"]
+        and protocol_seal["sha256"] == active_protocol["sha256"]
+    )
+    _verify(
+        repo / protocol_seal["pilot_input_seal"],
+        protocol_seal["pilot_input_seal_sha256"],
+        checks,
+        "r2_pilot_input_seal",
     )
     _verify(dataset, EXPECTED["dataset"], checks, "dataset_sha256")
     _verify(paper_pdf, EXPECTED["paper_pdf"], checks, "paper_pdf_sha256")
@@ -95,7 +109,6 @@ def run_preflight(
         == EXPECTED["camel"]
     )
 
-    active = json.loads((root / "ACTIVE_FREEZE.json").read_text(encoding="utf-8"))
     active_source_receipt = frozen / "SOURCE_PROMPT_RECEIPT.json"
     for amendment in active["amendments"]:
         seal = json.loads((root / amendment["seal"]).read_text(encoding="utf-8"))
@@ -144,6 +157,31 @@ def run_preflight(
         seed="IP375-FIDELITY-R1-SCHEDULE",
         reversal_count=20,
     )
+    pilot_seal = json.loads((frozen / "PILOT_R2_SEAL.json").read_text(encoding="utf-8"))
+    for name, digest in pilot_seal["artifacts"].items():
+        _verify(frozen / name, digest, checks, f"r2_{name}")
+    pilot_manifest_bytes = (frozen / "PILOT_R2_MANIFEST.json").read_bytes()
+    pilot_manifest = json.loads(pilot_manifest_bytes)
+    scored_ids = {str(record["id"]) for record in stored_manifest["records"]}
+    regenerated_pilot = build_sample_manifest(
+        dataset,
+        sample_size=20,
+        seed="IP375-FIDELITY-R2-PILOT",
+        exclude_ids=scored_ids,
+    )
+    checks["r2_pilot_manifest_regenerates"] = (
+        _canonical(regenerated_pilot) == pilot_manifest_bytes
+    )
+    pilot_ids = [str(record["id"]) for record in pilot_manifest["records"]]
+    checks["r2_pilot_disjoint_from_scored"] = scored_ids.isdisjoint(pilot_ids)
+    stored_pilot_schedule = json.loads(
+        (frozen / "PILOT_R2_SCHEDULE.json").read_text(encoding="utf-8")
+    )
+    checks["r2_pilot_schedule_regenerates"] = stored_pilot_schedule == build_schedule(
+        pilot_ids,
+        seed="IP375-FIDELITY-R2-PILOT-SCHEDULE",
+        reversal_count=0,
+    )
     sources = load_prompt_sources(camel_repo, EXPECTED["camel"], supplement_tex)
     source_receipt = json.loads(active_source_receipt.read_text(encoding="utf-8"))
     checks["source_prompt_hashes_regenerate"] = (
@@ -155,9 +193,18 @@ def run_preflight(
         observation_dir.iterdir()
     )
     checks["anthropic_api_key_present"] = bool(os.environ.get("ANTHROPIC_API_KEY"))
-    checks["explicit_run_authorization_present"] = (
-        root / "RUN_AUTHORIZATION.json"
-    ).is_file()
+    authorization_path = root / "RUN_AUTHORIZATION.json"
+    checks["explicit_run_authorization_present"] = authorization_path.is_file()
+    authorization = (
+        json.loads(authorization_path.read_text(encoding="utf-8"))
+        if authorization_path.is_file()
+        else {}
+    )
+    checks["authorization_matches_active_protocol"] = (
+        authorization.get("approved") is True
+        and authorization.get("protocol_id") == active_protocol["protocol_id"]
+        and authorization.get("protocol_sha256") == active_protocol["sha256"]
+    )
     checks["anthropic_runtime_version"] = anthropic.__version__ == "0.87.0"
     checks["anthropic_metadata_matches_runtime"] = (
         anthropic.__version__ == importlib.metadata.version("anthropic")
@@ -176,7 +223,7 @@ def run_preflight(
     )
     return {
         "schema_version": 1,
-        "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+        "protocol_id": active_protocol["protocol_id"],
         "status": "READY" if ready else "BLOCKED_BEFORE_PROVIDER_CALLS",
         "checks": checks,
         "versions": {

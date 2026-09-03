@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -14,21 +15,21 @@ from .analysis import analyze_wins
 from .manifest import resolve_manifest
 from .provider import AnthropicBackend, BudgetExceeded, UsageBudget
 from .preflight import run_preflight
-from .runner import LaneRExecutionError, PairStore, run_lane_r_pair
+from .runner import JudgeOutputError, LaneRExecutionError, PairStore, run_lane_r_pair
 from .sources import load_prompt_sources
 
 
-PROTOCOL_ID = "IP375-FIDELITY-EXECUTION-R1-2026-09-03"
-PROTOCOL_SHA256 = "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305"
+PROTOCOL_ID = "IP375-FIDELITY-EXECUTION-R2-2026-09-03"
+PROTOCOL_SHA256 = "bc5dadff484c9f6529fabe1e613624eb7acbb6847d77133dd1da4e12dfbe5373"
 GENERATOR_MODEL = "claude-haiku-4-5-20251001"
 JUDGE_MODEL = "claude-sonnet-4-5-20250929"
 STAGE_LIMITS = {
     "pilot": {
-        "max_logical_calls": 340,
-        "max_transport_attempts": 1020,
-        "max_input_tokens": 2_000_000,
+        "max_logical_calls": 1700,
+        "max_transport_attempts": 5100,
+        "max_input_tokens": 3_000_000,
         "max_output_tokens": 1_500_000,
-        "max_cost_usd": 10.0,
+        "max_cost_usd": 5.0,
     },
     "scored": {
         "max_logical_calls": 8860,
@@ -38,10 +39,54 @@ STAGE_LIMITS = {
         "max_cost_usd": 200.0,
     },
 }
+PILOT_TASK_COUNT = 20
+PILOT_MIN_COMPLETE = 18
+PILOT_ALLOWED_CAUSES = {"JudgeOutputFormatError", "JudgeScoreRangeError"}
 
 
 def _canonical(value: object) -> bytes:
     return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _validate_stage_inputs(
+    *, root: Path, stage: str, manifest_path: Path, schedule_path: Path
+) -> None:
+    frozen = root / "frozen_inputs"
+    if stage == "pilot":
+        seal = json.loads((frozen / "PILOT_R2_SEAL.json").read_text(encoding="utf-8"))
+        expected_manifest = seal["artifacts"]["PILOT_R2_MANIFEST.json"]
+        expected_schedule = seal["artifacts"]["PILOT_R2_SCHEDULE.json"]
+        expected_size = PILOT_TASK_COUNT
+    else:
+        seal = json.loads(
+            (frozen / "FROZEN_INPUTS_SEAL.json").read_text(encoding="utf-8")
+        )
+        expected_manifest = seal["artifacts"]["SAMPLE_MANIFEST.json"]
+        expected_schedule = seal["artifacts"]["SCHEDULE.json"]
+        expected_size = 100
+    if (
+        _file_sha256(manifest_path) != expected_manifest
+        or _file_sha256(schedule_path) != expected_schedule
+    ):
+        raise ValueError(
+            "provided manifest or schedule does not match sealed stage inputs"
+        )
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
+    manifest_ids = [str(record["id"]) for record in manifest["records"]]
+    schedule_ids = [str(record["task_id"]) for record in schedule]
+    if len(manifest_ids) != expected_size or set(manifest_ids) != set(schedule_ids):
+        raise ValueError(
+            "provided manifest and schedule do not describe the sealed cohort"
+        )
 
 
 def _atomic_write(path: Path, value: object) -> None:
@@ -114,9 +159,34 @@ def _public_summary(
         "usage": budget.snapshot(),
     }
     if stage == "pilot":
+        allowed = [
+            receipt
+            for receipt in quarantined
+            if receipt.get("cause_type") in PILOT_ALLOWED_CAUSES
+        ]
+        disallowed = [
+            receipt
+            for receipt in quarantined
+            if receipt.get("cause_type") not in PILOT_ALLOWED_CAUSES
+        ]
+        conformance_pass = (
+            len(task_ids) == PILOT_TASK_COUNT
+            and len(completed) >= PILOT_MIN_COMPLETE
+            and len(allowed) <= PILOT_TASK_COUNT - PILOT_MIN_COMPLETE
+            and not disallowed
+        )
         summary["efficacy_observations"] = 0
         summary["eligible_for_pooling"] = False
-        summary["conformance_pass"] = len(completed) == 4 and not quarantined
+        summary["allowed_content_quarantines"] = len(allowed)
+        summary["disallowed_quarantines"] = len(disallowed)
+        summary["conformance_pass"] = conformance_pass
+        summary["status"] = (
+            "COMPLETE_WITH_ALLOWED_QUARANTINE"
+            if conformance_pass and allowed
+            else "COMPLETE"
+            if conformance_pass
+            else "INCOMPLETE"
+        )
         return summary
 
     wins = {"original": 0, "ablated": 0, "draw": 0}
@@ -163,9 +233,22 @@ def _public_summary(
     return summary
 
 
+def _pilot_can_continue(cause: Exception, *, allowed_quarantine_count: int) -> bool:
+    return (
+        isinstance(cause, JudgeOutputError)
+        and allowed_quarantine_count <= PILOT_TASK_COUNT - PILOT_MIN_COMPLETE
+    )
+
+
 def execute(args: argparse.Namespace) -> dict[str, Any]:
     root = args.repo / "evals" / "issue_375_fidelity_research"
     _authorization(root / "RUN_AUTHORIZATION.json", args.stage)
+    _validate_stage_inputs(
+        root=root,
+        stage=args.stage,
+        manifest_path=args.manifest,
+        schedule_path=args.schedule,
+    )
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         raise RuntimeError("ANTHROPIC_API_KEY is absent; refusing provider calls")
@@ -189,8 +272,8 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     tasks = resolve_manifest(args.dataset, manifest)
-    if args.stage == "pilot":
-        tasks = tasks[:4]
+    if args.stage == "pilot" and len(tasks) != PILOT_TASK_COUNT:
+        raise ValueError(f"R2 pilot manifest must contain {PILOT_TASK_COUNT} tasks")
     schedules = {
         row["task_id"]: row
         for row in json.loads(args.schedule.read_text(encoding="utf-8"))
@@ -232,6 +315,11 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
 
     store = PairStore(args.output_root / args.stage)
     store.recover_interrupted()
+    pilot_allowed_quarantine_count = sum(
+        store.load_public(task["id"]).get("cause_type") in PILOT_ALLOWED_CAUSES
+        for task in tasks
+        if args.stage == "pilot" and store.has_public(task["id"])
+    )
     for task in tasks:
         if not store.begin(task["id"]):
             continue
@@ -268,7 +356,15 @@ def execute(args: argparse.Namespace) -> dict[str, Any]:
                 "cause_type": type(cause).__name__,
             }
             store.complete(task["id"], private, public)
-            if args.stage == "pilot" or isinstance(cause, BudgetExceeded):
+            if args.stage == "pilot" and isinstance(cause, JudgeOutputError):
+                pilot_allowed_quarantine_count += 1
+            if isinstance(cause, BudgetExceeded) or (
+                args.stage == "pilot"
+                and not _pilot_can_continue(
+                    cause,
+                    allowed_quarantine_count=pilot_allowed_quarantine_count,
+                )
+            ):
                 break
         else:
             store.complete(task["id"], private, public)

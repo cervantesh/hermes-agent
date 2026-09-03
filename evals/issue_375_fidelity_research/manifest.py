@@ -50,20 +50,27 @@ def build_sample_manifest(
     *,
     sample_size: int,
     seed: str,
+    exclude_ids: set[str] | None = None,
 ) -> dict[str, Any]:
     """Select distinct conversation IDs without copying task text into the manifest."""
     path = Path(source_path)
     conversations = _load_conversations(path)
-    if sample_size < 1 or sample_size > len(conversations):
+    excluded = set(exclude_ids or ())
+    eligible = {
+        record_id: fields
+        for record_id, fields in conversations.items()
+        if record_id not in excluded
+    }
+    if sample_size < 1 or sample_size > len(eligible):
         raise ValueError("sample_size must fit the number of distinct conversations")
 
     ranked = sorted(
-        conversations,
+        eligible,
         key=lambda record_id: (_sha256_text(f"{seed}|{record_id}"), record_id),
     )[:sample_size]
     records = []
     for record_id in ranked:
-        fields = conversations[record_id]
+        fields = eligible[record_id]
         records.append({
             "id": record_id,
             "rank_sha256": _sha256_text(f"{seed}|{record_id}"),
@@ -74,13 +81,17 @@ def build_sample_manifest(
             ),
             "user_role_sha256": _sha256_text(_role_name(fields["role_2"], "USER")),
         })
-    return {
+    manifest = {
         "schema_version": 1,
         "seed": seed,
         "source_sha256": _file_sha256(path),
         "sample_size": sample_size,
         "records": records,
     }
+    if excluded:
+        manifest["excluded_id_count"] = len(excluded)
+        manifest["excluded_ids_sha256"] = _sha256_text("\n".join(sorted(excluded)))
+    return manifest
 
 
 def resolve_manifest(

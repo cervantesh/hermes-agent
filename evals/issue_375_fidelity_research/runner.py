@@ -25,6 +25,18 @@ class LaneRExecutionError(RuntimeError):
         self.cause = cause
 
 
+class JudgeOutputError(ValueError):
+    """A non-retryable judge response that violates the frozen score contract."""
+
+
+class JudgeOutputFormatError(JudgeOutputError):
+    pass
+
+
+class JudgeScoreRangeError(JudgeOutputError):
+    pass
+
+
 def _sha(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -71,10 +83,12 @@ def parse_judge_scores(text: str) -> tuple[float, float]:
     first_line = text.splitlines()[0].strip() if text.splitlines() else ""
     match = re.fullmatch(r"(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)", first_line)
     if not match:
-        raise ValueError("judge first line must contain exactly two numeric scores")
+        raise JudgeOutputFormatError(
+            "judge first line must contain exactly two numeric scores"
+        )
     scores = tuple(float(value) for value in match.groups())
     if any(value < 1 or value > 10 for value in scores):
-        raise ValueError("judge scores must be within [1, 10]")
+        raise JudgeScoreRangeError("judge scores must be within [1, 10]")
     return scores  # type: ignore[return-value]
 
 

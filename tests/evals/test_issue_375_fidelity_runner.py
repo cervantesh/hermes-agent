@@ -1,8 +1,12 @@
 import json
 from dataclasses import dataclass
 
+import pytest
+
 from evals.issue_375_fidelity_research.protocol import Generation
 from evals.issue_375_fidelity_research.runner import (
+    JudgeOutputFormatError,
+    JudgeScoreRangeError,
     PairStore,
     parse_judge_scores,
     run_lane_r_pair,
@@ -53,6 +57,13 @@ def test_judge_parser_requires_exact_two_score_first_line():
             pass
         else:
             raise AssertionError(f"accepted malformed judge output: {invalid}")
+
+
+def test_judge_parser_classifies_format_and_range_quarantines_separately():
+    with pytest.raises(JudgeOutputFormatError):
+        parse_judge_scores("scores: 8 6")
+    with pytest.raises(JudgeScoreRangeError):
+        parse_judge_scores("11 2\nexplanation")
 
 
 def test_lane_r_pair_runs_two_arms_extracts_and_blind_judges():

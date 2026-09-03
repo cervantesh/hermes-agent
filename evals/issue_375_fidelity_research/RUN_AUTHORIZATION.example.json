@@ -3,13 +3,13 @@
   "generation_and_extraction_model": "claude-haiku-4-5-20251001",
   "judge_model": "claude-sonnet-4-5-20250929",
   "limits": {
-    "max_cost_usd": 10.0,
-    "max_input_tokens": 2000000,
-    "max_logical_calls": 340,
+    "max_cost_usd": 5.0,
+    "max_input_tokens": 3000000,
+    "max_logical_calls": 1700,
     "max_output_tokens": 1500000,
-    "max_transport_attempts": 1020
+    "max_transport_attempts": 5100
   },
-  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
-  "protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R2-2026-09-03",
+  "protocol_sha256": "bc5dadff484c9f6529fabe1e613624eb7acbb6847d77133dd1da4e12dfbe5373",
   "stage": "pilot"
 }
