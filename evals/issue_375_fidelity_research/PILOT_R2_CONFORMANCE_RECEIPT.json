@@ -1,7 +1,8 @@
 {
   "contains_credentials_or_account_identity": false,
   "disposition": "INCONCLUSIVE_PROTOCOL_OR_INFRASTRUCTURE",
-  "efficacy_inspected": false,
+  "efficacy_inspected": true,
+  "efficacy_inspection_scope": "After the failed pilot was closed, one completed public receipt was accidentally printed while auditing usage-field structure. One pair's scores and mapped outcome were exposed; no aggregate was computed or inspected, and the observation is excluded from every future design or selection decision.",
   "eligible_for_pooling": false,
   "execution": {
     "attempted_pairs": 12,

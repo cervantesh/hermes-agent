@@ -78,6 +78,11 @@ The completed R2 disposition is recorded in
 `PILOT_R2_CONFORMANCE_RECEIPT.json`. It did not pass the frozen conformance
 gate, so no scored run is authorized or appropriate from this evidence.
 
+The next prospective step is frozen separately in
+`JUDGE_CALIBRATION_R3_FREEZE.md`. R3 is design-only: its harness, fresh cohort,
+credentials, provider execution, and scored-run authorization do not yet
+exist. It must not be treated as an amendment that makes R2 pass.
+
 The unchanged judge contract still requires exactly two scores in `[1,10]`.
 R2 classifies malformed judge output as either `JudgeOutputFormatError` or
 `JudgeScoreRangeError`; it never repairs, retries, clamps, or scores that
