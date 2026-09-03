@@ -1,0 +1,16 @@
+{
+  "approved": false,
+  "control_judge_model": "claude-sonnet-4-5-20250929",
+  "fidelity_judge_model": "gpt-4-0613",
+  "generation_and_extraction_model": "claude-haiku-4-5-20251001",
+  "inputs_seal_sha256": "4f1291263c92eb0e46a5c99a3592d3a95ab44a350a007194c02aa88e9e7ced8a",
+  "limits": {
+    "max_cost_usd": 20.0,
+    "max_input_tokens": 6000000,
+    "max_logical_calls": 2700,
+    "max_output_tokens": 3000000,
+    "max_transport_attempts": 8100
+  },
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R3-2026-09-03",
+  "protocol_sha256": "ab70597ea1515dfb8460fd157578d329c384cb92c99bf1fc5b818cbafb2e18de"
+}

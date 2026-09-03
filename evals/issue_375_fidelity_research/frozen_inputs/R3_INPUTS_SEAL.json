@@ -1,0 +1,25 @@
+{
+  "artifacts": {
+    "R3_MANIFEST.json": "116cf1e52ae312034c17f09222f253d95f3875d45efdddf63dd1193b80caa973",
+    "R3_SCHEDULE.json": "a878b5ac756b361863d38778758db928f5527472a0f8a922023a239689a181e8"
+  },
+  "excluded_id_count": 120,
+  "excluded_ids_sha256": "b623428744805ba4e4abfacf765b67d4280b07cff4ea90855868be8981a4b424",
+  "exclusion_manifest_sha256": {
+    "FROZEN_INPUTS_SEAL.json": "593707d0246ff164081b6e4b8c94a7b176173e889861ffb453a0fbe6d3e35c61",
+    "PILOT_R2_MANIFEST.json": "b24a4b89590d73b62b1add42a300d109c6c5117738d274154675660f27968ea8",
+    "SAMPLE_MANIFEST.json": "532b2bd251d94bd759b7ba9fcf59cfa44300933fd0628c5a35f6a1232033ce8c"
+  },
+  "observations_started": false,
+  "prompt_artifact_sha256": {
+    "R3_EFFECTIVE_SYSTEM_PROMPTS.json": "a0a3cded5e9c316d7fdb7559dee7cebcc32ec267a1d39da7927e19301d31e617",
+    "SOURCE_PROMPT_RECEIPT_AMENDMENT_007.json": "d241da64de45ae148967288e4e25eafa404410403ff7b154d405cead47727590"
+  },
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R3-2026-09-03",
+  "protocol_sha256": "ab70597ea1515dfb8460fd157578d329c384cb92c99bf1fc5b818cbafb2e18de",
+  "sample_seed": "IP375-JUDGE-CALIBRATION-R3",
+  "sample_size": 30,
+  "schedule_seed": "IP375-JUDGE-CALIBRATION-R3-SCHEDULE",
+  "schema_version": 1,
+  "status": "FROZEN_INPUTS_NO_PROVIDER_OBSERVATIONS"
+}

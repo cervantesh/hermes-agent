@@ -79,9 +79,10 @@ The completed R2 disposition is recorded in
 gate, so no scored run is authorized or appropriate from this evidence.
 
 The next prospective step is frozen separately in
-`JUDGE_CALIBRATION_R3_FREEZE.md`. R3 is design-only: its harness, fresh cohort,
-credentials, provider execution, and scored-run authorization do not yet
-exist. It must not be treated as an amendment that makes R2 pass.
+`JUDGE_CALIBRATION_R3_FREEZE.md`. Its provider-free harness and fresh 30-task
+cohort now exist, but no R3 provider observation or authorization exists. R3
+calibrates the Appendix H judge; it must not be treated as an amendment that
+makes R2 pass or as efficacy evidence.
 
 The unchanged judge contract still requires exactly two scores in `[1,10]`.
 R2 classifies malformed judge output as either `JudgeOutputFormatError` or
@@ -120,3 +121,40 @@ remain in the same external output root across both stages.
 
 Do not copy the external `private/`, `in_progress/`, or budget state into the
 repository. A public evidence packet is prepared only after privacy review.
+
+## R3 judge calibration
+
+`frozen_inputs/R3_INPUTS_SEAL.json` binds the fresh cohort, fully reversed
+schedule, source-prompt receipt, and per-task effective system-prompt hashes.
+The executor recomputes the effective prompts before constructing either
+provider client.
+
+Copy `R3_RUN_AUTHORIZATION.example.json` to the ignored
+`R3_RUN_AUTHORIZATION.json` only after a separate authorization names both
+providers, all three exact model IDs, the protocol and input-seal digests, and
+the frozen USD 20 ceiling. Both API keys must be supplied through the process
+environment; neither belongs in the authorization file.
+
+```powershell
+python -m evals.issue_375_fidelity_research.execute_calibration_r3 `
+  --repo <repo> `
+  --dataset <dataset> `
+  --manifest evals/issue_375_fidelity_research/frozen_inputs/R3_MANIFEST.json `
+  --schedule evals/issue_375_fidelity_research/frozen_inputs/R3_SCHEDULE.json `
+  --camel-repo <camel-repo> `
+  --supplement-tex <supplement-tex> `
+  --paper-pdf <paper-pdf> `
+  --paper-source <paper-source> `
+  --output-root <new-outside-repo-path>
+```
+
+The executor first checkpoints all 30 generation/extraction fixtures. It sends
+no judge request unless every pair is `JUDGE_READY`. Forward and reversed
+outputs are persisted privately before parsing; the repository-safe summary
+contains conformance and reversal-consistency counts, never scores, winners,
+or arm efficacy.
+
+Provider-free implementation evidence is recorded in
+`R3_HARNESS_CONFORMANCE_RECEIPT.json`. That receipt proves only harness
+conformance at its listed artifact hashes. It does not authorize R3, claim
+access to the historical judge, or report an experimental result.

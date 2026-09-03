@@ -1,4 +1,4 @@
-"""Direct Anthropic transport with exact identity, budgets, and sanitized receipts."""
+"""Direct provider transports with exact identity, budgets, and sanitized receipts."""
 
 from __future__ import annotations
 
@@ -215,5 +215,110 @@ class AnthropicBackend:
         return Generation(
             text=text,
             finish_reason=str(response.stop_reason),
+            usage={"input_tokens": input_tokens, "output_tokens": output_tokens},
+        )
+
+
+class OpenAIChatBackend:
+    """Pinned Chat Completions transport for the paper-family calibration judge."""
+
+    def __init__(
+        self,
+        *,
+        client: Any,
+        model: str,
+        input_usd_per_million: float,
+        output_usd_per_million: float,
+        budget: UsageBudget,
+        max_attempts: int,
+        retry_waits: tuple[float, ...],
+        sleep: Callable[[float], None] = time.sleep,
+        reserve_usd: float,
+    ) -> None:
+        if max_attempts != len(retry_waits) + 1:
+            raise ValueError("retry_waits must provide one wait per retry")
+        self.client = client
+        self.model = model
+        self.input_usd_per_million = input_usd_per_million
+        self.output_usd_per_million = output_usd_per_million
+        self.budget = budget
+        self.max_attempts = max_attempts
+        self.retry_waits = retry_waits
+        self.sleep = sleep
+        self.reserve_usd = reserve_usd
+        self.receipts: list[dict[str, Any]] = []
+
+    def complete(
+        self,
+        *,
+        agent: str,
+        system_prompt: str,
+        messages: list[dict[str, str]],
+        parameters: dict[str, Any],
+    ) -> Generation:
+        provider_messages = [
+            {"role": "system", "content": system_prompt},
+            *messages,
+        ]
+        request = {
+            "model": self.model,
+            "messages": provider_messages,
+            "temperature": parameters["temperature"],
+            "top_p": parameters["top_p"],
+            "max_tokens": parameters["max_tokens"],
+        }
+        self.budget.begin_call(self.reserve_usd)
+        started = time.perf_counter()
+        response = None
+        attempts = 0
+        for attempt in range(self.max_attempts):
+            attempts = attempt + 1
+            self.budget.begin_attempt()
+            try:
+                response = self.client.chat.completions.create(**request)
+                break
+            except Exception as error:
+                if not _retryable(error) or attempts == self.max_attempts:
+                    raise
+                self.sleep(self.retry_waits[attempt])
+        if response is None:
+            raise RuntimeError("provider did not return a response")
+
+        choice = response.choices[0]
+        text = choice.message.content
+        if not isinstance(text, str) or not text:
+            raise ValueError("provider response contained no text")
+        input_tokens = int(response.usage.prompt_tokens)
+        output_tokens = int(response.usage.completion_tokens)
+        self.budget.commit_usage(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            input_usd_per_million=self.input_usd_per_million,
+            output_usd_per_million=self.output_usd_per_million,
+        )
+        receipt = {
+            "agent": agent,
+            "requested_model": self.model,
+            "returned_model": str(response.model),
+            "request_sha256": _canonical_hash(request),
+            "system_prompt_sha256": _text_hash(system_prompt),
+            "messages_sha256": _canonical_hash(messages),
+            "response_sha256": _text_hash(text),
+            "finish_reason": str(choice.finish_reason),
+            "usage": {
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+            },
+            "attempts": attempts,
+            "latency_ms": round((time.perf_counter() - started) * 1000, 3),
+        }
+        self.receipts.append(receipt)
+        if response.model != self.model:
+            raise ModelIdentityError(
+                f"provider returned {response.model!r}, expected {self.model!r}"
+            )
+        return Generation(
+            text=text,
+            finish_reason=str(choice.finish_reason),
             usage={"input_tokens": input_tokens, "output_tokens": output_tokens},
         )

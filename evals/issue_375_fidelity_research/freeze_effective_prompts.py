@@ -26,14 +26,14 @@ def _canonical(value: object) -> bytes:
     return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
-def generate(
+def build_artifact(
     *,
     dataset_path: Path,
     manifest_path: Path,
     camel_repo: Path,
     supplement_tex: Path,
-    output_path: Path,
-) -> str:
+    freeze_id: str = FREEZE_ID,
+) -> dict[str, object]:
     manifest_bytes = manifest_path.read_bytes()
     manifest = json.loads(manifest_bytes)
     tasks = resolve_manifest(dataset_path, manifest)
@@ -55,9 +55,9 @@ def generate(
                 "initial_relay_sha256": _sha(initial_relay_message(prompts.user)),
             }
         records.append({"id": task["id"], "arms": arms})
-    artifact = {
+    return {
         "schema_version": 1,
-        "freeze_id": FREEZE_ID,
+        "freeze_id": freeze_id,
         "sample_manifest_sha256": _sha(manifest_bytes),
         "records": records,
         "dynamic_prompt_rule": (
@@ -65,6 +65,24 @@ def generate(
             "before the next provider request; its bytes cannot be known prospectively."
         ),
     }
+
+
+def generate(
+    *,
+    dataset_path: Path,
+    manifest_path: Path,
+    camel_repo: Path,
+    supplement_tex: Path,
+    output_path: Path,
+    freeze_id: str = FREEZE_ID,
+) -> str:
+    artifact = build_artifact(
+        dataset_path=dataset_path,
+        manifest_path=manifest_path,
+        camel_repo=camel_repo,
+        supplement_tex=supplement_tex,
+        freeze_id=freeze_id,
+    )
     data = _canonical(artifact)
     output_path.write_bytes(data)
     return _sha(data)
@@ -77,6 +95,7 @@ def main() -> None:
     parser.add_argument("--camel-repo", type=Path, required=True)
     parser.add_argument("--supplement-tex", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--freeze-id", default=FREEZE_ID)
     args = parser.parse_args()
     digest = generate(
         dataset_path=args.dataset,
@@ -84,6 +103,7 @@ def main() -> None:
         camel_repo=args.camel_repo,
         supplement_tex=args.supplement_tex,
         output_path=args.output,
+        freeze_id=args.freeze_id,
     )
     print(digest)
 

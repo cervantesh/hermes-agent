@@ -1,0 +1,41 @@
+{
+  "artifacts": {
+    "calibration.py": "8ba0b14567e12275b3a7277ae5bda3431320042ca6215a32ddee70c208854aae",
+    "execute_calibration_r3.py": "4e200c6581f8cf86d07cab225cc69470e7835aefb085c7c6b4030fc05bc6f3e6",
+    "freeze_effective_prompts.py": "fe55dc8caa9f4ae8249fa704c2f221c667ccb4662c863cf2f6deea757253b478",
+    "freeze_r3_inputs.py": "3d12b6cedecaae16ebe3914d87dfc47475fbd0a3dde818a4f6e3fc2d2531aff1",
+    "provider.py": "0ffb3f40b1939986b9798a453f61e7871095d547d3c7f411ab1fdc6135576b7b"
+  },
+  "frozen_inputs": {
+    "R3_EFFECTIVE_SYSTEM_PROMPTS.json": "a0a3cded5e9c316d7fdb7559dee7cebcc32ec267a1d39da7927e19301d31e617",
+    "R3_INPUTS_SEAL.json": "4f1291263c92eb0e46a5c99a3592d3a95ab44a350a007194c02aa88e9e7ced8a",
+    "R3_MANIFEST.json": "116cf1e52ae312034c17f09222f253d95f3875d45efdddf63dd1193b80caa973",
+    "R3_SCHEDULE.json": "a878b5ac756b361863d38778758db928f5527472a0f8a922023a239689a181e8"
+  },
+  "negative_controls": [
+    "authorization protocol and input-seal mismatch",
+    "cohort or schedule mutation",
+    "effective-prompt artifact mutation",
+    "returned model identity mismatch",
+    "interrupted fixture without a durable checkpoint",
+    "interrupted judgment without a durable raw response",
+    "repository-contained observation output"
+  ],
+  "observations_started": false,
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R3-2026-09-03",
+  "protocol_sha256": "ab70597ea1515dfb8460fd157578d329c384cb92c99bf1fc5b818cbafb2e18de",
+  "provider_calls_made": 0,
+  "schema_version": 1,
+  "status": "PROVIDER_FREE_HARNESS_READY_FOR_REVIEW",
+  "verification": {
+    "compileall": "PASS",
+    "git_diff_check": "PASS",
+    "issue_375_eval_tests": {
+      "passed": 58,
+      "result": "PASS"
+    },
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS",
+    "secret_signature_scan": "PASS"
+  }
+}

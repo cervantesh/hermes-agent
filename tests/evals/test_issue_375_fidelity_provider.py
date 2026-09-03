@@ -6,6 +6,7 @@ from evals.issue_375_fidelity_research.provider import (
     AnthropicBackend,
     BudgetExceeded,
     ModelIdentityError,
+    OpenAIChatBackend,
     UsageBudget,
 )
 
@@ -167,3 +168,55 @@ def test_budget_emits_state_before_attempt_and_after_usage():
     assert snapshots[1]["transport_attempts"] == 1
     assert snapshots[-1]["input_tokens"] == 11
     assert snapshots[-1]["output_tokens"] == 7
+
+
+def test_openai_backend_uses_exact_chat_snapshot_and_sanitizes_receipt():
+    completions = FakeMessages([
+        SimpleNamespace(
+            model="gpt-4-0613",
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content="8 6\nprivate rationale"),
+                    finish_reason="stop",
+                )
+            ],
+            usage=SimpleNamespace(prompt_tokens=13, completion_tokens=5),
+        )
+    ])
+    client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+    backend = OpenAIChatBackend(
+        client=client,
+        model="gpt-4-0613",
+        input_usd_per_million=30,
+        output_usd_per_million=60,
+        budget=UsageBudget(10, 30, 1000, 1000, 2.0),
+        max_attempts=3,
+        retry_waits=(2, 4),
+        sleep=lambda _: None,
+        reserve_usd=0.5,
+    )
+
+    generation = backend.complete(
+        agent="judge_fidelity_forward",
+        system_prompt="private paper system",
+        messages=[{"role": "user", "content": "private answers"}],
+        parameters={"temperature": 0.0, "top_p": 1.0, "max_tokens": 100},
+    )
+
+    assert generation.text == "8 6\nprivate rationale"
+    assert completions.calls == [
+        {
+            "model": "gpt-4-0613",
+            "messages": [
+                {"role": "system", "content": "private paper system"},
+                {"role": "user", "content": "private answers"},
+            ],
+            "temperature": 0.0,
+            "top_p": 1.0,
+            "max_tokens": 100,
+        }
+    ]
+    receipt = backend.receipts[0]
+    assert receipt["returned_model"] == "gpt-4-0613"
+    assert receipt["usage"] == {"input_tokens": 13, "output_tokens": 5}
+    assert "private" not in str(receipt)
