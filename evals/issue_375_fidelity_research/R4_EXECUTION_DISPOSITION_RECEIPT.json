@@ -1,0 +1,47 @@
+{
+  "adjudication": {
+    "original_summary_usage_is_lower_bound": false,
+    "reason": "The failed APIConnectionError dispatch has no response receipt. Six receipts in the terminal fixture belong to earlier successful calls in the same arm.",
+    "usage_is_lower_bound": true
+  },
+  "eligible_for_pooling": false,
+  "execution_commit": "533992beb0874e11a9fd539650e8f3bbc0ea70b5",
+  "external_public_artifact_sha256": {
+    "R4_BUDGET_STATE.json": "87083687730d8332b22223f3a6e1d16e955c4a1dc140670ab69b0eb8a124c1a7",
+    "R4_PUBLIC_SUMMARY.json": "4da8ff23473cffea7308df2d20bb5fcc8e7df6f288a5d45c1bbe2c9256ea62bd",
+    "R4_RUN_IDENTITY.json": "4f90d33e96aafbb21825afeaafa98cddcfd3cc6243f273f20d895f79792625b2",
+    "terminal_fixture_public.json": "fa11c3b0a6fb6eda2e8925881c34160446c22211672d64b23a5fc2361c633138"
+  },
+  "fixture_phase": {
+    "attempted": 21,
+    "judge_ready": 20,
+    "terminal": {
+      "arm": "ablated",
+      "cause_type": "APIConnectionError",
+      "failed_call_response_receipt_present": false,
+      "phase": "generation",
+      "prior_successful_response_receipts": 6,
+      "status": "QUARANTINED_FIXTURE_FAILURE",
+      "task_id": "027_006_007"
+    }
+  },
+  "judge_requests": {
+    "control": 0,
+    "fidelity": 0,
+    "total": 0
+  },
+  "observed_usage_lower_bound": {
+    "cost_usd": 2.519278,
+    "input_tokens": 1151493,
+    "logical_calls": 547,
+    "output_tokens": 273557,
+    "transport_attempts": 547
+  },
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R4-2026-09-03",
+  "protocol_sha256": "82e3168595ebf6b57acf0256e8e6d14627275a647b4e05b749ec0c68ef778266",
+  "provider_rerun_authorized": false,
+  "schema_version": 1,
+  "status": "TERMINAL",
+  "disposition": "INCONCLUSIVE_HARNESS_OR_INFRASTRUCTURE",
+  "efficacy_observations": 0
+}

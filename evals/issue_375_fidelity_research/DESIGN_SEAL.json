@@ -1,0 +1,20 @@
+{
+  "freeze_id": "IP375-FIDELITY-INITIAL-2026-09-03",
+  "status": "FROZEN_DESIGN_NO_OBSERVATIONS",
+  "created_at": "2026-09-03T00:55:09-04:00",
+  "canonical_artifact": "evals/issue_375_fidelity_research/INITIAL_DESIGN_FREEZE.md",
+  "sha256": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
+  "hermes_revision": "4dac5f28af54001b899c9b6fc8ba81cb58da2f0e",
+  "issue": "https://github.com/NousResearch/hermes-agent/issues/375",
+  "issue_body_sha256": "a64224848291d59c04a7f8946035e55bee526fc02b76bab4d249ec295e7a5613",
+  "paper": "arXiv:2303.17760v2",
+  "paper_pdf_sha256": "926c73c2ae9f9abc7612ab58373e428476f4de55db78646ed59de09810db7777",
+  "paper_source_sha256": "232dc85336d51948808effa9590087b47ccdb7e4baa364b39120743da050faf2",
+  "camel_revision": "c402032a7f7cd27e196356fbcf413c521a8cb4ca",
+  "ai_society_dataset_revision": "a493cd1636808cbe3cf2389dec79471a1db9e6bc",
+  "metadata_dataset_revision": "b19a8708cbe95fc3baa631e24bc888a9b89d5b91",
+  "observations_started": false,
+  "provider_calls_authorized": false,
+  "production_changes_authorized": false,
+  "next_required_artifact": "EXECUTION_PROTOCOL_FREEZE.md"
+}

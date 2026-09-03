@@ -1,0 +1,26 @@
+{
+  "artifacts": {
+    "R4_MANIFEST.json": "95c0ebf1600c02101bbd906b75cc3d7ec2a26fa93b459551687976520ff0ab22",
+    "R4_SCHEDULE.json": "a8b9458a40adb5fa36dd9d6e6d1e4d75d16b5f2c4d3c8aa94001967c0966d62a"
+  },
+  "dataset_sha256": "f8cfd147969ced5a61ba6df3507d6e14348ec5b300e94c1a05ec67d0266c0c12",
+  "excluded_id_count": 150,
+  "excluded_ids_sha256": "7e03108410e32376bdc68e041ed06a8f8eefdda2d6c9d492ff5baefd3283e495",
+  "exclusion_manifest_sha256": {
+    "PILOT_R2_MANIFEST.json": "b24a4b89590d73b62b1add42a300d109c6c5117738d274154675660f27968ea8",
+    "R3_MANIFEST.json": "116cf1e52ae312034c17f09222f253d95f3875d45efdddf63dd1193b80caa973",
+    "SAMPLE_MANIFEST.json": "532b2bd251d94bd759b7ba9fcf59cfa44300933fd0628c5a35f6a1232033ce8c"
+  },
+  "observations_started": false,
+  "prompt_artifact_sha256": {
+    "R4_EFFECTIVE_SYSTEM_PROMPTS.json": "d519098a7915d95aaeb20ceef13d64f6ffc70f062e1c1d3af675d0ffd82b5b0c",
+    "SOURCE_PROMPT_RECEIPT_AMENDMENT_007.json": "d241da64de45ae148967288e4e25eafa404410403ff7b154d405cead47727590"
+  },
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R4-2026-09-03",
+  "protocol_sha256": "82e3168595ebf6b57acf0256e8e6d14627275a647b4e05b749ec0c68ef778266",
+  "sample_seed": "IP375-JUDGE-CALIBRATION-R4",
+  "sample_size": 30,
+  "schedule_seed": "IP375-JUDGE-CALIBRATION-R4-SCHEDULE",
+  "schema_version": 1,
+  "status": "FROZEN_INPUTS_NO_PROVIDER_OBSERVATIONS"
+}

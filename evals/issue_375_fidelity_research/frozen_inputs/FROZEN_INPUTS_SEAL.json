@@ -1,0 +1,19 @@
+{
+  "artifacts": {
+    "CALL_CAP.json": "16fe31ed7697c9aa0d00f1ec9ce68be51bb55649a69bcf47ae2fae405ca37937",
+    "SAMPLE_MANIFEST.json": "532b2bd251d94bd759b7ba9fcf59cfa44300933fd0628c5a35f6a1232033ce8c",
+    "SCHEDULE.json": "69248abad95d476be2e342acc6658170085c695188d745e7a389bd5fdfc93de4",
+    "SOURCE_PROMPT_RECEIPT.json": "8082c0e90e2f206dd67796b484bf210e45a0aa18c0e63e23904c69ba5b7aaa83"
+  },
+  "freeze_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "observations_started": false,
+  "parent_freeze_sha256": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
+  "pilot_record_ids": [
+    "043_034_009",
+    "035_027_003",
+    "040_018_003",
+    "020_032_004"
+  ],
+  "schema_version": 1,
+  "status": "FROZEN_INPUTS_NO_PROVIDER_OBSERVATIONS"
+}

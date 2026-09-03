@@ -1,0 +1,49 @@
+{
+  "adversarial_review": {
+    "implementation_review": "READY",
+    "protocol_disposition": "READY"
+  },
+  "artifacts": {
+    "calibration.py": "53781b92b9085660f1374c29b2f227ce2d7bdbfe373a11f3dede61115acfb38f",
+    "execute_calibration_r4.py": "d0f09da513e5afb89f3a4a49dc41ccc12dd0d0d6a0b065a6f08f9bd02158de4b",
+    "freeze_r4_inputs.py": "2242a247b3590808af59750cf50a65d86c06a86f6d52a6f125f58eec82029d59",
+    "provider.py": "3eb562ca3eb0f678e9935c25996030226168301ca841f4d2f97fb0e0247a1751"
+  },
+  "frozen_inputs": {
+    "R4_EFFECTIVE_SYSTEM_PROMPTS.json": "d519098a7915d95aaeb20ceef13d64f6ffc70f062e1c1d3af675d0ffd82b5b0c",
+    "R4_INPUTS_SEAL.json": "b765d3bd229245ed1ee8cfe9ba06c422a955f4e008c7c07ebd13c8ed8dd14cdb",
+    "R4_MANIFEST.json": "95c0ebf1600c02101bbd906b75cc3d7ec2a26fa93b459551687976520ff0ab22",
+    "R4_SCHEDULE.json": "a8b9458a40adb5fa36dd9d6e6d1e4d75d16b5f2c4d3c8aa94001967c0966d62a"
+  },
+  "negative_controls": [
+    "R3 or mismatched authorization",
+    "protocol artifact mutation",
+    "cohort, schedule, or effective-prompt mutation",
+    "stale or unbound external output root",
+    "changed harness commit or provider identity",
+    "deadline reached before dispatch",
+    "terminal fixture or judgment outcome",
+    "fidelity reversal threshold mathematically unreachable",
+    "control attempted before fidelity pass",
+    "token threshold crossing without a sanitized receipt"
+  ],
+  "observations_started": false,
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R4-2026-09-03",
+  "protocol_sha256": "82e3168595ebf6b57acf0256e8e6d14627275a647b4e05b749ec0c68ef778266",
+  "provider_calls_made": 0,
+  "schema_version": 1,
+  "status": "PROVIDER_FREE_R4_HARNESS_READY_FOR_AUTHORIZATION",
+  "verification": {
+    "compileall": "PASS",
+    "effective_prompt_regeneration": "PASS",
+    "git_diff_check": "PASS",
+    "input_seal_validation": "PASS",
+    "issue_375_eval_tests": {
+      "passed": 82,
+      "result": "PASS"
+    },
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS",
+    "secret_signature_scan": "PASS"
+  }
+}

@@ -1,0 +1,322 @@
+[
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "044_046_007"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "010_033_004"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "016_049_006"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "049_003_003"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "035_045_007"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "022_029_007"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "037_003_004"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "012_003_010"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "025_015_001"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "012_020_002"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "019_032_007"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "012_021_005"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "044_024_001"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "017_029_001"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "012_038_010"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "017_026_010"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "ablated",
+      "original"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "016_007_001"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "050_007_010"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "ablated",
+      "original"
+    ],
+    "order_reversal": false,
+    "task_id": "030_020_008"
+  },
+  {
+    "blind_labels": [
+      "Assistant 1",
+      "Assistant 2"
+    ],
+    "generation_order": [
+      "original",
+      "ablated"
+    ],
+    "judge_order": [
+      "original",
+      "ablated"
+    ],
+    "order_reversal": false,
+    "task_id": "042_011_003"
+  }
+]

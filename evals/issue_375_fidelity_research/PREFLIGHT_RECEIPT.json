@@ -1,0 +1,53 @@
+{
+  "checks": {
+    "IP375-FIDELITY-AMENDMENT-001-SPECIFIED-TASK-2026-09-03_seal": true,
+    "IP375-FIDELITY-AMENDMENT-002-REPEAT-WORD-2026-09-03_seal": true,
+    "IP375-FIDELITY-AMENDMENT-003-REPEAT-WORD-EXACT-2026-09-03_seal": true,
+    "IP375-FIDELITY-AMENDMENT-004-TRANSPORT-CAP-2026-09-03_seal": true,
+    "IP375-FIDELITY-AMENDMENT-005-RUNTIME-IDENTITY-2026-09-03_seal": true,
+    "anthropic_api_key_present": false,
+    "anthropic_metadata_matches_runtime": true,
+    "anthropic_runtime_version": true,
+    "camel_commit_available": true,
+    "dataset_sha256": true,
+    "design_seal": true,
+    "effective_system_prompt_manifest": true,
+    "execution_protocol_seal": true,
+    "explicit_run_authorization_present": false,
+    "frozen_CALL_CAP.json": true,
+    "frozen_SAMPLE_MANIFEST.json": true,
+    "frozen_SCHEDULE.json": true,
+    "frozen_SOURCE_PROMPT_RECEIPT.json": true,
+    "frozen_hermes_commit_available": true,
+    "observation_ledger_empty": true,
+    "paper_pdf_sha256": true,
+    "paper_source_sha256": true,
+    "sample_manifest_regenerates": true,
+    "schedule_regenerates": true,
+    "scipy_runtime_version": true,
+    "source_prompt_hashes_regenerate": true,
+    "tiktoken_runtime_version": true
+  },
+  "configured_models": {
+    "generation_and_extraction": "claude-haiku-4-5-20251001",
+    "primary_judge": "claude-sonnet-4-5-20250929"
+  },
+  "contains_paths_or_account_identity": false,
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "provider_calls_made": 0,
+  "schema_version": 1,
+  "source_revisions": {
+    "frozen_hermes": "4dac5f28af54001b899c9b6fc8ba81cb58da2f0e",
+    "origin_main_at_preflight": "25caae02c020f6dd7ecdc3eaf353ece85aeef09b",
+    "paper_era_camel": "c402032a7f7cd27e196356fbcf413c521a8cb4ca"
+  },
+  "status": "BLOCKED_BEFORE_PROVIDER_CALLS",
+  "versions": {
+    "anthropic_metadata": "0.87.0",
+    "anthropic_metadata_matches_runtime": true,
+    "anthropic_runtime": "0.87.0",
+    "python": "3.11.7",
+    "scipy": "1.17.1",
+    "tiktoken": "0.12.0"
+  }
+}

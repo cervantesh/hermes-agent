@@ -1,0 +1,4 @@
+anthropic==0.87.0
+openai==2.24.0
+scipy==1.17.1
+tiktoken==0.12.0

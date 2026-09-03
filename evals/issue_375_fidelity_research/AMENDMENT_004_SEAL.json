@@ -1,0 +1,10 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-004-TRANSPORT-CAP-2026-09-03",
+  "status": "FROZEN_PROSPECTIVE_AMENDMENT_NO_OBSERVATIONS",
+  "parent_input_freeze_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "canonical_artifact": "evals/issue_375_fidelity_research/AMENDMENT_004_TRANSPORT_ATTEMPT_CAP.md",
+  "sha256": "fb01c3d1f96a35f4930fae19ef3f963cc9e7bd208bcd8b5eeea832559549e09b",
+  "transport_cap_artifact": "evals/issue_375_fidelity_research/TRANSPORT_ATTEMPT_CAP.json",
+  "transport_cap_sha256": "475bcf620335ce6cf9722a2c540d589c0ca44c1ae239dd595b044807da6f19c0",
+  "observations_started": false
+}

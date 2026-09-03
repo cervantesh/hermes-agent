@@ -1,0 +1,6 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-004-TRANSPORT-CAP-2026-09-03",
+  "logical_call_cap": 8860,
+  "max_attempts_per_logical_call": 3,
+  "transport_attempt_cap": 26580
+}

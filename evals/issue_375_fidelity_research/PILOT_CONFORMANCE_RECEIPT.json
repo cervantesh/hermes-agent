@@ -1,0 +1,63 @@
+{
+  "active_amendments": [
+    {
+      "id": "IP375-FIDELITY-AMENDMENT-006-ANTHROPIC-SAMPLING-2026-09-03",
+      "sha256": "b46617f120ad6b1b58642c61233e7f1fe59b0586579e0be3f370381506eee7cc"
+    },
+    {
+      "id": "IP375-FIDELITY-AMENDMENT-007-TEX-LINEBREAKS-2026-09-03",
+      "sha256": "f54a5a52cd0dba5603a0f364af2ea50972dee92bb9d555d52e89d7e384101875"
+    }
+  ],
+  "contains_credentials_or_account_identity": false,
+  "disposition": "INCONCLUSIVE_PROTOCOL_OR_INFRASTRUCTURE",
+  "efficacy_inspected": false,
+  "eligible_for_pooling": false,
+  "frames": [
+    {
+      "completed_pairs": 0,
+      "cost_usd": 0.0,
+      "disposition": "INVALID_HARNESS_ANTHROPIC_SAMPLING_REQUEST",
+      "logical_calls": 1,
+      "public_failure_receipt_sha256": "0933431aa8780a9cc8fae9baee0f34d198f9d9ffd136a9e759dab7eda52b8cdc",
+      "public_summary_sha256": "3953d8e915c92093c81ba07c109156604a08f4be784d5284665115cc87071c6a",
+      "quarantined_pairs": 4
+    },
+    {
+      "completed_pairs": 3,
+      "cost_usd": 0.515369,
+      "disposition": "INVALID_HARNESS_TEX_LINEBREAK_SERIALIZATION",
+      "logical_calls": 100,
+      "public_failure_receipt_sha256": "f64916545f71250816072d6dfd6619c2dd9a2d86739481ed1aaa2e2d1bfdab3d",
+      "public_summary_sha256": "de23203e73129c1c704eb014ea680ab21ad6282581a4be0770264f7cebb356d1",
+      "quarantined_pairs": 1
+    },
+    {
+      "completed_pairs": 3,
+      "cost_usd_incremental": 0.546677,
+      "disposition": "VALID_EXECUTION_JUDGE_SCORE_RANGE_VIOLATION",
+      "logical_calls_incremental": 91,
+      "public_failure_receipt_sha256": "f64916545f71250816072d6dfd6619c2dd9a2d86739481ed1aaa2e2d1bfdab3d",
+      "public_summary_sha256": "b1b01db05438b994ab450487258044d8fabb6d0c98c01463b18e4410878639ce",
+      "quarantined_pairs": 1
+    }
+  ],
+  "final_conformance_pass": false,
+  "models": {
+    "generation_and_extraction": "claude-haiku-4-5-20251001",
+    "judge": "claude-sonnet-4-5-20250929"
+  },
+  "next_action": "DO_NOT_START_SCORED_RUN",
+  "private_content_inspected": false,
+  "private_error_metadata_inspected": true,
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "schema_version": 1,
+  "total_authorized_usage": {
+    "cost_usd": 1.062046,
+    "input_tokens": 432672,
+    "logical_calls": 192,
+    "output_tokens": 103232,
+    "transport_attempts": 192
+  }
+}

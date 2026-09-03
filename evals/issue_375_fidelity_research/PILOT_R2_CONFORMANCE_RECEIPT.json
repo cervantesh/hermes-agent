@@ -1,0 +1,46 @@
+{
+  "contains_credentials_or_account_identity": false,
+  "disposition": "INCONCLUSIVE_PROTOCOL_OR_INFRASTRUCTURE",
+  "efficacy_inspected": true,
+  "efficacy_inspection_scope": "After the failed pilot was closed, one completed public receipt was accidentally printed while auditing usage-field structure. One pair's scores and mapped outcome were exposed; no aggregate was computed or inspected, and the observation is excluded from every future design or selection decision.",
+  "eligible_for_pooling": false,
+  "execution": {
+    "attempted_pairs": 12,
+    "completed_pairs": 9,
+    "conformance_pass": false,
+    "judge_output_quarantines": {
+      "JudgeOutputFormatError": 0,
+      "JudgeScoreRangeError": 3
+    },
+    "other_runtime_quarantines": 0,
+    "selected_pairs": 20,
+    "transport_retries": 0,
+    "unattempted_pairs_after_stop": 8
+  },
+  "external_artifact_hashes": {
+    "budget_state_sha256": "b429b2152dd0aafc936bba4b3a745433b7e7b0c73f950b92cb8ad5d17796fe33",
+    "private_receipt_set_sha256": "16f145cd16ab3595f2672fe2d8f39fae89aee92089d7fa9a64002b5ef93ea47c",
+    "public_receipt_set_sha256": "982d8b1c53809dadcffd03faf1ce7db697688560f3f54ed74bd8faca299422f8",
+    "public_summary_sha256": "2b639db7dc7109de3fc96756fceffc0ccfef0b5e4652c0d87b5753b419ac3f8e"
+  },
+  "models": {
+    "generation_and_extraction": "claude-haiku-4-5-20251001",
+    "judge": "claude-sonnet-4-5-20250929"
+  },
+  "next_action": "DO_NOT_START_SCORED_RUN",
+  "pilot_input_seal_sha256": "904a5e926137bdcaed71f5b1fb839276c844b5dbfe2e595b598ed5e9c0a2298a",
+  "private_content_inspected": false,
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R2-2026-09-03",
+  "protocol_sha256": "bc5dadff484c9f6529fabe1e613624eb7acbb6847d77133dd1da4e12dfbe5373",
+  "reporting_limitation": "The executor's disallowed_quarantines count includes eight NOT_RUN tasks after the third allowed judge quarantine triggered the frozen stop rule. No disallowed runtime failure occurred.",
+  "schema_version": 1,
+  "usage": {
+    "r1_prior_cost_usd": 1.062046,
+    "r2_cost_usd": 1.656046,
+    "r2_input_tokens": 691499,
+    "r2_logical_calls": 303,
+    "r2_output_tokens": 157799,
+    "r2_transport_attempts": 303,
+    "total_cost_usd_r1_plus_r2": 2.718092
+  }
+}

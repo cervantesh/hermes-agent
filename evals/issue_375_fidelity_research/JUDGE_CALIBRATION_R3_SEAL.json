@@ -1,0 +1,12 @@
+{
+  "canonical_artifact": "evals/issue_375_fidelity_research/JUDGE_CALIBRATION_R3_FREEZE.md",
+  "implementation_started": false,
+  "observations_started": false,
+  "parent_protocol_id": "IP375-FIDELITY-EXECUTION-R2-2026-09-03",
+  "parent_protocol_sha256": "bc5dadff484c9f6529fabe1e613624eb7acbb6847d77133dd1da4e12dfbe5373",
+  "parent_receipt": "evals/issue_375_fidelity_research/PILOT_R2_CONFORMANCE_RECEIPT.json",
+  "parent_receipt_sha256": "ecfdc1ce7a7264b383e3b6a4564df812b42377e49b00bd17a5d40a4a2d38e7a8",
+  "protocol_id": "IP375-JUDGE-CALIBRATION-R3-2026-09-03",
+  "sha256": "ab70597ea1515dfb8460fd157578d329c384cb92c99bf1fc5b818cbafb2e18de",
+  "status": "FROZEN_DESIGN_NO_IMPLEMENTATION_OR_PROVIDER_OBSERVATIONS"
+}

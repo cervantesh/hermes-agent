@@ -1,0 +1,11 @@
+{
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "status": "FROZEN_EXECUTION_PROTOCOL_NO_PROVIDER_OBSERVATIONS",
+  "canonical_artifact": "evals/issue_375_fidelity_research/EXECUTION_PROTOCOL_FREEZE.md",
+  "sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "parent_design_sha256": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
+  "frozen_inputs_seal_sha256": "593707d0246ff164081b6e4b8c94a7b176173e889861ffb453a0fbe6d3e35c61",
+  "effective_system_prompt_manifest_sha256": "1f3a7dd60f9fc122979d118a4842f1ea8c0f084b21d05cc26c0c31ed84f2c942",
+  "provider_calls_authorized": false,
+  "observations_started": false
+}
