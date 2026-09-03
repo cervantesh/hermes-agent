@@ -1,0 +1,17 @@
+{
+  "camel_revision": "c402032a7f7cd27e196356fbcf413c521a8cb4ca",
+  "freeze_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "prompt_sha256": {
+    "ablated_assistant": "d2f559e284b2df5c173df374a0710d69c015033d0fe43d09712bd51445d93630",
+    "ablated_user": "3f543d94e0b7d096c17567ea9b3796f0731eae6ea742772a637fb6df4af0e1d4",
+    "evaluation_instruction": "7b5925acca58c32f67999e7fa0ddbd151117dbb26b4d19c46cd29e2d8986611f",
+    "evaluation_system": "8ec001fd8f1a623f9e444c9eca7be1cc3ee529003e931167a1b44958132baf33",
+    "evaluation_template": "f5bb473bf430d151ee7471c28e663cccbbf70465d7b93da15ab677879f48c456",
+    "original_assistant": "ab96dcea803d07ae168b9617f12952a443678f748d20f5907efdc7730185b7db",
+    "original_user": "8734cf603be383a03c089e112c25a7281f65148575869ae9261680d7852d9715",
+    "solution_extraction": "a9e459811a8a5a3c948901ab029288a08741200bd5b1094d7be8a472689d1524",
+    "task_specifier": "6ad0ba96e36eecd8ecde445d2462081207449009d01c7cc37d1ad562f71a9946"
+  },
+  "schema_version": 1,
+  "task_specification_identity": "PINNED_DATASET_OUTPUT"
+}

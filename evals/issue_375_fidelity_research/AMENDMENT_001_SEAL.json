@@ -1,0 +1,9 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-001-SPECIFIED-TASK-2026-09-03",
+  "status": "FROZEN_PROSPECTIVE_AMENDMENT_NO_OBSERVATIONS",
+  "parent_freeze_id": "IP375-FIDELITY-INITIAL-2026-09-03",
+  "parent_sha256": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
+  "canonical_artifact": "evals/issue_375_fidelity_research/AMENDMENT_001_FIXED_SPECIFIED_TASK.md",
+  "sha256": "4a756e1444975a87e0b9de16bba1a2087e72c4373deca0cd9959532cfa4cb680",
+  "observations_started": false
+}

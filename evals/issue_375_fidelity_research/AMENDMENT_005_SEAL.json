@@ -1,0 +1,8 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-005-RUNTIME-IDENTITY-2026-09-03",
+  "status": "FROZEN_PROSPECTIVE_AMENDMENT_NO_OBSERVATIONS",
+  "parent_protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "canonical_artifact": "evals/issue_375_fidelity_research/AMENDMENT_005_RUNTIME_PACKAGE_IDENTITY.md",
+  "sha256": "4a0ce6d56b6d938d3e4a2e1ab2e98f965298dcd0b414262e7085305481b812dd",
+  "observations_started": false
+}

@@ -1,0 +1,11 @@
+{
+  "extraction_calls": 208,
+  "freeze_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "note": "Worst case includes the excluded four-task provider pilot and its scored-sample rerun.",
+  "primary_judge_calls": 104,
+  "reversal_judge_calls": 20,
+  "role_generation_calls": 8528,
+  "schema_version": 1,
+  "task_specification_calls": 0,
+  "total_calls": 8860
+}

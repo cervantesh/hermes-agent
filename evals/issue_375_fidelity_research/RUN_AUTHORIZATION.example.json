@@ -1,0 +1,15 @@
+{
+  "approved": false,
+  "generation_and_extraction_model": "claude-haiku-4-5-20251001",
+  "judge_model": "claude-sonnet-4-5-20250929",
+  "limits": {
+    "max_cost_usd": 10.0,
+    "max_input_tokens": 2000000,
+    "max_logical_calls": 340,
+    "max_output_tokens": 1500000,
+    "max_transport_attempts": 1020
+  },
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "stage": "pilot"
+}

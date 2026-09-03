@@ -1,0 +1,28 @@
+{
+  "checks": {
+    "blind_judging": true,
+    "both_arms": true,
+    "extraction": true,
+    "historical_priming": true,
+    "order_reversal_not_scheduled_for_pilot": true,
+    "private_public_separation": true,
+    "resume_completed_pairs": true
+  },
+  "completed_pairs_reused": 4,
+  "efficacy_observations": 0,
+  "fixture": "DETERMINISTIC_NON_MODEL_FIXTURE",
+  "fixture_completions": 0,
+  "interrupted_pairs_recovered": 0,
+  "new_pairs": 0,
+  "pair_statuses": [
+    "COMPLETE",
+    "COMPLETE",
+    "COMPLETE",
+    "COMPLETE"
+  ],
+  "protocol_id": "IP375-FIDELITY-EXECUTION-R1-2026-09-03",
+  "provider_calls": 0,
+  "records_exercised": 4,
+  "schema_version": 1,
+  "status": "PASS"
+}

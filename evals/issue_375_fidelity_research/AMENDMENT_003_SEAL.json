@@ -1,0 +1,10 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-003-REPEAT-WORD-EXACT-2026-09-03",
+  "status": "FROZEN_PROSPECTIVE_AMENDMENT_NO_OBSERVATIONS",
+  "parent_freeze_id": "IP375-FIDELITY-INITIAL-2026-09-03",
+  "parent_sha256": "c8de22a6da211616c15d16a9c37520682e8f219b8052c74af30cb12f8c5204ef",
+  "supersedes_description_in": "IP375-FIDELITY-AMENDMENT-002-REPEAT-WORD-2026-09-03",
+  "canonical_artifact": "evals/issue_375_fidelity_research/AMENDMENT_003_REPEAT_WORD_EXACT_SEMANTICS.md",
+  "sha256": "193518eea5f3cec71943263340dfc211986eec3f7bc4ff460dce91905048619c",
+  "observations_started": false
+}
