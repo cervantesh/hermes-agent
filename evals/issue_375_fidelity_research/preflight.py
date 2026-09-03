@@ -96,6 +96,7 @@ def run_preflight(
     )
 
     active = json.loads((root / "ACTIVE_FREEZE.json").read_text(encoding="utf-8"))
+    active_source_receipt = frozen / "SOURCE_PROMPT_RECEIPT.json"
     for amendment in active["amendments"]:
         seal = json.loads((root / amendment["seal"]).read_text(encoding="utf-8"))
         _verify(
@@ -104,6 +105,14 @@ def run_preflight(
             checks,
             f"{amendment['amendment_id']}_seal",
         )
+        if source_receipt_name := seal.get("source_prompt_receipt"):
+            active_source_receipt = root / source_receipt_name
+            _verify(
+                active_source_receipt,
+                seal["source_prompt_receipt_sha256"],
+                checks,
+                f"{amendment['amendment_id']}_source_prompt_receipt",
+            )
 
     frozen_seal = json.loads(
         (frozen / "FROZEN_INPUTS_SEAL.json").read_text(encoding="utf-8")
@@ -136,9 +145,7 @@ def run_preflight(
         reversal_count=20,
     )
     sources = load_prompt_sources(camel_repo, EXPECTED["camel"], supplement_tex)
-    source_receipt = json.loads(
-        (frozen / "SOURCE_PROMPT_RECEIPT.json").read_text(encoding="utf-8")
-    )
+    source_receipt = json.loads(active_source_receipt.read_text(encoding="utf-8"))
     checks["source_prompt_hashes_regenerate"] = (
         sources.sha256 == source_receipt["prompt_sha256"]
     )

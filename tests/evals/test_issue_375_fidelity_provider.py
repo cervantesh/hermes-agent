@@ -75,7 +75,6 @@ def test_direct_backend_sends_only_frozen_supported_parameters_and_sanitizes_rec
             "system": "secret task system",
             "messages": [{"role": "user", "content": "private message"}],
             "temperature": 0.2,
-            "top_p": 1.0,
             "max_tokens": 100,
             "extra_headers": {"anthropic-version": "2023-06-01"},
         }

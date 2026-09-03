@@ -1,0 +1,10 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-006-ANTHROPIC-SAMPLING-2026-09-03",
+  "status": "FROZEN_HARNESS_REPAIR_AFTER_INVALID_PILOT",
+  "parent_protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "canonical_artifact": "evals/issue_375_fidelity_research/AMENDMENT_006_ANTHROPIC_SAMPLING_COMPATIBILITY.md",
+  "sha256": "b46617f120ad6b1b58642c61233e7f1fe59b0586579e0be3f370381506eee7cc",
+  "observations_started": true,
+  "prior_pilot_valid": false,
+  "fresh_pilot_required": true
+}

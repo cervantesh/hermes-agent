@@ -162,7 +162,6 @@ class AnthropicBackend:
             "system": system_prompt,
             "messages": messages,
             "temperature": parameters["temperature"],
-            "top_p": parameters["top_p"],
             "max_tokens": parameters["max_tokens"],
             "extra_headers": {"anthropic-version": "2023-06-01"},
         }

@@ -39,6 +39,18 @@
       "artifact": "AMENDMENT_005_RUNTIME_PACKAGE_IDENTITY.md",
       "seal": "AMENDMENT_005_SEAL.json",
       "sha256": "4a0ce6d56b6d938d3e4a2e1ab2e98f965298dcd0b414262e7085305481b812dd"
+    },
+    {
+      "amendment_id": "IP375-FIDELITY-AMENDMENT-006-ANTHROPIC-SAMPLING-2026-09-03",
+      "artifact": "AMENDMENT_006_ANTHROPIC_SAMPLING_COMPATIBILITY.md",
+      "seal": "AMENDMENT_006_SEAL.json",
+      "sha256": "b46617f120ad6b1b58642c61233e7f1fe59b0586579e0be3f370381506eee7cc"
+    },
+    {
+      "amendment_id": "IP375-FIDELITY-AMENDMENT-007-TEX-LINEBREAKS-2026-09-03",
+      "artifact": "AMENDMENT_007_TEX_LINEBREAK_FIDELITY.md",
+      "seal": "AMENDMENT_007_SEAL.json",
+      "sha256": "f54a5a52cd0dba5603a0f364af2ea50972dee92bb9d555d52e89d7e384101875"
     }
   ]
 }

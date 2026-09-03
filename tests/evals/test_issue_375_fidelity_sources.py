@@ -48,7 +48,7 @@ def test_prompt_sources_are_extracted_from_pinned_git_and_tex(monkeypatch, tmp_p
     [System]\\
     {prompt}\\
     \textbf{\underline{Prompt:}}
-    Return two scores first.
+    Return two scores first.\\Then explain.
 \end{AIBox}
 \begin{AIBox}{AI Society Ablation Inception Prompt}
 \parbox{A}{{\bf Assistant System Prompt} \scriptsize \begin{alltt}
@@ -78,7 +78,7 @@ def test_prompt_sources_are_extracted_from_pinned_git_and_tex(monkeypatch, tmp_p
     assert sources.evaluation_system == "Judge precisely."
     assert "{answer_1}" in sources.evaluation_template
     assert sources.evaluation_template.endswith("{prompt}")
-    assert sources.evaluation_instruction == "Return two scores first."
+    assert sources.evaluation_instruction == "Return two scores first.\nThen explain."
     assert set(sources.sha256) == {
         "original_assistant",
         "original_user",

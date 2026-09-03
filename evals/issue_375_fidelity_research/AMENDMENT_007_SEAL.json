@@ -1,0 +1,12 @@
+{
+  "amendment_id": "IP375-FIDELITY-AMENDMENT-007-TEX-LINEBREAKS-2026-09-03",
+  "status": "FROZEN_HARNESS_REPAIR_AFTER_INVALID_PILOT",
+  "parent_protocol_sha256": "78294319621e91540173c2dc19b01eb3b698f70c735cbe7a44ea40b3a5310305",
+  "canonical_artifact": "evals/issue_375_fidelity_research/AMENDMENT_007_TEX_LINEBREAK_FIDELITY.md",
+  "sha256": "f54a5a52cd0dba5603a0f364af2ea50972dee92bb9d555d52e89d7e384101875",
+  "source_prompt_receipt": "frozen_inputs/SOURCE_PROMPT_RECEIPT_AMENDMENT_007.json",
+  "source_prompt_receipt_sha256": "d241da64de45ae148967288e4e25eafa404410403ff7b154d405cead47727590",
+  "observations_started": true,
+  "prior_pilot_valid": false,
+  "fresh_pilot_required": true
+}

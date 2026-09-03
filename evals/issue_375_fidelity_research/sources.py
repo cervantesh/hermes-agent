@@ -76,9 +76,8 @@ def _plain_lines(fragment: str, *, skip_headings: bool = False) -> str:
         if skip_headings and line.startswith(r"\textbf"):
             continue
         line = line.replace(r"\_", "_")
-        line = re.sub(r"\\+$", "", line).strip()
-        if line:
-            output.append(line)
+        line = line.replace(r"\\", "\n")
+        output.extend(part.strip() for part in line.splitlines() if part.strip())
     return "\n".join(output)
 
 
