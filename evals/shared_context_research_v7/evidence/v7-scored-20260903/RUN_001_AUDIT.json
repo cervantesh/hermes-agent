@@ -1,0 +1,36 @@
+{
+  "all_records_controls_exact": false,
+  "arm_counts": {
+    "B": 15,
+    "D": 8
+  },
+  "canary_disclosed_in_any_track3_prompt": false,
+  "cohort_counts": {
+    "anthropic-sonnet46": 13,
+    "openai-codex-gpt54": 10
+  },
+  "d_rows_with_forbidden_kanban_tools": 8,
+  "disposition": "INCONCLUSIVE_PROTOCOL_IMPLEMENTATION",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "journal_sha256": "0ab6f6523a84a2c7d5bce26e8cca3bfd39907ea866e0ac6032e1f2896762f690",
+  "observation_count": 23,
+  "provider_usage_complete": true,
+  "reasons": [
+    "D executed Kanban tools despite the frozen no-Kanban contract",
+    "Track 1 all-records controls were not exact across both cohorts",
+    "Track 3 declared-parent positive controls failed in both cohorts",
+    "the terminal receipt builder misclassified B-first Track 2 rows"
+  ],
+  "reuse_policy": "PRESERVE_BUT_DO_NOT_POOL_WITH_A_REPETITION",
+  "run_id": "v7-scored-20260903",
+  "slot_duplicates": 0,
+  "slots_complete": true,
+  "terminal_postprocessing_error": "KeyError: case",
+  "track2_b_first_outcomes": {
+    "128": true,
+    "32": true,
+    "512": false
+  },
+  "track2_expansion_expected": true,
+  "track3_positive_controls_exact": false
+}

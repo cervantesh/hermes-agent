@@ -1,0 +1,31 @@
+{
+  "camel_revision": "5cd0d0f4bda29893bdbf90c707c4ee59e36c829c",
+  "created_at_utc": "2026-09-03T01:57:23.954066+00:00",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "hermes_revision": "593aa74c6182ce2e5e23bc102daaaae71710c05d",
+  "manifest": {
+    "CAMEL_REFERENCE_CONTRACT.md": "872665c7bb2fe258be3745f25d12ea7221888cd630990a325f0c3e880b7529c5",
+    "DESIGN_SEAL.json": "d2314fff30641c4eb137eaa2881b7fc8362748a4bc8cbcd7e1e49f441a8f18d4",
+    "INITIAL_DESIGN_FREEZE.md": "7de472e9de934cac0a5041defb3ea455d4129118969c3b830b8a77d93c201787",
+    "OWNERSHIP_AUDIT.md": "f21eebec57953758ca9fe78e40370f042624df06b0515b27e6e3a97139a4fdf3",
+    "common/evidence.py": "b91b7fd380d72cc2688c519ccf404c8a404d6f92e3bf055d1e8459e7802339b0",
+    "common/harness.py": "195bb2f5ccef731f12f48b6478f6f4f4cf740e496a64aab4d1f91cc704d51540",
+    "common/hermes_fixture.py": "0813e047e7c8c296a70332e77efcad84fab9cc917d4901a38beabaddf61a4f18",
+    "common/model_runtime.py": "464b992d6a6790dd40cde7fc15cae49ccc2c7993d321e7982890d0a57f189ca0",
+    "common/preflight_runner.py": "e7b429f87dbca8ebcc115573dd1cc9f41cff4e56bf3812b07e87a2ee9b4fed51",
+    "context_cost/PROTOCOL_FREEZE.md": "46853537037e3cd32b10e7ef9c84637c77c90221a898fe7dc21c30e3ece28e3c",
+    "context_cost/preflight.py": "4de9f55d14136cac9188d102cdde9155c9bd0b0a5e08804f741740af9af4b51d",
+    "context_cost/runner.py": "73015ca5c8c22a22f03dab64c3e1c43767b3e4c78e858d2f7ce580b479fd54f0",
+    "isolation/PROTOCOL_FREEZE.md": "378d0aea459532fcfa1d4b39d1cf92a1f7b7df6dbccd530fe6099526f12ce5ba",
+    "isolation/preflight.py": "ff7a0b85eb8389b3e7e4f8488d7a37a86a16aac5bef6e10c2f9c1f0cffbc8d97",
+    "isolation/runner.py": "8f473ae44e96249fa5e7274639713a301f3af9535340afe7a7a14b0abc97bc37",
+    "protocol.py": "0685607ec9555d1c34bc54376b9a34e056b2bdc3620dcebf4ad5a6fc55a49192",
+    "scored_runner.py": "a5b00233c8d8dc0907feb3baf2f23136b502efb9c9034b909d1149a86057ee10",
+    "seal_protocol.py": "39b03ffd50ebf4bbdddbd833fea63a81333d5055d997960848b6cba6ce974ac2",
+    "selective_access/PROTOCOL_FREEZE.md": "2c21e87c0924efc056ff8b6b2f098bef4d88c86ce42403edc4d055f59ad70556",
+    "selective_access/preflight.py": "9da05bb1a9eb52c95077d6590adece52c261100bb97e0ff0568f01a1dc13cce1",
+    "selective_access/runner.py": "3f4868582fd2d771342b89d4452db2e3fdcadea84ba2956a3208b33a4aacb4e1",
+    "source_manifest.py": "94a8f7983a7d44a1a121ee4862678319d1ba6127cad8fda445f0b928c7fd5285"
+  },
+  "status": "PROSPECTIVE_NO_PROVIDER_OBSERVATIONS"
+}

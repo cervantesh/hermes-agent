@@ -1,0 +1,22 @@
+{
+  "created_at_utc": "2026-09-03T04:16:06.2679711Z",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "protocol_id": "SCR-V7-REPETITION-002-2026-09-03",
+  "parent_protocol_seal_sha256": "fb01efd5b59bd3d36070b8b3702ba0ebc66420f8a465bafc5e0aa5ea56fffdb3",
+  "amendment_001_seal_sha256": "a4cf978def09fd8b9eda2675c24ccaefbeaa5acd4a2a120181e4c41a5f834010",
+  "amendment_002_seal_sha256": "bff469c77207bb03afc1453b4e4b3040222df8419d0e65a766ed706a844d7d34",
+  "run_001_audit_seal_sha256": "8017389248ec4b5b3c71f34cd3de0d7f1d832ee0a783e642b40dc901a23e0008",
+  "repetition_001_protocol_seal_sha256": "91b01a32be5e302272b0455a06f19a38015044a2d31d9bfd7ad75c8c323cf470",
+  "run_002_audit_seal_sha256": "6a9bce68f57126f80604f5f724ef068cbcc95681f13623be84a4b52bac09877f",
+  "manifest": {
+    "REPETITION_002_PROTOCOL_FREEZE.md": "4af6fbf3688529b0ae1383f2b69b180c5e8d24a17f2a526d0dc8a6c03530709e",
+    "repetition2/__init__.py": "48645466904c4d62d5b37d0feab83c183dea1c99e69fe409e6f503e793ddebb7",
+    "repetition2/credentialed_execution.py": "92996bbfab85db8a40eb1dd514f23f5a257a68ca377ec394419855cde6c7d0a7",
+    "repetition2/runners.py": "cbd004071049b839f639b4d953887af042957a8a487d501cf076f931000731b1",
+    "repetition2/study.py": "e6b705810e13a9cd921ab88a8923fc45f27b5f77f8c27e323a61ca7e250be9ce",
+    "repetition2/test_runners.py": "03070ddd50a82eff5775d69e771d5ba4ab0f908d68004050e5566b239fce9ab7",
+    "repetition2/test_seal.py": "bdc27d6c584f7b09c98588f198b061bfa1793315467d9c736bd81363976be80d",
+    "repetition2/test_study.py": "d06745a685b930daab63e991d5514f960d96870019c10e9c144192b051ce1dde"
+  },
+  "status": "PROSPECTIVE_NO_REPETITION_002_OBSERVATIONS"
+}

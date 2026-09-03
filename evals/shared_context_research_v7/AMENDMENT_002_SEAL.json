@@ -1,0 +1,11 @@
+{
+  "created_at_utc": "2026-09-03T02:19:08.0956694Z",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "parent_amendment_seal_sha256": "a4cf978def09fd8b9eda2675c24ccaefbeaa5acd4a2a120181e4c41a5f834010",
+  "manifest": {
+    "AMENDMENT_002_EPHEMERAL_CODEX_AUTH.md": "2e312cc7dda49d5c3da444aaf3f209ebf8518385b62ca43f1a2f54d131614d8f",
+    "credentialed_execution.py": "931f6b7ddf9499b35a660762ae5b558f9133378bf4b5f331af582e7987e2af31",
+    "test_credentialed_execution.py": "c8d0732aca5298ceb9c7baf4e85f76ccf3d7be86fc5822009a72e089de37cd1f"
+  },
+  "status": "PROSPECTIVE_NO_SCORED_OBSERVATIONS"
+}

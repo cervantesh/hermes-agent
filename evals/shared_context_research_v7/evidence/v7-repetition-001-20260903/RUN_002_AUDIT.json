@@ -1,0 +1,41 @@
+{
+  "adjudicated_tracks": {
+    "active_writes": "GATE_CLOSED_NOT_EXECUTED",
+    "concurrency": "GATE_CLOSED_NOT_EXECUTED",
+    "context_cost": "INCONCLUSIVE",
+    "isolation": "INCONCLUSIVE",
+    "remote_backends": "GATE_CLOSED_NOT_EXECUTED",
+    "selective_access": "INCONCLUSIVE"
+  },
+  "all_d_rows_tool_free": true,
+  "all_rows_have_canonical_prompt_tokens": true,
+  "b_configured_kanban_only": true,
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "implementation_authorized": false,
+  "observation_count": 23,
+  "overall_disposition": "INCONCLUSIVE_PROTOCOL_IMPLEMENTATION",
+  "protocol_id": "SCR-V7-REPETITION-001-2026-09-03",
+  "reasons": [
+    "Track 1's all-records control shows the same resource advantage",
+    "Track 2 restricted B to the kanban toolset instead of the frozen strongest-current-Hermes surface",
+    "Track 3 did not pass both family-level positive controls"
+  ],
+  "receipt_observation_count": 23,
+  "reuse_policy": "PRESERVE_BUT_DO_NOT_POOL_WITH_A_FURTHER_REPETITION",
+  "run_id": "v7-repetition-001-20260903",
+  "strong_baseline_tools_missing": [
+    "read_file",
+    "terminal"
+  ],
+  "track1_control_artifact": true,
+  "track1_receipt_disposition": "INCONCLUSIVE",
+  "track2_confirmation": {
+    "all_b_valid_failures": true,
+    "all_d_valid_successes": true,
+    "b_count": 4,
+    "d_count": 4
+  },
+  "track2_receipt_disposition": "IMPLEMENTATION OPPORTUNITY",
+  "track3_positive_controls_valid_and_exact": false,
+  "track3_receipt_disposition": "INCONCLUSIVE"
+}

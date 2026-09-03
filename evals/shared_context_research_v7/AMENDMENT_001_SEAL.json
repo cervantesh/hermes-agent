@@ -1,0 +1,11 @@
+{
+  "created_at_utc": "2026-09-03T02:16:08.6254610Z",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "parent_protocol_seal_sha256": "fb01efd5b59bd3d36070b8b3702ba0ebc66420f8a465bafc5e0aa5ea56fffdb3",
+  "manifest": {
+    "AMENDMENT_001_WINDOWS_LOG_LIFECYCLE.md": "bf63ee7a8054f58c1bb8f5e3e856480a073be4af37cae103944d01ca598322b0",
+    "test_windows_execution_adapter.py": "9a3a0c9bf8ec40d1ff893e703d3d2591bec26ca177682f85ac83a94caf760fdf",
+    "windows_execution_adapter.py": "c804309dd6c5b9a1cd7e30d8d1fd1dd990076771410b802544929ef4cf52c697"
+  },
+  "status": "PROSPECTIVE_NO_SCORED_OBSERVATIONS"
+}

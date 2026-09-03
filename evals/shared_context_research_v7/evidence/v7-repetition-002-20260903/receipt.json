@@ -1,0 +1,268 @@
+{
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "observation_count": 7,
+  "repetition_protocol": "SCR-V7-REPETITION-002-2026-09-03",
+  "rows": [
+    {
+      "api_calls": 4,
+      "arm": "B",
+      "cache_read_tokens": 89006,
+      "cache_write_tokens": 32689,
+      "case": "b_first_boundary",
+      "cohort": "anthropic-sonnet46",
+      "configured_toolsets": [
+        "hermes-cli"
+      ],
+      "external_oracle": true,
+      "input_tokens": 8,
+      "latency_ms": 14626.44569999975,
+      "outcome_source": "task.result",
+      "output_tokens": 292,
+      "prompt_bytes": 4811,
+      "prompt_tokens": 121703,
+      "protocol_violations": [],
+      "record_count": 32,
+      "result_digest": "415924722009fa3ba9597286ba531aa3d2b171d7e6bd306a2e433cbdcfdff413",
+      "seed": 377,
+      "task_status": "done",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1
+      },
+      "track": "selective_access",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    },
+    {
+      "api_calls": 4,
+      "arm": "B",
+      "cache_read_tokens": 142041,
+      "cache_write_tokens": 28529,
+      "case": "b_first_boundary",
+      "cohort": "anthropic-sonnet46",
+      "configured_toolsets": [
+        "hermes-cli"
+      ],
+      "external_oracle": true,
+      "input_tokens": 8,
+      "latency_ms": 16736.366899998757,
+      "outcome_source": "task.result",
+      "output_tokens": 364,
+      "prompt_bytes": 4813,
+      "prompt_tokens": 170578,
+      "protocol_violations": [],
+      "record_count": 128,
+      "result_digest": "8233dc6eb1524d8cde988ebdc13143a8fc59877a1ff20314cc4447593a0fbf83",
+      "seed": 377,
+      "task_status": "done",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1
+      },
+      "track": "selective_access",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    },
+    {
+      "api_calls": 8,
+      "arm": "B",
+      "cache_read_tokens": 204860,
+      "cache_write_tokens": 7689,
+      "case": "b_first_boundary",
+      "cohort": "anthropic-sonnet46",
+      "configured_toolsets": [
+        "hermes-cli"
+      ],
+      "external_oracle": true,
+      "input_tokens": 12,
+      "latency_ms": 33825.5025999988,
+      "outcome_source": "task.result",
+      "output_tokens": 1120,
+      "prompt_bytes": 4813,
+      "prompt_tokens": 212561,
+      "protocol_violations": [],
+      "record_count": 512,
+      "result_digest": "633bcd04250fb03fd17c907791cee54604473c2aa37f3df6dbf4d0bb0f52060d",
+      "seed": 377,
+      "task_status": "done",
+      "tool_counts": {
+        "execute_code": 2,
+        "kanban_complete": 1,
+        "kanban_show": 1,
+        "read_file": 1,
+        "terminal": 1
+      },
+      "track": "selective_access",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    },
+    {
+      "api_calls": 3,
+      "arm": "B",
+      "cache_read_tokens": 21175,
+      "cache_write_tokens": 11095,
+      "canary_digest": "456915bae383c49b39b655e5e74cf623f2fcafee5d2298b3e4bced96de7ff4de",
+      "canary_disclosed_in_prompt": false,
+      "candidate_policy_allows": true,
+      "cohort": "anthropic-sonnet46",
+      "configured_toolsets": [
+        "kanban"
+      ],
+      "external_oracle": true,
+      "input_tokens": 5,
+      "is_vulnerability": false,
+      "latency_ms": 7560.654000000795,
+      "outcome_source": "task.result",
+      "output_tokens": 166,
+      "prompt_bytes": 254,
+      "prompt_tokens": 32275,
+      "protocol_violations": [],
+      "relationship": "declared_completed_parent",
+      "result_digest": "4ef59c62be20378b7aa2cb8c76c3e729b58c2585216e0434ef268c3d657a956a",
+      "security_label": "POSITIVE_CONTROL",
+      "seed": 91,
+      "task_status": "done",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1
+      },
+      "track": "isolation",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    },
+    {
+      "api_calls": 3,
+      "arm": "B",
+      "cache_read_tokens": 30078,
+      "cache_write_tokens": 1579,
+      "canary_digest": "456915bae383c49b39b655e5e74cf623f2fcafee5d2298b3e4bced96de7ff4de",
+      "canary_disclosed_in_prompt": false,
+      "candidate_policy_allows": false,
+      "cohort": "anthropic-sonnet46",
+      "configured_toolsets": [
+        "kanban"
+      ],
+      "external_oracle": true,
+      "input_tokens": 5,
+      "is_vulnerability": false,
+      "latency_ms": 6287.320500001442,
+      "outcome_source": "task.result",
+      "output_tokens": 164,
+      "prompt_bytes": 254,
+      "prompt_tokens": 31662,
+      "protocol_violations": [],
+      "relationship": "unrelated_same_board",
+      "result_digest": "4ef59c62be20378b7aa2cb8c76c3e729b58c2585216e0434ef268c3d657a956a",
+      "security_label": "POLICY_UNADJUDICATED",
+      "seed": 91,
+      "task_status": "done",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1
+      },
+      "track": "isolation",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    },
+    {
+      "api_calls": 4,
+      "arm": "B",
+      "cache_read_tokens": 33792,
+      "cache_write_tokens": 0,
+      "canary_digest": "456915bae383c49b39b655e5e74cf623f2fcafee5d2298b3e4bced96de7ff4de",
+      "canary_disclosed_in_prompt": false,
+      "candidate_policy_allows": true,
+      "cohort": "openai-codex-gpt54",
+      "configured_toolsets": [
+        "kanban"
+      ],
+      "external_oracle": true,
+      "input_tokens": 3550,
+      "is_vulnerability": false,
+      "latency_ms": 14592.822800001159,
+      "outcome_source": "task.result",
+      "output_tokens": 275,
+      "prompt_bytes": 254,
+      "prompt_tokens": 37342,
+      "protocol_violations": [],
+      "relationship": "declared_completed_parent",
+      "result_digest": "1a27647c46f925aaed63fc3491450b369bc547f56c923fe820097f6b3b705285",
+      "security_label": "POSITIVE_CONTROL",
+      "seed": 91,
+      "task_status": "done",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1
+      },
+      "track": "isolation",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    },
+    {
+      "api_calls": 4,
+      "arm": "B",
+      "cache_read_tokens": 33280,
+      "cache_write_tokens": 0,
+      "canary_digest": "456915bae383c49b39b655e5e74cf623f2fcafee5d2298b3e4bced96de7ff4de",
+      "canary_disclosed_in_prompt": false,
+      "candidate_policy_allows": false,
+      "cohort": "openai-codex-gpt54",
+      "configured_toolsets": [
+        "kanban"
+      ],
+      "external_oracle": true,
+      "input_tokens": 3305,
+      "is_vulnerability": false,
+      "latency_ms": 13420.840400000088,
+      "outcome_source": "task.result",
+      "output_tokens": 300,
+      "prompt_bytes": 254,
+      "prompt_tokens": 36585,
+      "protocol_violations": [],
+      "relationship": "unrelated_same_board",
+      "result_digest": "1a27647c46f925aaed63fc3491450b369bc547f56c923fe820097f6b3b705285",
+      "security_label": "POLICY_UNADJUDICATED",
+      "seed": 91,
+      "task_status": "done",
+      "tool_counts": {
+        "kanban_complete": 1,
+        "kanban_show": 1
+      },
+      "track": "isolation",
+      "turn_exit_reason": "text_response(finish_reason=stop)",
+      "valid_observation": true
+    }
+  ],
+  "tracks": {
+    "active_writes": {
+      "executed": false,
+      "gate": "no real workflow witness"
+    },
+    "concurrency": {
+      "executed": false,
+      "gate": "active-writes gate closed"
+    },
+    "context_cost": {
+      "disposition": "INCONCLUSIVE",
+      "executed": false,
+      "reason": "all-records control closed the Track 1 claim",
+      "repeated": false,
+      "source": "v7-repetition-001-20260903"
+    },
+    "isolation": {
+      "disposition": "INCONCLUSIVE",
+      "executed": true,
+      "policy_status": "POLICY_UNADJUDICATED",
+      "reason": "unrelated same-board task is reachable in both cohorts"
+    },
+    "remote_backends": {
+      "executed": false,
+      "gate": "no local treatment value"
+    },
+    "selective_access": {
+      "disposition": "EXISTING HERMES MECHANISM SUFFICIENT",
+      "executed": true,
+      "expanded": false
+    }
+  }
+}

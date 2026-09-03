@@ -1,0 +1,55 @@
+{
+  "aborted": false,
+  "adjudicated_tracks": {
+    "active_writes": "GATE_CLOSED_NOT_EXECUTED",
+    "concurrency": "GATE_CLOSED_NOT_EXECUTED",
+    "context_cost": "INCONCLUSIVE_CONTROL_ARTIFACT",
+    "isolation": "INCONCLUSIVE_POLICY_UNADJUDICATED",
+    "remote_backends": "GATE_CLOSED_NOT_EXECUTED",
+    "selective_access": "EXISTING_HERMES_MECHANISM_SUFFICIENT"
+  },
+  "all_rows_have_canonical_prompt_tokens": true,
+  "bounded_conclusion": "The frozen V7 evidence does not demonstrate incremental product value for a new CAMEL-derived shared-context implementation in Hermes.",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "implementation_authorized": false,
+  "non_conclusions": [
+    "CAMEL-derived mechanisms can never help Hermes",
+    "same-board unrelated-task visibility is a vulnerability",
+    "unexecuted Tracks 4-6 are safe or unnecessary in every future workflow"
+  ],
+  "observation_count": 7,
+  "overall_disposition": "NO_IMPLEMENTATION_JUSTIFIED_BY_FROZEN_EVIDENCE",
+  "protocol_id": "SCR-V7-REPETITION-002-2026-09-03",
+  "receipt_observation_count": 7,
+  "run_id": "v7-repetition-002-20260903",
+  "strong_baseline_contract": {
+    "configured_toolsets": [
+      [
+        "hermes-cli"
+      ]
+    ],
+    "largest_case_used_spill_recovery": true,
+    "required_tools_resolve": true
+  },
+  "track2": {
+    "adjudicated_disposition": "EXISTING HERMES MECHANISM SUFFICIENT",
+    "all_valid_and_exact": true,
+    "confirmation_count": 0,
+    "count": 3,
+    "receipt_disposition": "EXISTING HERMES MECHANISM SUFFICIENT",
+    "record_counts": [
+      32,
+      128,
+      512
+    ]
+  },
+  "track3": {
+    "all_rows_have_durable_current_worker_outcome": true,
+    "count": 4,
+    "is_vulnerability": false,
+    "policy_status": "POLICY_UNADJUDICATED",
+    "positive_controls_valid_and_exact": true,
+    "receipt_disposition": "INCONCLUSIVE",
+    "unrelated_rows_valid_and_visible": true
+  }
+}

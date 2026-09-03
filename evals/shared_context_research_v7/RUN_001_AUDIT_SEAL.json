@@ -1,0 +1,14 @@
+{
+  "created_at_utc": "2026-09-03T02:32:40.5776279Z",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "run_id": "v7-scored-20260903",
+  "disposition": "INCONCLUSIVE_PROTOCOL_IMPLEMENTATION",
+  "manifest": {
+    "RUN_001_DISPOSITION.md": "05611b1d7b2f2cf03f95581502b62bade07c9ba856ed7ef19b12557fa6bc1579",
+    "audit_run001.py": "c8e1d941f7a59573b610985317c4c380263bb16cffc1f3ab748227ae5d6b4bfb",
+    "evidence/v7-scored-20260903/RUN_001_AUDIT.json": "fa612306bd490064a996abacc2402d237afe77da61f9c26acc972a73181b4224",
+    "evidence/v7-scored-20260903/observations.jsonl": "0ab6f6523a84a2c7d5bce26e8cca3bfd39907ea866e0ac6032e1f2896762f690",
+    "test_audit_run001.py": "58eac81ffe92fab7ce34edb0a6a4b0c8a99d91811aff6c2fc87c4e11af7400ff"
+  },
+  "reuse_policy": "PRESERVE_BUT_DO_NOT_POOL_WITH_A_REPETITION"
+}

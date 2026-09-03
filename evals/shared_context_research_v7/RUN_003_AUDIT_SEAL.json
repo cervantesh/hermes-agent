@@ -1,0 +1,20 @@
+{
+  "created_at_utc": "2026-09-03T04:21:52.5933630Z",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "protocol_id": "SCR-V7-REPETITION-002-2026-09-03",
+  "run_id": "v7-repetition-002-20260903",
+  "disposition": "NO_IMPLEMENTATION_JUSTIFIED_BY_FROZEN_EVIDENCE",
+  "protocol_seal_sha256": "9ecdaacbdc66757a4afc8383ef84d32688856401c2d6494ccf0798ca77ca35c8",
+  "manifest": {
+    "DRIFT_AUDIT_2026-09-03_FINAL.md": "f9ee30333eb4c79a83b81aa89b125eae1c14f9e48b7622d238c57f8dd2dcd216",
+    "FINAL_REPORT.md": "f9d8de3fedae7cab6b77efd27256550ffae804cfc9c51e18b32d8c780c8965e3",
+    "RUN_003_DISPOSITION.md": "c17925b5ca00633942adcd6be4e20e15fddaa5d27970838f449fdf2e87a9b92a",
+    "audit_run003.py": "2236ecac0669c39cb0bafe211eaf53a3de9944371dfe1b50846e48dc3800403d",
+    "evidence/v7-repetition-002-20260903/RUN_003_AUDIT.json": "931dca1a720c150bc9127f97686b376462bddd014b936a04611fb5ed17fbad50",
+    "evidence/v7-repetition-002-20260903/observations.jsonl": "9f6d1e06ca8180e71e41bdaf232c20be20938b42866a53d243089a1145d32adb",
+    "evidence/v7-repetition-002-20260903/receipt.json": "7e141629bedd23ea55b630cf2f2993587ef08377bd21b8a8be5b7c215aaecee7",
+    "test_audit_run003.py": "226e7ff26b037655074c8fc2521d039a15ab07eaf4f40098bb99b564d2a5cf58",
+    "test_run003_audit_seal.py": "653a41a24646698bf56a67a2ee565bbd75dac7e60940898d89ee92c41d6f12eb"
+  },
+  "reuse_policy": "FINAL_BOUNDED_EVIDENCE_FRAME_DO_NOT_POOL_PRIOR_INVALID_RUNS"
+}

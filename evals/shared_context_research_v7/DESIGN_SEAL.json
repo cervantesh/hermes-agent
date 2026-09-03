@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "status": "FROZEN",
+  "sealed_at": "2026-09-02T20:14:05-04:00",
+  "design_path": "evals/shared_context_research_v7/INITIAL_DESIGN_FREEZE.md",
+  "design_sha256": "7de472e9de934cac0a5041defb3ea455d4129118969c3b830b8a77d93c201787",
+  "design_bytes": 10233,
+  "hermes_reference": "593aa74c6182ce2e5e23bc102daaaae71710c05d",
+  "camel_reference": "5cd0d0f4bda29893bdbf90c707c4ee59e36c829c",
+  "issue": "https://github.com/NousResearch/hermes-agent/issues/377",
+  "change_control": "Do not modify the frozen design. Record later changes as separate amendments and reseal affected protocols before collecting observations."
+}

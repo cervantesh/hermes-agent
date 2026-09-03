@@ -1,0 +1,16 @@
+{
+  "created_at_utc": "2026-09-03T04:10:39.3060814+00:00",
+  "freeze_id": "SCR-V7-INITIAL-2026-09-02",
+  "protocol_id": "SCR-V7-REPETITION-001-2026-09-03",
+  "run_id": "v7-repetition-001-20260903",
+  "disposition": "INCONCLUSIVE_PROTOCOL_IMPLEMENTATION",
+  "manifest": {
+    "RUN_002_DISPOSITION.md": "e28db641e0d25b3a4dbd867584a519a60a81ad0ab17d0c7061e14543870aed82",
+    "audit_run002.py": "a607258e213a0ada34a116b39fcb47ba2f8e428977431cf01168636ed61118b9",
+    "evidence/v7-repetition-001-20260903/RUN_002_AUDIT.json": "899ea85a75a4c4c8c1220dad4a4fd7c12d8dc9f9c7d2225591f885622a267e88",
+    "evidence/v7-repetition-001-20260903/observations.jsonl": "989b8a99af4bf0fd0cb1ea2c7e84de8f77215e72e20fb1d5e4bf97cb1c6d294c",
+    "evidence/v7-repetition-001-20260903/receipt.json": "5746cb26cc1a144da70b50dcbebdba1f4c25e9a86f8677f29278cdca1dc003ad",
+    "test_audit_run002.py": "a928c1a194dd22a1abc1bd0a616f7636c3c5534cfcb0180e8e4e71a1b7e30781"
+  },
+  "reuse_policy": "PRESERVE_BUT_DO_NOT_POOL_WITH_A_FURTHER_REPETITION"
+}
